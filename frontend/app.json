@@ -8,13 +8,21 @@
     "scheme": "propsignal",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "eas": {
+        "projectId": "propsignal-engine-2026"
+      }
+    },
+    "owner": "propsignal",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.propsignal.engine",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Receive alerts for BUY/SELL trading signals"
       }
     },
     "android": {
+      "package": "com.propsignal.engine",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"

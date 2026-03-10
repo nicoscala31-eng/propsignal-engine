@@ -71,13 +71,20 @@ class NotificationService {
 
       // Get Expo push token
       try {
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId || 'propsignal-engine-2026';
         token = (await Notifications.getExpoPushTokenAsync({
           projectId: projectId,
         })).data;
         console.log('Expo Push Token:', token);
       } catch (e) {
-        console.log('Error getting push token:', e);
+        // Try without projectId as fallback
+        console.log('Error getting push token with projectId, trying fallback:', e);
+        try {
+          token = (await Notifications.getExpoPushTokenAsync()).data;
+          console.log('Expo Push Token (fallback):', token);
+        } catch (e2) {
+          console.log('Error getting push token (fallback):', e2);
+        }
       }
     } else {
       console.log('Must use physical device for push notifications');

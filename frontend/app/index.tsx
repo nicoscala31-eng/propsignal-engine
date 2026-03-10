@@ -77,6 +77,7 @@ export default function HomeScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [autoScanEnabled, setAutoScanEnabled] = useState(false); // Disabled - backend scanner handles this
   const [backendScannerRunning, setBackendScannerRunning] = useState(false);
+  const [pushToken, setPushToken] = useState<string | null>(null);
   
   // Track previous signal types to detect new BUY/SELL
   const prevEurusdType = useRef<string | null>(null);
@@ -89,7 +90,10 @@ export default function HomeScreen() {
       const token = await notificationService.initialize();
       if (token) {
         setNotificationsEnabled(true);
-        console.log('Notifications enabled');
+        setPushToken(token);
+        console.log('Notifications enabled, token:', token);
+      } else {
+        console.log('Notifications not enabled');
       }
       
       // Handle notification tap - navigate to signal detail
@@ -108,6 +112,32 @@ export default function HomeScreen() {
       subscription.remove();
     };
   }, []);
+
+  // Manual notification permission request
+  const requestNotificationPermission = async () => {
+    try {
+      const token = await notificationService.initialize();
+      if (token) {
+        setNotificationsEnabled(true);
+        setPushToken(token);
+        Alert.alert(
+          'Notifiche Attivate!',
+          'Riceverai notifiche push quando vengono generati segnali BUY/SELL.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        // Permissions denied - guide user to settings
+        Alert.alert(
+          'Permessi Notifiche',
+          'Per ricevere notifiche push, devi abilitarle nelle Impostazioni del telefono.\n\nVai su: Impostazioni > Notifiche > Expo Go > Consenti notifiche',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+      Alert.alert('Errore', 'Impossibile attivare le notifiche');
+    }
+  };
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
@@ -531,6 +561,28 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Test Notification Button */}
+        <TouchableOpacity
+          style={styles.testNotificationButton}
+          onPress={async () => {
+            try {
+              // Send local notification (works on Expo Go)
+              await notificationService.sendLocalSignalNotification({
+                signalType: 'BUY',
+                asset: 'EURUSD',
+                entryPrice: 1.16550,
+                confidence: 85,
+                signalId: 'TEST_LOCAL_' + Date.now()
+              });
+              Alert.alert('✅ Notifica Inviata!', 'Controlla le notifiche del dispositivo.');
+            } catch (error) {
+              Alert.alert('Errore', 'Impossibile inviare notifica locale');
+            }
+          }}
+        >
+          <Text style={styles.testNotificationButtonText}>🔔 Test Notifica Locale</Text>
+        </TouchableOpacity>
+
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={[
@@ -883,6 +935,20 @@ const styles = StyleSheet.create({
     color: '#00ff88',
     fontSize: 12,
     marginTop: 4,
+  },
+  testNotificationButton: {
+    backgroundColor: '#222222',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#00ff88',
+  },
+  testNotificationButtonText: {
+    color: '#00ff88',
+    fontSize: 16,
+    fontWeight: '600',
   },
   loadingOverlay: {
     position: 'absolute',
