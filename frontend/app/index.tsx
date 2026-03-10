@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,22 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
-  Alert
+  Alert,
+  AppState,
+  AppStateStatus
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { notificationService } from '../services/NotificationService';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 // Mock user ID for MVP (in production, this would come from auth)
 const MOCK_USER_ID = '1773156899.291813';
 const MOCK_PROFILE_ID = '1773156903.940538';
+
+// Auto-refresh interval (30 seconds)
+const SIGNAL_POLL_INTERVAL = 30000;
 
 interface Signal {
   id: string;
@@ -68,6 +74,49 @@ export default function HomeScreen() {
   const [xauusdSignal, setXauusdSignal] = useState<Signal | null>(null);
   const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(false);
+  
+  // Track previous signal types to detect new BUY/SELL
+  const prevEurusdType = useRef<string | null>(null);
+  const prevXauusdType = useRef<string | null>(null);
+  const appState = useRef(AppState.currentState);
+
+  // Initialize notifications
+  useEffect(() => {
+    const initNotifications = async () => {
+      const token = await notificationService.initialize();
+      if (token) {
+        setNotificationsEnabled(true);
+        console.log('Notifications enabled');
+      }
+      
+      // Handle notification tap - navigate to signal detail
+      notificationService.onNotificationTap = (signalId: string) => {
+        router.push(`/signal-detail?id=${signalId}`);
+      };
+    };
+    
+    initNotifications();
+    
+    // Handle app state changes
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    
+    return () => {
+      notificationService.cleanup();
+      subscription.remove();
+    };
+  }, []);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+      // App came to foreground - refresh data
+      console.log('App came to foreground, refreshing...');
+      fetchLatestSignals();
+      fetchProviderStatus();
+    }
+    appState.current = nextAppState;
+  };
 
   const fetchProviderStatus = useCallback(async () => {
     try {
@@ -103,6 +152,66 @@ export default function HomeScreen() {
     }
   };
 
+  // Auto-scan for new signals
+  const autoScanForSignals = useCallback(async () => {
+    if (!autoScanEnabled) return;
+    
+    console.log('Auto-scanning for signals...');
+    
+    for (const asset of ['EURUSD', 'XAUUSD'] as const) {
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/users/${MOCK_USER_ID}/signals/generate`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              asset: asset,
+              prop_profile_id: MOCK_PROFILE_ID
+            })
+          }
+        );
+
+        if (response.ok) {
+          const signal = await response.json();
+          const prevType = asset === 'EURUSD' ? prevEurusdType.current : prevXauusdType.current;
+          
+          // Update state
+          if (asset === 'EURUSD') {
+            setEurusdSignal(signal);
+            prevEurusdType.current = signal.signal_type;
+          } else {
+            setXauusdSignal(signal);
+            prevXauusdType.current = signal.signal_type;
+          }
+          
+          // Send notification for new BUY/SELL signals
+          if (signal.signal_type !== 'NEXT' && prevType !== signal.signal_type && notificationsEnabled) {
+            if (signal.signal_type === 'BUY') {
+              await notificationService.sendBuyNotification(
+                asset,
+                signal.entry_price || 0,
+                signal.confidence_score || 0,
+                signal.id
+              );
+            } else if (signal.signal_type === 'SELL') {
+              await notificationService.sendSellNotification(
+                asset,
+                signal.entry_price || 0,
+                signal.confidence_score || 0,
+                signal.id
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Auto-scan error for ${asset}:`, error);
+      }
+    }
+    
+    await fetchProviderStatus();
+  }, [autoScanEnabled, notificationsEnabled, fetchProviderStatus]);
+
   const generateSignal = async (asset: 'EURUSD' | 'XAUUSD') => {
     setLoading(true);
     try {
@@ -122,14 +231,25 @@ export default function HomeScreen() {
         const signal = await response.json();
         if (asset === 'EURUSD') {
           setEurusdSignal(signal);
+          prevEurusdType.current = signal.signal_type;
         } else {
           setXauusdSignal(signal);
+          prevXauusdType.current = signal.signal_type;
         }
 
         // Refresh live prices after signal generation
         await fetchProviderStatus();
 
         if (signal.signal_type !== 'NEXT') {
+          // Send notification
+          if (notificationsEnabled) {
+            if (signal.signal_type === 'BUY') {
+              await notificationService.sendBuyNotification(asset, signal.entry_price, signal.confidence_score, signal.id);
+            } else {
+              await notificationService.sendSellNotification(asset, signal.entry_price, signal.confidence_score, signal.id);
+            }
+          }
+          
           Alert.alert(
             `${signal.signal_type} Signal`,
             `${asset}: ${signal.explanation || 'New signal generated'}`,
@@ -158,9 +278,37 @@ export default function HomeScreen() {
     fetchProviderStatus();
 
     // Auto-refresh prices every 10 seconds
-    const interval = setInterval(fetchProviderStatus, 10000);
-    return () => clearInterval(interval);
+    const priceInterval = setInterval(fetchProviderStatus, 10000);
+    
+    return () => {
+      clearInterval(priceInterval);
+    };
   }, [fetchProviderStatus]);
+  
+  // Auto-scan effect
+  useEffect(() => {
+    if (!autoScanEnabled) return;
+    
+    // Initial scan
+    autoScanForSignals();
+    
+    // Scan every 30 seconds when auto-scan is enabled
+    const scanInterval = setInterval(autoScanForSignals, SIGNAL_POLL_INTERVAL);
+    
+    return () => clearInterval(scanInterval);
+  }, [autoScanEnabled, autoScanForSignals]);
+
+  const toggleAutoScan = () => {
+    const newState = !autoScanEnabled;
+    setAutoScanEnabled(newState);
+    if (newState) {
+      Alert.alert(
+        'Auto-Scan Enabled',
+        'The app will check for BUY/SELL opportunities every 30 seconds and notify you when found.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   const getLivePrice = (asset: 'EURUSD' | 'XAUUSD'): LivePrice | null => {
     return providerStatus?.prices?.[asset] || null;
@@ -369,11 +517,37 @@ export default function HomeScreen() {
 
         <View style={styles.actionButtons}>
           <TouchableOpacity
+            style={[
+              styles.actionButton, 
+              autoScanEnabled && styles.actionButtonActive
+            ]}
+            onPress={toggleAutoScan}
+          >
+            <Text style={[
+              styles.actionButtonText,
+              autoScanEnabled && { color: '#0a0a0a' }
+            ]}>
+              {autoScanEnabled ? 'Auto-Scan ON' : 'Auto-Scan OFF'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push('/analytics')}
           >
             <Text style={styles.actionButtonText}>Analytics</Text>
           </TouchableOpacity>
+        </View>
+        
+        {/* Notification Status */}
+        <View style={styles.notificationStatus}>
+          <Text style={styles.notificationStatusText}>
+            Notifications: {notificationsEnabled ? 'Enabled' : 'Disabled'}
+          </Text>
+          {autoScanEnabled && (
+            <Text style={styles.autoScanStatusText}>
+              Auto-scanning every 30 seconds...
+            </Text>
+          )}
         </View>
       </ScrollView>
 
@@ -658,7 +832,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   actionButton: {
     flex: 1,
@@ -669,10 +843,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#222222',
   },
+  actionButtonActive: {
+    backgroundColor: '#00ff88',
+    borderColor: '#00ff88',
+  },
   actionButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  notificationStatus: {
+    backgroundColor: '#111111',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  notificationStatusText: {
+    color: '#666666',
+    fontSize: 12,
+  },
+  autoScanStatusText: {
+    color: '#00ff88',
+    fontSize: 12,
+    marginTop: 4,
   },
   loadingOverlay: {
     position: 'absolute',
