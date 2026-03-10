@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+interface LifecycleEvent {
+  stage: string;
+  timestamp: string;
+  price?: number;
+  pips?: number;
+  rr?: number;
+  reason?: string;
+}
 
 interface SignalDetail {
   id: string;
@@ -42,10 +51,28 @@ interface SignalDetail {
   prop_rule_safety: string;
   prop_rule_warnings: string[];
   created_at: string;
+  // News risk fields
+  news_risk?: boolean;
+  news_event?: string;
+  minutes_to_news?: number;
+  // Lifecycle fields
+  outcome?: string;
+  outcome_price?: number;
+  outcome_pips?: number;
+  outcome_rr_achieved?: number;
+  lifecycle_stage?: string;
+  lifecycle_history?: LifecycleEvent[];
+  is_resolved?: boolean;
+  resolved_at?: string;
+  // Live data
+  live_bid?: number;
+  live_ask?: number;
+  data_provider?: string;
 }
 
 export default function SignalDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const [signal, setSignal] = useState<SignalDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +105,12 @@ export default function SignalDetailScreen() {
   if (!signal) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Signal not found</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Signal not found</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -86,6 +118,19 @@ export default function SignalDetailScreen() {
   const signalColor = 
     signal.signal_type === 'BUY' ? '#00ff88' : 
     signal.signal_type === 'SELL' ? '#ff3366' : '#888888';
+
+  const getOutcomeColor = (outcome?: string) => {
+    if (!outcome) return '#888888';
+    if (outcome.includes('TP')) return '#00ff88';
+    if (outcome === 'SL_HIT') return '#ff3366';
+    if (outcome === 'INVALIDATED') return '#ffaa00';
+    return '#888888';
+  };
+
+  const formatLifecycleStage = (stage?: string) => {
+    if (!stage) return 'Unknown';
+    return stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -97,6 +142,72 @@ export default function SignalDetailScreen() {
             <Text style={styles.signalBadgeText}>{signal.signal_type}</Text>
           </View>
         </View>
+
+        {/* News Risk Warning */}
+        {signal.news_risk && (
+          <View style={styles.newsWarning}>
+            <Text style={styles.newsWarningText}>
+              ⚠️ HIGH NEWS RISK: {signal.news_event}
+            </Text>
+            {signal.minutes_to_news && (
+              <Text style={styles.newsWarningSubtext}>
+                {signal.minutes_to_news > 0 
+                  ? `Event in ${signal.minutes_to_news} minutes`
+                  : `Event was ${Math.abs(signal.minutes_to_news)} minutes ago`}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Outcome Banner (if resolved) */}
+        {signal.is_resolved && signal.outcome && (
+          <View style={[styles.outcomeBanner, { backgroundColor: getOutcomeColor(signal.outcome) + '20' }]}>
+            <Text style={[styles.outcomeText, { color: getOutcomeColor(signal.outcome) }]}>
+              {signal.outcome === 'TP1_HIT' && '✅ Take Profit 1 Hit'}
+              {signal.outcome === 'TP2_HIT' && '✅ Take Profit 2 Hit'}
+              {signal.outcome === 'SL_HIT' && '❌ Stop Loss Hit'}
+              {signal.outcome === 'INVALIDATED' && '⚠️ Signal Invalidated'}
+              {signal.outcome === 'PENDING' && '⏳ Pending'}
+            </Text>
+            {signal.outcome_pips !== undefined && (
+              <Text style={[styles.outcomeSubtext, { color: getOutcomeColor(signal.outcome) }]}>
+                {signal.outcome_pips > 0 ? '+' : ''}{signal.outcome_pips.toFixed(1)} pips 
+                {signal.outcome_rr_achieved !== undefined && ` (${signal.outcome_rr_achieved > 0 ? '+' : ''}${signal.outcome_rr_achieved.toFixed(2)}R)`}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Lifecycle Stage */}
+        {signal.lifecycle_stage && signal.signal_type !== 'NEXT' && (
+          <View style={styles.lifecycleContainer}>
+            <Text style={styles.sectionTitle}>Signal Lifecycle</Text>
+            <View style={styles.lifecycleStage}>
+              <View style={[styles.lifecycleDot, { backgroundColor: signal.is_resolved ? getOutcomeColor(signal.outcome) : '#ffaa00' }]} />
+              <Text style={styles.lifecycleText}>{formatLifecycleStage(signal.lifecycle_stage)}</Text>
+            </View>
+            
+            {/* Lifecycle History */}
+            {signal.lifecycle_history && signal.lifecycle_history.length > 0 && (
+              <View style={styles.lifecycleHistory}>
+                {signal.lifecycle_history.map((event, index) => (
+                  <View key={index} style={styles.lifecycleEvent}>
+                    <View style={styles.lifecycleEventDot} />
+                    <View style={styles.lifecycleEventContent}>
+                      <Text style={styles.lifecycleEventStage}>{formatLifecycleStage(event.stage)}</Text>
+                      <Text style={styles.lifecycleEventTime}>
+                        {new Date(event.timestamp).toLocaleString()}
+                      </Text>
+                      {event.price && (
+                        <Text style={styles.lifecycleEventPrice}>@ {event.price}</Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Core Info */}
         <View style={styles.section}>
@@ -402,10 +513,122 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 4,
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
   errorText: {
     color: '#ff3366',
     fontSize: 16,
     textAlign: 'center',
-    marginTop: 100,
+    marginBottom: 20,
+  },
+  backButton: {
+    backgroundColor: '#222222',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: '#00ff88',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  newsWarning: {
+    backgroundColor: 'rgba(255, 170, 0, 0.15)',
+    borderWidth: 1,
+    borderColor: '#ffaa00',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+  },
+  newsWarningText: {
+    color: '#ffaa00',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  newsWarningSubtext: {
+    color: '#ffaa00',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  outcomeBanner: {
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  outcomeText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  outcomeSubtext: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  lifecycleContainer: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222222',
+  },
+  lifecycleStage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  lifecycleDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  lifecycleText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  lifecycleHistory: {
+    borderLeftWidth: 2,
+    borderLeftColor: '#333333',
+    marginLeft: 5,
+    paddingLeft: 20,
+  },
+  lifecycleEvent: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    position: 'relative',
+  },
+  lifecycleEventDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#555555',
+    position: 'absolute',
+    left: -24,
+    top: 4,
+  },
+  lifecycleEventContent: {
+    flex: 1,
+  },
+  lifecycleEventStage: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  lifecycleEventTime: {
+    color: '#666666',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  lifecycleEventPrice: {
+    color: '#00ff88',
+    fontSize: 12,
+    marginTop: 2,
   },
 });

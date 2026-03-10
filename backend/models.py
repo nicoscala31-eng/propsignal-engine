@@ -137,6 +137,28 @@ class ScoreBreakdown(BaseModel):
     prop_rule_safety: float = 0.0
     total: float = 0.0
 
+class SignalOutcome(str, Enum):
+    """Signal final outcome"""
+    PENDING = "PENDING"
+    TP1_HIT = "TP1_HIT"
+    TP2_HIT = "TP2_HIT"
+    SL_HIT = "SL_HIT"
+    INVALIDATED = "INVALIDATED"
+    EXPIRED = "EXPIRED"
+
+
+class SignalLifecycle(str, Enum):
+    """Signal lifecycle stages"""
+    CREATED = "signal_created"
+    ENTRY_TRIGGERED = "entry_triggered"
+    TRADE_ACTIVE = "trade_active"
+    TP1_HIT = "take_profit_1_hit"
+    TP2_HIT = "take_profit_2_hit"
+    SL_HIT = "stop_loss_hit"
+    INVALIDATED = "invalidated"
+    EXPIRED = "expired"
+
+
 class Signal(BaseModel):
     id: str = Field(default_factory=lambda: str(datetime.utcnow().timestamp()))
     user_id: str
@@ -203,16 +225,48 @@ class Signal(BaseModel):
     prop_rule_safety: PropRuleSafety = PropRuleSafety.SAFE
     prop_rule_warnings: List[str] = Field(default_factory=list)
     
+    # ==================== NEWS RISK ====================
+    news_risk: bool = False
+    news_event: Optional[str] = None  # e.g., "US CPI", "FOMC"
+    news_event_time: Optional[datetime] = None
+    minutes_to_news: Optional[int] = None
+    
+    # ==================== SIGNAL OUTCOME ====================
+    outcome: SignalOutcome = SignalOutcome.PENDING
+    outcome_price: Optional[float] = None
+    outcome_pips: Optional[float] = None
+    outcome_rr_achieved: Optional[float] = None
+    
+    # ==================== LIFECYCLE TRACKING ====================
+    lifecycle_stage: SignalLifecycle = SignalLifecycle.CREATED
+    lifecycle_history: List[Dict[str, Any]] = Field(default_factory=list)
+    
+    # Lifecycle timestamps
+    entry_triggered_at: Optional[datetime] = None
+    trade_active_at: Optional[datetime] = None
+    tp1_hit_at: Optional[datetime] = None
+    tp2_hit_at: Optional[datetime] = None
+    sl_hit_at: Optional[datetime] = None
+    
+    # ==================== OPERATIONAL ====================
+    operational_profile: Optional[str] = None  # Which profile generated this signal
+    
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: Optional[datetime] = None
     invalidated_at: Optional[datetime] = None
+    resolved_at: Optional[datetime] = None
     
     # Status tracking
     is_active: bool = True
+    is_resolved: bool = False
     tp1_hit: bool = False
     tp2_hit: bool = False
     sl_hit: bool = False
+    
+    # Notification tracking
+    notification_sent: bool = False
+    notification_sent_at: Optional[datetime] = None
 
 class SignalHistory(BaseModel):
     id: str = Field(default_factory=lambda: str(datetime.utcnow().timestamp()))

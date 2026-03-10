@@ -11,12 +11,15 @@ from datetime import datetime
 
 from models import (
     User, PropProfile, Signal, SignalHistory, Notification,
-    Asset, Timeframe, PropPhase, DrawdownType, AccountSettings, SignalType
+    Asset, Timeframe, PropPhase, DrawdownType, AccountSettings, SignalType,
+    SignalOutcome, SignalLifecycle
 )
 from services.signal_orchestrator import enhanced_signal_orchestrator
 from services.market_scanner import init_market_scanner, market_scanner
 from services.analytics_service import create_analytics_service
 from services.push_notification_service import push_service
+from services.signal_outcome_tracker import init_outcome_tracker, outcome_tracker
+from services.macro_news_service import macro_news_service
 from engines.prop_rule_engine import prop_rule_engine
 from providers.provider_manager import provider_manager
 
@@ -44,6 +47,7 @@ logger = logging.getLogger(__name__)
 # Initialize services
 scanner = None
 analytics = None
+tracker = None
 
 
 # ==================== STARTUP/SHUTDOWN EVENTS ====================
@@ -51,7 +55,7 @@ analytics = None
 @app.on_event("startup")
 async def startup_event():
     """Initialize market data provider and services on startup"""
-    global scanner, analytics
+    global scanner, analytics, tracker
     
     logger.info("🚀 Starting PropSignal Engine...")
     
@@ -71,20 +75,31 @@ async def startup_event():
     scanner = init_market_scanner(db)
     logger.info("📊 Market Scanner initialized")
     
+    # Initialize outcome tracker
+    tracker = init_outcome_tracker(db)
+    logger.info("📈 Outcome Tracker initialized")
+    
     # Initialize analytics service
     analytics = create_analytics_service(db)
     logger.info("📈 Analytics Service initialized")
     
-    # Optionally auto-start scanner (disabled by default)
-    # await scanner.start()
+    # Auto-start scanner and tracker if there are registered devices
+    device_count = await db.devices.count_documents({"is_active": True})
+    if device_count > 0:
+        logger.info(f"📱 Found {device_count} active devices, auto-starting services...")
+        await scanner.start()
+        await tracker.start()
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global scanner
+    global scanner, tracker
     
     if scanner:
         await scanner.stop()
+    
+    if tracker:
+        await tracker.stop()
     
     await push_service.close()
     await provider_manager.shutdown()
@@ -863,6 +878,184 @@ async def send_test_notification(device_id: Optional[str] = None):
         "total": len(results),
         "successful": successful,
         "failed": len(results) - successful
+    }
+
+
+# ==================== OUTCOME TRACKER ====================
+
+@api_router.get("/tracker/status")
+async def get_tracker_status():
+    """Get signal outcome tracker status"""
+    if not tracker:
+        return {"error": "Tracker not initialized"}
+    
+    return tracker.get_stats()
+
+@api_router.post("/tracker/start")
+async def start_tracker():
+    """Start the signal outcome tracker"""
+    if not tracker:
+        raise HTTPException(status_code=500, detail="Tracker not initialized")
+    
+    if tracker.is_running:
+        return {"status": "already_running"}
+    
+    await tracker.start()
+    return {"status": "started"}
+
+@api_router.post("/tracker/stop")
+async def stop_tracker():
+    """Stop the signal outcome tracker"""
+    if not tracker:
+        raise HTTPException(status_code=500, detail="Tracker not initialized")
+    
+    if not tracker.is_running:
+        return {"status": "already_stopped"}
+    
+    await tracker.stop()
+    return {"status": "stopped"}
+
+
+# ==================== NEWS CALENDAR ====================
+
+@api_router.get("/news/upcoming")
+async def get_upcoming_news():
+    """Get upcoming high-impact news events"""
+    return await macro_news_service.get_news_calendar(days=7)
+
+@api_router.get("/news/check/{asset}")
+async def check_news_risk(asset: str):
+    """Check news risk for a specific asset"""
+    try:
+        asset_enum = Asset(asset)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid asset: {asset}")
+    
+    return await macro_news_service.check_news_risk(asset_enum, minutes_window=30)
+
+@api_router.post("/news/simulate")
+async def simulate_news_event(
+    event_name: str,
+    currency: str,
+    minutes_from_now: int = 15
+):
+    """Add a simulated news event for testing"""
+    macro_news_service.add_simulated_event(
+        event_name=event_name,
+        currency=currency,
+        minutes_from_now=minutes_from_now
+    )
+    return {
+        "status": "added",
+        "event_name": event_name,
+        "currency": currency,
+        "minutes_from_now": minutes_from_now
+    }
+
+
+# ==================== SIGNAL LIFECYCLE ====================
+
+@api_router.get("/signals/{signal_id}/lifecycle")
+async def get_signal_lifecycle(signal_id: str):
+    """Get full signal lifecycle history"""
+    signal = await db.signals.find_one({"id": signal_id})
+    
+    if not signal:
+        raise HTTPException(status_code=404, detail="Signal not found")
+    
+    return {
+        "signal_id": signal_id,
+        "asset": signal.get("asset"),
+        "signal_type": signal.get("signal_type"),
+        "outcome": signal.get("outcome", "PENDING"),
+        "lifecycle_stage": signal.get("lifecycle_stage", "signal_created"),
+        "lifecycle_history": signal.get("lifecycle_history", []),
+        "news_risk": signal.get("news_risk", False),
+        "news_event": signal.get("news_event"),
+        "created_at": signal.get("created_at").isoformat() if signal.get("created_at") else None,
+        "resolved_at": signal.get("resolved_at").isoformat() if signal.get("resolved_at") else None,
+        "is_resolved": signal.get("is_resolved", False)
+    }
+
+@api_router.get("/signals/active")
+async def get_active_signals():
+    """Get all active (unresolved) signals"""
+    signals = await db.signals.find({
+        "is_active": True,
+        "is_resolved": {"$ne": True},
+        "signal_type": {"$in": ["BUY", "SELL"]}
+    }).sort("created_at", -1).to_list(100)
+    
+    return [
+        {
+            "id": s.get("id"),
+            "asset": s.get("asset"),
+            "signal_type": s.get("signal_type"),
+            "entry_price": s.get("entry_price"),
+            "stop_loss": s.get("stop_loss"),
+            "take_profit_1": s.get("take_profit_1"),
+            "confidence": s.get("confidence_score"),
+            "lifecycle_stage": s.get("lifecycle_stage", "signal_created"),
+            "news_risk": s.get("news_risk", False),
+            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None
+        }
+        for s in signals
+    ]
+
+@api_router.get("/signals/resolved")
+async def get_resolved_signals(limit: int = 50):
+    """Get resolved signals with outcomes"""
+    signals = await db.signals.find({
+        "is_resolved": True,
+        "signal_type": {"$in": ["BUY", "SELL"]}
+    }).sort("resolved_at", -1).limit(limit).to_list(limit)
+    
+    return [
+        {
+            "id": s.get("id"),
+            "asset": s.get("asset"),
+            "signal_type": s.get("signal_type"),
+            "outcome": s.get("outcome"),
+            "outcome_price": s.get("outcome_price"),
+            "outcome_pips": s.get("outcome_pips"),
+            "outcome_rr": s.get("outcome_rr_achieved"),
+            "news_risk": s.get("news_risk", False),
+            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None,
+            "resolved_at": s.get("resolved_at").isoformat() if s.get("resolved_at") else None
+        }
+        for s in signals
+    ]
+
+
+# ==================== SYSTEM STATUS ====================
+
+@api_router.get("/system/status")
+async def get_system_status():
+    """Get complete system status"""
+    scanner_stats = scanner.get_stats() if scanner else {"error": "not initialized"}
+    tracker_stats = tracker.get_stats() if tracker else {"error": "not initialized"}
+    push_stats = push_service.get_stats()
+    provider_status = provider_manager.get_status()
+    
+    device_count = await db.devices.count_documents({"is_active": True})
+    active_signals = await db.signals.count_documents({"is_active": True, "is_resolved": {"$ne": True}, "signal_type": {"$in": ["BUY", "SELL"]}})
+    total_signals = await db.signals.count_documents({})
+    
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "provider": {
+            "name": provider_status.provider_name if provider_status else "Unknown",
+            "connected": provider_status.is_connected if provider_status else False,
+            "is_production": provider_manager.is_production_ready()
+        },
+        "scanner": scanner_stats,
+        "tracker": tracker_stats,
+        "push": push_stats,
+        "database": {
+            "active_devices": device_count,
+            "active_signals": active_signals,
+            "total_signals": total_signals
+        }
     }
 
 
