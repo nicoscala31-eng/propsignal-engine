@@ -361,6 +361,59 @@ async def get_signal_history(user_id: str, limit: int = 50):
     
     return [Signal(**s) for s in signals]
 
+
+# ==================== GLOBAL SIGNAL QUERIES (must be before /{signal_id}) ====================
+
+@api_router.get("/signals/active")
+async def get_global_active_signals():
+    """Get all active (unresolved) signals"""
+    signals = await db.signals.find({
+        "is_active": True,
+        "is_resolved": {"$ne": True},
+        "signal_type": {"$in": ["BUY", "SELL"]}
+    }).sort("created_at", -1).to_list(100)
+    
+    return [
+        {
+            "id": s.get("id"),
+            "asset": s.get("asset"),
+            "signal_type": s.get("signal_type"),
+            "entry_price": s.get("entry_price"),
+            "stop_loss": s.get("stop_loss"),
+            "take_profit_1": s.get("take_profit_1"),
+            "confidence": s.get("confidence_score"),
+            "lifecycle_stage": s.get("lifecycle_stage", "signal_created"),
+            "news_risk": s.get("news_risk", False),
+            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None
+        }
+        for s in signals
+    ]
+
+@api_router.get("/signals/resolved")
+async def get_global_resolved_signals(limit: int = 50):
+    """Get resolved signals with outcomes"""
+    signals = await db.signals.find({
+        "is_resolved": True,
+        "signal_type": {"$in": ["BUY", "SELL"]}
+    }).sort("resolved_at", -1).limit(limit).to_list(limit)
+    
+    return [
+        {
+            "id": s.get("id"),
+            "asset": s.get("asset"),
+            "signal_type": s.get("signal_type"),
+            "outcome": s.get("outcome"),
+            "outcome_price": s.get("outcome_price"),
+            "outcome_pips": s.get("outcome_pips"),
+            "outcome_rr": s.get("outcome_rr_achieved"),
+            "news_risk": s.get("news_risk", False),
+            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None,
+            "resolved_at": s.get("resolved_at").isoformat() if s.get("resolved_at") else None
+        }
+        for s in signals
+    ]
+
+
 @api_router.get("/signals/{signal_id}", response_model=Signal)
 async def get_signal(signal_id: str):
     """Get a specific signal by ID"""
@@ -976,55 +1029,6 @@ async def get_signal_lifecycle(signal_id: str):
         "resolved_at": signal.get("resolved_at").isoformat() if signal.get("resolved_at") else None,
         "is_resolved": signal.get("is_resolved", False)
     }
-
-@api_router.get("/signals/active")
-async def get_active_signals():
-    """Get all active (unresolved) signals"""
-    signals = await db.signals.find({
-        "is_active": True,
-        "is_resolved": {"$ne": True},
-        "signal_type": {"$in": ["BUY", "SELL"]}
-    }).sort("created_at", -1).to_list(100)
-    
-    return [
-        {
-            "id": s.get("id"),
-            "asset": s.get("asset"),
-            "signal_type": s.get("signal_type"),
-            "entry_price": s.get("entry_price"),
-            "stop_loss": s.get("stop_loss"),
-            "take_profit_1": s.get("take_profit_1"),
-            "confidence": s.get("confidence_score"),
-            "lifecycle_stage": s.get("lifecycle_stage", "signal_created"),
-            "news_risk": s.get("news_risk", False),
-            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None
-        }
-        for s in signals
-    ]
-
-@api_router.get("/signals/resolved")
-async def get_resolved_signals(limit: int = 50):
-    """Get resolved signals with outcomes"""
-    signals = await db.signals.find({
-        "is_resolved": True,
-        "signal_type": {"$in": ["BUY", "SELL"]}
-    }).sort("resolved_at", -1).limit(limit).to_list(limit)
-    
-    return [
-        {
-            "id": s.get("id"),
-            "asset": s.get("asset"),
-            "signal_type": s.get("signal_type"),
-            "outcome": s.get("outcome"),
-            "outcome_price": s.get("outcome_price"),
-            "outcome_pips": s.get("outcome_pips"),
-            "outcome_rr": s.get("outcome_rr_achieved"),
-            "news_risk": s.get("news_risk", False),
-            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None,
-            "resolved_at": s.get("resolved_at").isoformat() if s.get("resolved_at") else None
-        }
-        for s in signals
-    ]
 
 
 # ==================== SYSTEM STATUS ====================
