@@ -75,7 +75,8 @@ export default function HomeScreen() {
   const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [autoScanEnabled, setAutoScanEnabled] = useState(false);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(false); // Disabled - backend scanner handles this
+  const [backendScannerRunning, setBackendScannerRunning] = useState(false);
   
   // Track previous signal types to detect new BUY/SELL
   const prevEurusdType = useRef<string | null>(null);
@@ -285,28 +286,43 @@ export default function HomeScreen() {
     };
   }, [fetchProviderStatus]);
   
-  // Auto-scan effect
+  // Check backend scanner status instead of frontend auto-scan
   useEffect(() => {
-    if (!autoScanEnabled) return;
+    const checkScannerStatus = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/scanner/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setBackendScannerRunning(data.is_running);
+        }
+      } catch (error) {
+        console.log('Could not check scanner status');
+      }
+    };
     
-    // Initial scan
-    autoScanForSignals();
-    
-    // Scan every 30 seconds when auto-scan is enabled
-    const scanInterval = setInterval(autoScanForSignals, SIGNAL_POLL_INTERVAL);
-    
-    return () => clearInterval(scanInterval);
-  }, [autoScanEnabled, autoScanForSignals]);
+    checkScannerStatus();
+    const interval = setInterval(checkScannerStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const toggleAutoScan = () => {
-    const newState = !autoScanEnabled;
-    setAutoScanEnabled(newState);
-    if (newState) {
-      Alert.alert(
-        'Auto-Scan Enabled',
-        'The app will check for BUY/SELL opportunities every 30 seconds and notify you when found.',
-        [{ text: 'OK' }]
-      );
+  const toggleBackendScanner = async () => {
+    try {
+      const endpoint = backendScannerRunning ? 'stop' : 'start';
+      const response = await fetch(`${BACKEND_URL}/api/scanner/${endpoint}`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        setBackendScannerRunning(!backendScannerRunning);
+        Alert.alert(
+          backendScannerRunning ? 'Scanner Stopped' : 'Scanner Started',
+          backendScannerRunning 
+            ? 'Background signal scanning has been stopped.'
+            : 'Background scanner will check for BUY/SELL signals every 30 seconds and send push notifications.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not toggle scanner');
     }
   };
 
@@ -519,15 +535,15 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={[
               styles.actionButton, 
-              autoScanEnabled && styles.actionButtonActive
+              backendScannerRunning && styles.actionButtonActive
             ]}
-            onPress={toggleAutoScan}
+            onPress={toggleBackendScanner}
           >
             <Text style={[
               styles.actionButtonText,
-              autoScanEnabled && { color: '#0a0a0a' }
+              backendScannerRunning && { color: '#0a0a0a' }
             ]}>
-              {autoScanEnabled ? 'Auto-Scan ON' : 'Auto-Scan OFF'}
+              {backendScannerRunning ? 'Scanner ON' : 'Scanner OFF'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -543,9 +559,9 @@ export default function HomeScreen() {
           <Text style={styles.notificationStatusText}>
             Notifications: {notificationsEnabled ? 'Enabled' : 'Disabled'}
           </Text>
-          {autoScanEnabled && (
+          {backendScannerRunning && (
             <Text style={styles.autoScanStatusText}>
-              Auto-scanning every 30 seconds...
+              Backend scanner active - checking every 30s
             </Text>
           )}
         </View>
