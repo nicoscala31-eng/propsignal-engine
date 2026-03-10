@@ -42,7 +42,7 @@ class TwelveDataProvider(BaseMarketDataProvider):
         # Realistic price ranges for validation
         self.price_ranges = {
             Asset.EURUSD: (0.9000, 1.3000),  # Min, Max
-            Asset.XAUUSD: (1500.0, 3500.0)
+            Asset.XAUUSD: (1500.0, 6000.0)  # Updated for current gold prices
         }
         
         # Typical spreads for validation
