@@ -151,6 +151,13 @@ class Signal(BaseModel):
     strategy_type: Optional[StrategyType] = None
     market_regime: MarketRegime
     
+    # Adaptive regime weighting metadata
+    regime_strategy_priorities: Optional[Dict[str, List[str]]] = None
+    strategy_weight_multiplier: Optional[float] = None
+    strategy_weight_reason: Optional[str] = None
+    strategy_weight_priority: Optional[str] = None
+    base_score_before_weighting: Optional[float] = None
+    
     # Live market data
     live_bid: Optional[float] = None
     live_ask: Optional[float] = None
