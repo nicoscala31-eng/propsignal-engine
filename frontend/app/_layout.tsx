@@ -15,9 +15,34 @@ export default function RootLayout() {
           },
         }}
       >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="signal-detail" options={{ title: 'Signal Details' }} />
-        <Stack.Screen name="analytics" options={{ title: 'Analytics' }} />
+        <Stack.Screen 
+          name="index" 
+          options={{ 
+            headerShown: false,
+            title: 'PropSignal Engine'
+          }} 
+        />
+        <Stack.Screen 
+          name="signal/[symbol]" 
+          options={{ 
+            title: 'Signal Details',
+            presentation: 'card'
+          }} 
+        />
+        <Stack.Screen 
+          name="analytics" 
+          options={{ 
+            title: 'Analytics',
+            presentation: 'card'
+          }} 
+        />
+        <Stack.Screen 
+          name="+not-found" 
+          options={{ 
+            title: 'Not Found',
+            presentation: 'modal'
+          }} 
+        />
       </Stack>
     </SafeAreaProvider>
   );
