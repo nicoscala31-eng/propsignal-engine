@@ -291,6 +291,54 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: Analytics summary endpoint working perfectly. Correctly calculated total signals (10), trade signals (4), average confidence (81.0%), and breakdown by asset (EURUSD: 1, XAUUSD: 3)."
 
+  - task: "Device registration system"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Device registration endpoints working perfectly. POST /api/register-device successfully registers iOS/Android devices with push tokens. GET /api/devices/count shows correct device counts (total: 1, active: 1). Device data properly stored and updated."
+
+  - task: "Market scanner control system"
+    implemented: true
+    working: true
+    file: "services/market_scanner.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Market scanner control system fully functional. GET /api/scanner/status shows proper statistics (is_running, active_profile, scan_interval). Profile switching works correctly: POST /api/scanner/profile/aggressive changes to 'Aggressive' profile, POST /api/scanner/profile/prop_firm_safe resets to 'Prop Firm Safe'. All profile changes verified through status endpoint."
+
+  - task: "Enhanced analytics endpoints"
+    implemented: true
+    working: true
+    file: "services/analytics_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Enhanced analytics system working excellently. GET /api/analytics/performance returns comprehensive metrics with proper structure: summary (48 total signals, 4 BUY, 3 SELL, 41 NEXT), performance metrics (win_rate, loss_rate), risk_metrics (R:R ratio 2.0), streaks, and activity breakdown. GET /api/analytics/distribution?days=7 provides daily signal distribution. GET /api/analytics/recent-trades?limit=5 returns detailed trade summaries with outcomes."
+
+  - task: "Push notification stats system"
+    implemented: true
+    working: true
+    file: "services/push_notification_service.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Push notification statistics system working correctly. GET /api/push/stats returns proper statistics structure with sent/failed/total counts. Math validation passes (total = sent + failed). Currently shows 0 notifications sent, which is expected for testing environment."
+
 frontend:
   - task: "Home dashboard with signal cards"
     implemented: true
@@ -336,7 +384,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All backend testing complete"
+    - "NEW FEATURES TESTING COMPLETE - All backend features verified"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
@@ -348,3 +396,5 @@ agent_communication:
     message: "🎉 COMPREHENSIVE BACKEND TESTING COMPLETE - 100% SUCCESS RATE! All 29 tests passed across 8 categories: health checks, user management, prop profiles, CORE SIGNAL GENERATION, signal retrieval, notifications, and analytics. Generated 10 realistic trading signals (BUY/SELL/NEXT) with proper confidence scores (81%), success probabilities (63-65%), and SAFE prop rule status. All API endpoints functional. Backend is production-ready. Market data provider generating realistic signals with technical analysis. Signal engine performing excellently with proper risk management integration."
   - agent: "testing"
     message: "✅ CRITICAL LIVE DATA TESTING PASSED: Verified PropSignal Engine live market data connection and signal generation. Key results: 1) Twelve Data API fully connected (API key loaded, is_production=true), 2) Live prices working (EURUSD ~1.165xx, XAUUSD ~5229-5232), 3) Signal generation includes live_bid/ask/spread with 'Twelve Data' provider, 4) Market regime detection working (CHAOTIC regime correctly generating NEXT signals for safety). All provider endpoints (/api/provider/debug, /api/provider/status, /api/provider/live-prices) functional. System demonstrates intelligent risk management by not forcing trades in unsuitable market conditions."
+  - agent: "testing"
+    message: "🚀 NEW FEATURES TESTING COMPLETE - 12/12 TESTS PASSED (100% SUCCESS)! All NEW PropSignal Engine features verified: 1) Device Registration: POST /api/register-device and GET /api/devices/count working perfectly (1 device registered), 2) Market Scanner Control: Scanner status, profile switching (Aggressive ↔ Prop Firm Safe) all functional, 3) Enhanced Analytics: Performance metrics (48 signals total), signal distribution, recent trades with detailed outcomes, 4) Push Notification Stats: Statistics tracking working, 5) Existing Endpoints: Live prices and provider debug still working. Backend upgrade successfully implements all requested professional trading signal platform features. System ready for production use."

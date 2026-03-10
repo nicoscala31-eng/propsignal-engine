@@ -1,175 +1,360 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const MOCK_USER_ID = '1773156899.291813';
 
-interface AnalyticsSummary {
-  total_signals: number;
-  buy_signals: number;
-  sell_signals: number;
-  next_signals: number;
-  trade_signals: number;
-  average_confidence: number;
-  by_asset: {
-    EURUSD: number;
-    XAUUSD: number;
+interface PerformanceData {
+  summary: {
+    total_signals: number;
+    buy_signals: number;
+    sell_signals: number;
+    next_signals: number;
+  };
+  performance: {
+    win_rate: number;
+    loss_rate: number;
+    winning_trades: number;
+    losing_trades: number;
+    pending_trades: number;
+  };
+  risk_metrics: {
+    average_rr_ratio: number;
+    profit_factor: number;
+    expectancy: number;
+    max_drawdown_pct: number;
+    current_drawdown_pct: number;
+  };
+  streaks: {
+    longest_winning: number;
+    longest_losing: number;
+  };
+  by_asset: Record<string, number>;
+  by_regime: Record<string, number>;
+  win_rate_by_asset: Record<string, number>;
+  activity: {
+    signals_today: number;
+    signals_this_week: number;
+    signals_this_month: number;
+  };
+}
+
+interface ScannerStatus {
+  is_running: boolean;
+  active_profile: string;
+  scan_interval_seconds: number;
+  statistics: {
+    total_scans: number;
+    signals_generated: number;
+    notifications_sent: number;
   };
 }
 
 export default function AnalyticsScreen() {
-  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+  const [scannerStatus, setScannerStatus] = useState<ScannerStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/${MOCK_USER_ID}/analytics/summary`);
-      if (response.ok) {
-        const data = await response.json();
-        setAnalytics(data);
+      const [perfResponse, scannerResponse] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/analytics/performance`),
+        fetch(`${BACKEND_URL}/api/scanner/status`)
+      ]);
+
+      if (perfResponse.ok) {
+        const perfData = await perfResponse.json();
+        setPerformance(perfData);
       }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
+
+      if (scannerResponse.ok) {
+        const scannerData = await scannerResponse.json();
+        setScannerStatus(scannerData);
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      setError('Failed to load analytics');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
+  const toggleScanner = async () => {
+    try {
+      const endpoint = scannerStatus?.is_running ? 'stop' : 'start';
+      const response = await fetch(`${BACKEND_URL}/api/scanner/${endpoint}`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        // Refresh status
+        const statusResponse = await fetch(`${BACKEND_URL}/api/scanner/status`);
+        if (statusResponse.ok) {
+          const data = await statusResponse.json();
+          setScannerStatus(data);
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling scanner:', err);
+    }
+  };
+
+  const setProfile = async (profileName: string) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scanner/profile/${profileName}`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        // Refresh status
+        const statusResponse = await fetch(`${BACKEND_URL}/api/scanner/status`);
+        if (statusResponse.ok) {
+          const data = await statusResponse.json();
+          setScannerStatus(data);
+        }
+      }
+    } catch (err) {
+      console.error('Error setting profile:', err);
     }
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#00ff88" style={{ marginTop: 100 }} />
-      </SafeAreaView>
-    );
-  }
-
-  if (!analytics) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>No analytics data available</Text>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#00ff88" />
+          <Text style={styles.loadingText}>Loading analytics...</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView style={styles.content}>
-        {/* Overview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Signal Overview</Text>
-          
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{analytics.total_signals}</Text>
-              <Text style={styles.statLabel}>Total Signals</Text>
-            </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.backButton}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Analytics</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: '#00ff88' }]}>{analytics.buy_signals}</Text>
-              <Text style={styles.statLabel}>BUY Signals</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: '#ff3366' }]}>{analytics.sell_signals}</Text>
-              <Text style={styles.statLabel}>SELL Signals</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: '#888888' }]}>{analytics.next_signals}</Text>
-              <Text style={styles.statLabel}>NEXT Signals</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Trade Quality */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Trade Quality</Text>
-          
-          <View style={styles.qualityCard}>
-            <Text style={styles.qualityLabel}>Average Confidence</Text>
-            <Text style={styles.qualityValue}>{analytics.average_confidence.toFixed(1)}%</Text>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { width: `${analytics.average_confidence}%`, backgroundColor: '#00ff88' }
-                ]} 
-              />
-            </View>
-          </View>
-
-          <View style={styles.qualityCard}>
-            <Text style={styles.qualityLabel}>Trade Signal Rate</Text>
-            <Text style={styles.qualityValue}>
-              {analytics.total_signals > 0 
-                ? ((analytics.trade_signals / analytics.total_signals) * 100).toFixed(1)
-                : 0
-              }%
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00ff88" />
+        }
+      >
+        {/* Scanner Status Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Backend Scanner</Text>
+          <View style={styles.scannerRow}>
+            <View style={[
+              styles.statusDot,
+              { backgroundColor: scannerStatus?.is_running ? '#00ff88' : '#666666' }
+            ]} />
+            <Text style={styles.statusText}>
+              {scannerStatus?.is_running ? 'Running' : 'Stopped'}
             </Text>
-            <Text style={styles.qualitySubtext}>
-              {analytics.trade_signals} trade signals out of {analytics.total_signals} total
-            </Text>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                scannerStatus?.is_running ? styles.toggleStop : styles.toggleStart
+              ]}
+              onPress={toggleScanner}
+            >
+              <Text style={styles.toggleButtonText}>
+                {scannerStatus?.is_running ? 'Stop' : 'Start'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* By Asset */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Signals by Asset</Text>
-          
-          <View style={styles.assetCard}>
-            <View style={styles.assetRow}>
-              <Text style={styles.assetLabel}>EUR/USD</Text>
-              <Text style={styles.assetValue}>{analytics.by_asset.EURUSD}</Text>
+          {scannerStatus && (
+            <View style={styles.scannerStats}>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Profile</Text>
+                <Text style={styles.statValue}>{scannerStatus.active_profile}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Scans</Text>
+                <Text style={styles.statValue}>{scannerStatus.statistics.total_scans}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Notifications</Text>
+                <Text style={styles.statValue}>{scannerStatus.statistics.notifications_sent}</Text>
+              </View>
             </View>
-            <View style={styles.progressBar}>
-              <View 
+          )}
+
+          {/* Profile Selection */}
+          <View style={styles.profileSelector}>
+            <Text style={styles.profileLabel}>Mode:</Text>
+            {['aggressive', 'defensive', 'prop_firm_safe'].map((profile) => (
+              <TouchableOpacity
+                key={profile}
                 style={[
-                  styles.progressFill,
-                  { 
-                    width: `${(analytics.by_asset.EURUSD / (analytics.by_asset.EURUSD + analytics.by_asset.XAUUSD || 1)) * 100}%`,
-                    backgroundColor: '#00aaff'
-                  }
-                ]} 
-              />
-            </View>
-          </View>
-
-          <View style={styles.assetCard}>
-            <View style={styles.assetRow}>
-              <Text style={styles.assetLabel}>XAU/USD (Gold)</Text>
-              <Text style={styles.assetValue}>{analytics.by_asset.XAUUSD}</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill,
-                  { 
-                    width: `${(analytics.by_asset.XAUUSD / (analytics.by_asset.EURUSD + analytics.by_asset.XAUUSD || 1)) * 100}%`,
-                    backgroundColor: '#ffd700'
-                  }
-                ]} 
-              />
-            </View>
+                  styles.profileButton,
+                  scannerStatus?.active_profile.toLowerCase().replace(' ', '_') === profile && styles.profileButtonActive
+                ]}
+                onPress={() => setProfile(profile)}
+              >
+                <Text style={[
+                  styles.profileButtonText,
+                  scannerStatus?.active_profile.toLowerCase().replace(' ', '_') === profile && styles.profileButtonTextActive
+                ]}>
+                  {profile.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Info */}
-        <View style={styles.section}>
-          <Text style={styles.infoTitle}>📊 Analytics Information</Text>
-          <Text style={styles.infoText}>
-            These analytics show your signal generation history. The system prioritizes quality over quantity,
-            generating BUY/SELL signals only when high-confidence setups are detected.
-          </Text>
-          <Text style={styles.infoText}>
-            NEXT signals indicate times when the market conditions don't meet the strict quality thresholds
-            required for prop firm trading.
-          </Text>
-        </View>
+        {/* Performance Overview */}
+        {performance && (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Signal Summary</Text>
+              <View style={styles.summaryGrid}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryValue}>{performance.summary.total_signals}</Text>
+                  <Text style={styles.summaryLabel}>Total</Text>
+                </View>
+                <View style={[styles.summaryItem, { borderColor: '#00ff88' }]}>
+                  <Text style={[styles.summaryValue, { color: '#00ff88' }]}>{performance.summary.buy_signals}</Text>
+                  <Text style={styles.summaryLabel}>BUY</Text>
+                </View>
+                <View style={[styles.summaryItem, { borderColor: '#ff3366' }]}>
+                  <Text style={[styles.summaryValue, { color: '#ff3366' }]}>{performance.summary.sell_signals}</Text>
+                  <Text style={styles.summaryLabel}>SELL</Text>
+                </View>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryValue}>{performance.summary.next_signals}</Text>
+                  <Text style={styles.summaryLabel}>NEXT</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Performance</Text>
+              <View style={styles.metricsRow}>
+                <View style={styles.metricBox}>
+                  <Text style={[styles.metricValue, { color: '#00ff88' }]}>
+                    {performance.performance.win_rate.toFixed(1)}%
+                  </Text>
+                  <Text style={styles.metricLabel}>Win Rate</Text>
+                </View>
+                <View style={styles.metricBox}>
+                  <Text style={styles.metricValue}>
+                    {performance.risk_metrics.profit_factor.toFixed(2)}
+                  </Text>
+                  <Text style={styles.metricLabel}>Profit Factor</Text>
+                </View>
+                <View style={styles.metricBox}>
+                  <Text style={styles.metricValue}>
+                    {performance.risk_metrics.expectancy.toFixed(2)}R
+                  </Text>
+                  <Text style={styles.metricLabel}>Expectancy</Text>
+                </View>
+              </View>
+
+              <View style={styles.metricsRow}>
+                <View style={styles.metricBox}>
+                  <Text style={styles.metricValue}>
+                    {performance.risk_metrics.average_rr_ratio.toFixed(2)}
+                  </Text>
+                  <Text style={styles.metricLabel}>Avg R:R</Text>
+                </View>
+                <View style={styles.metricBox}>
+                  <Text style={[styles.metricValue, { color: '#ff3366' }]}>
+                    {performance.risk_metrics.max_drawdown_pct.toFixed(1)}%
+                  </Text>
+                  <Text style={styles.metricLabel}>Max DD</Text>
+                </View>
+                <View style={styles.metricBox}>
+                  <Text style={styles.metricValue}>
+                    {performance.streaks.longest_winning}
+                  </Text>
+                  <Text style={styles.metricLabel}>Best Streak</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Activity</Text>
+              <View style={styles.activityRow}>
+                <View style={styles.activityItem}>
+                  <Text style={styles.activityValue}>{performance.activity.signals_today}</Text>
+                  <Text style={styles.activityLabel}>Today</Text>
+                </View>
+                <View style={styles.activityItem}>
+                  <Text style={styles.activityValue}>{performance.activity.signals_this_week}</Text>
+                  <Text style={styles.activityLabel}>This Week</Text>
+                </View>
+                <View style={styles.activityItem}>
+                  <Text style={styles.activityValue}>{performance.activity.signals_this_month}</Text>
+                  <Text style={styles.activityLabel}>This Month</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Trade Outcomes */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Trade Outcomes</Text>
+              <View style={styles.outcomeRow}>
+                <View style={[styles.outcomeItem, { backgroundColor: 'rgba(0, 255, 136, 0.1)' }]}>
+                  <Text style={[styles.outcomeValue, { color: '#00ff88' }]}>
+                    {performance.performance.winning_trades}
+                  </Text>
+                  <Text style={styles.outcomeLabel}>Winners</Text>
+                </View>
+                <View style={[styles.outcomeItem, { backgroundColor: 'rgba(255, 51, 102, 0.1)' }]}>
+                  <Text style={[styles.outcomeValue, { color: '#ff3366' }]}>
+                    {performance.performance.losing_trades}
+                  </Text>
+                  <Text style={styles.outcomeLabel}>Losers</Text>
+                </View>
+                <View style={[styles.outcomeItem, { backgroundColor: 'rgba(255, 170, 0, 0.1)' }]}>
+                  <Text style={[styles.outcomeValue, { color: '#ffaa00' }]}>
+                    {performance.performance.pending_trades}
+                  </Text>
+                  <Text style={styles.outcomeLabel}>Pending</Text>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
+
+        {error && (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -180,113 +365,227 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0a0a0a',
   },
-  content: {
+  centered: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  section: {
-    padding: 20,
+  loadingText: {
+    color: '#666666',
+    marginTop: 12,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#222222',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  backButton: {
     color: '#00ff88',
-    marginBottom: 16,
+    fontSize: 16,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#111111',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 32,
+  title: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 4,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#111111',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#222222',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#888888',
+    marginBottom: 12,
+  },
+  scannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  statusText: {
+    color: '#ffffff',
+    fontSize: 16,
+    flex: 1,
+  },
+  toggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  toggleStart: {
+    backgroundColor: '#00ff88',
+  },
+  toggleStop: {
+    backgroundColor: '#ff3366',
+  },
+  toggleButtonText: {
+    color: '#0a0a0a',
+    fontWeight: 'bold',
+  },
+  scannerStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#222222',
+    marginBottom: 12,
+  },
+  statItem: {
+    alignItems: 'center',
   },
   statLabel: {
-    fontSize: 12,
-    color: '#888888',
-  },
-  qualityCard: {
-    backgroundColor: '#111111',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  qualityLabel: {
-    fontSize: 14,
-    color: '#888888',
-    marginBottom: 8,
-  },
-  qualityValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#00ff88',
-    marginBottom: 12,
-  },
-  qualitySubtext: {
-    fontSize: 12,
     color: '#666666',
-    marginTop: 8,
+    fontSize: 11,
+    marginBottom: 4,
   },
-  progressBar: {
-    height: 8,
+  statValue: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  profileSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#222222',
+  },
+  profileLabel: {
+    color: '#666666',
+    fontSize: 12,
+    marginRight: 4,
+  },
+  profileButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 4,
     backgroundColor: '#1a1a1a',
-    borderRadius: 4,
-    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#333333',
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
+  profileButtonActive: {
+    backgroundColor: '#00ff88',
+    borderColor: '#00ff88',
   },
-  assetCard: {
-    backgroundColor: '#111111',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+  profileButtonText: {
+    color: '#888888',
+    fontSize: 11,
   },
-  assetRow: {
+  profileButtonTextActive: {
+    color: '#0a0a0a',
+    fontWeight: 'bold',
+  },
+  summaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  summaryItem: {
     alignItems: 'center',
-    marginBottom: 12,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#333333',
+    flex: 1,
+    marginHorizontal: 4,
   },
-  assetLabel: {
-    fontSize: 16,
+  summaryValue: {
     color: '#ffffff',
-    fontWeight: '600',
-  },
-  assetValue: {
-    fontSize: 20,
-    color: '#00ff88',
+    fontSize: 24,
     fontWeight: 'bold',
   },
-  infoTitle: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
+  summaryLabel: {
+    color: '#666666',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
-  infoText: {
-    fontSize: 14,
+  metricBox: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#0a0a0a',
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  metricValue: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  metricLabel: {
+    color: '#666666',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  activityItem: {
+    alignItems: 'center',
+  },
+  activityValue: {
+    color: '#00ff88',
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  activityLabel: {
+    color: '#666666',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  outcomeRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  outcomeItem: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 8,
+  },
+  outcomeValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  outcomeLabel: {
     color: '#888888',
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  errorCard: {
+    backgroundColor: '#1a0a0a',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ff3366',
   },
   errorText: {
-    color: '#ff3366',
-    fontSize: 16,
+    color: '#ff6666',
     textAlign: 'center',
-    marginTop: 100,
   },
 });

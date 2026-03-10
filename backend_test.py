@@ -1,272 +1,386 @@
 #!/usr/bin/env python3
 """
-PropSignal Engine Backend Testing Suite
-Focus: Live Market Data Connection and Signal Generation
+PropSignal Engine Backend Testing
+Testing all NEW endpoints as specified in the review request
 """
-
-import asyncio
-import aiohttp
+import requests
 import json
+import time
 from datetime import datetime
-from typing import Dict, Any, Optional
+import logging
 
-# Test Configuration
-BASE_URL = "https://eurusd-alerts.preview.emergentagent.com/api"
-TEST_USER_ID = "1773156899.291813"  
-TEST_PROP_PROFILE_ID = "1773156903.940538"
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Backend URL - Use the environment variable from frontend/.env
+BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com"
+BASE_API_URL = f"{BACKEND_URL}/api"
 
 class PropSignalTester:
-    def __init__(self):
-        self.session: Optional[aiohttp.ClientSession] = None
+    def __init__(self, base_url):
+        self.base_url = base_url
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        })
         self.test_results = []
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
-    
-    def log_test(self, test_name: str, success: bool, details: str, data: Dict = None):
+        self.errors = []
+
+    def log_test(self, test_name, success, response_data=None, error=None):
         """Log test results"""
         result = {
-            "test": test_name,
-            "success": success,
-            "details": details,
-            "timestamp": datetime.now().isoformat(),
-            "data": data
+            'test': test_name,
+            'success': success,
+            'timestamp': datetime.now().isoformat(),
+            'response': response_data,
+            'error': error
         }
         self.test_results.append(result)
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}: {details}")
         
-    async def test_health_check(self):
-        """Test basic health endpoint"""
-        try:
-            async with self.session.get(f"{BASE_URL}/health") as response:
-                if response.status == 200:
-                    data = await response.json()
-                    self.log_test("Health Check", True, "Backend is healthy", data)
-                    return True
-                else:
-                    self.log_test("Health Check", False, f"HTTP {response.status}")
-                    return False
-        except Exception as e:
-            self.log_test("Health Check", False, f"Connection error: {str(e)}")
-            return False
+        if success:
+            logger.info(f"✅ {test_name}: PASSED")
+        else:
+            logger.error(f"❌ {test_name}: FAILED - {error}")
+            self.errors.append(f"{test_name}: {error}")
 
-    async def test_provider_debug(self):
-        """Test /api/provider/debug endpoint - CRITICAL TEST"""
+    def test_device_registration(self):
+        """Test device registration endpoints"""
+        logger.info("\n=== 1. DEVICE REGISTRATION TESTS ===")
+        
+        # Test POST /api/register-device
+        device_data = {
+            "push_token": "ExpoTestToken123456",
+            "platform": "ios", 
+            "device_id": "test_device_001",
+            "device_name": "Test iPhone"
+        }
+        
         try:
-            async with self.session.get(f"{BASE_URL}/provider/debug") as response:
-                if response.status == 200:
-                    data = await response.json()
+            response = self.session.post(f"{self.base_url}/register-device", json=device_data)
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["status", "device_id"]
+                if all(key in data for key in expected_keys):
+                    self.log_test("Device Registration - POST /register-device", True, data)
+                else:
+                    self.log_test("Device Registration - POST /register-device", False, 
+                                error=f"Missing expected keys in response: {data}")
+            else:
+                self.log_test("Device Registration - POST /register-device", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Device Registration - POST /register-device", False, error=str(e))
+
+        # Test GET /api/devices/count
+        try:
+            response = self.session.get(f"{self.base_url}/devices/count")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["total_devices", "active_devices"]
+                if all(key in data for key in expected_keys):
+                    self.log_test("Device Count - GET /devices/count", True, data)
+                else:
+                    self.log_test("Device Count - GET /devices/count", False,
+                                error=f"Missing expected keys in response: {data}")
+            else:
+                self.log_test("Device Count - GET /devices/count", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Device Count - GET /devices/count", False, error=str(e))
+
+    def test_market_scanner_control(self):
+        """Test market scanner control endpoints"""
+        logger.info("\n=== 2. MARKET SCANNER CONTROL TESTS ===")
+        
+        # Test GET /api/scanner/status 
+        try:
+            response = self.session.get(f"{self.base_url}/scanner/status")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["is_running", "active_profile", "statistics"]
+                if all(key in data for key in expected_keys):
+                    self.log_test("Scanner Status - GET /scanner/status", True, data)
                     
-                    # Check API key status
-                    api_key_loaded = data.get("api_key", {}).get("status") == "LOADED"
+                    # Store initial profile for verification
+                    initial_profile = data.get("active_profile")
                     
-                    # Check provider status
+                else:
+                    self.log_test("Scanner Status - GET /scanner/status", False,
+                                error=f"Missing expected keys in response: {data}")
+            else:
+                self.log_test("Scanner Status - GET /scanner/status", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Scanner Status - GET /scanner/status", False, error=str(e))
+
+        # Test POST /api/scanner/profile/aggressive
+        try:
+            response = self.session.post(f"{self.base_url}/scanner/profile/aggressive")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["status", "new_profile"]
+                if all(key in data for key in expected_keys):
+                    if data.get("new_profile") == "Aggressive":
+                        self.log_test("Scanner Profile Change - POST /scanner/profile/aggressive", True, data)
+                    else:
+                        self.log_test("Scanner Profile Change - POST /scanner/profile/aggressive", False,
+                                    error=f"Profile not changed to Aggressive: {data}")
+                else:
+                    self.log_test("Scanner Profile Change - POST /scanner/profile/aggressive", False,
+                                error=f"Missing expected keys in response: {data}")
+            else:
+                self.log_test("Scanner Profile Change - POST /scanner/profile/aggressive", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Scanner Profile Change - POST /scanner/profile/aggressive", False, error=str(e))
+
+        # Verify profile changed to "Aggressive"
+        try:
+            response = self.session.get(f"{self.base_url}/scanner/status")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("active_profile") == "Aggressive":
+                    self.log_test("Scanner Status Verification - Profile is Aggressive", True, data)
+                else:
+                    self.log_test("Scanner Status Verification - Profile is Aggressive", False,
+                                error=f"Profile not changed to Aggressive: {data.get('active_profile')}")
+            else:
+                self.log_test("Scanner Status Verification - Profile is Aggressive", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Scanner Status Verification - Profile is Aggressive", False, error=str(e))
+
+        # Test POST /api/scanner/profile/prop_firm_safe (reset to safe profile)
+        try:
+            response = self.session.post(f"{self.base_url}/scanner/profile/prop_firm_safe")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["status", "new_profile"]
+                if all(key in data for key in expected_keys):
+                    if data.get("new_profile") == "Prop Firm Safe":
+                        self.log_test("Scanner Profile Reset - POST /scanner/profile/prop_firm_safe", True, data)
+                    else:
+                        self.log_test("Scanner Profile Reset - POST /scanner/profile/prop_firm_safe", False,
+                                    error=f"Profile not changed to Prop Firm Safe: {data}")
+                else:
+                    self.log_test("Scanner Profile Reset - POST /scanner/profile/prop_firm_safe", False,
+                                error=f"Missing expected keys in response: {data}")
+            else:
+                self.log_test("Scanner Profile Reset - POST /scanner/profile/prop_firm_safe", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Scanner Profile Reset - POST /scanner/profile/prop_firm_safe", False, error=str(e))
+
+    def test_analytics_endpoints(self):
+        """Test analytics endpoints"""
+        logger.info("\n=== 3. ANALYTICS ENDPOINTS TESTS ===")
+        
+        # Test GET /api/analytics/performance
+        try:
+            response = self.session.get(f"{self.base_url}/analytics/performance")
+            if response.status_code == 200:
+                data = response.json()
+                expected_top_keys = ["summary", "performance", "risk_metrics", "streaks", "activity"]
+                if all(key in data for key in expected_top_keys):
+                    # Check sub-keys
+                    summary_keys = ["total_signals", "buy_signals", "sell_signals", "next_signals"]
+                    performance_keys = ["win_rate", "loss_rate", "winning_trades", "losing_trades", "pending_trades"]
+                    risk_keys = ["average_rr_ratio", "profit_factor", "expectancy"]
+                    
+                    if (all(key in data["summary"] for key in summary_keys) and
+                        all(key in data["performance"] for key in performance_keys) and 
+                        all(key in data["risk_metrics"] for key in risk_keys)):
+                        self.log_test("Analytics Performance - GET /analytics/performance", True, data)
+                    else:
+                        self.log_test("Analytics Performance - GET /analytics/performance", False,
+                                    error=f"Missing expected sub-keys in response")
+                else:
+                    self.log_test("Analytics Performance - GET /analytics/performance", False,
+                                error=f"Missing expected keys in response: {list(data.keys())}")
+            else:
+                self.log_test("Analytics Performance - GET /analytics/performance", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Analytics Performance - GET /analytics/performance", False, error=str(e))
+
+        # Test GET /api/analytics/distribution?days=7
+        try:
+            response = self.session.get(f"{self.base_url}/analytics/distribution?days=7")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["period_days", "start_date", "end_date", "daily_distribution"]
+                if all(key in data for key in expected_keys):
+                    if data.get("period_days") == 7:
+                        self.log_test("Analytics Distribution - GET /analytics/distribution?days=7", True, data)
+                    else:
+                        self.log_test("Analytics Distribution - GET /analytics/distribution?days=7", False,
+                                    error=f"Period days incorrect: {data.get('period_days')}")
+                else:
+                    self.log_test("Analytics Distribution - GET /analytics/distribution?days=7", False,
+                                error=f"Missing expected keys in response: {list(data.keys())}")
+            else:
+                self.log_test("Analytics Distribution - GET /analytics/distribution?days=7", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Analytics Distribution - GET /analytics/distribution?days=7", False, error=str(e))
+
+        # Test GET /api/analytics/recent-trades?limit=5
+        try:
+            response = self.session.get(f"{self.base_url}/analytics/recent-trades?limit=5")
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Check if we have data and it has correct structure
+                    if len(data) <= 5:  # Should respect limit
+                        if len(data) > 0:
+                            # Check structure of first item
+                            expected_trade_keys = ["id", "asset", "signal_type", "confidence", "outcome"]
+                            if all(key in data[0] for key in expected_trade_keys):
+                                self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", True, data)
+                            else:
+                                self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", False,
+                                            error=f"Missing expected keys in trade data: {list(data[0].keys())}")
+                        else:
+                            # Empty array is valid (no trades yet)
+                            self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", True, data)
+                    else:
+                        self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", False,
+                                    error=f"Response exceeds limit of 5: {len(data)} items")
+                else:
+                    self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", False,
+                                error=f"Response is not a list: {type(data)}")
+            else:
+                self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Analytics Recent Trades - GET /analytics/recent-trades?limit=5", False, error=str(e))
+
+    def test_push_notification_stats(self):
+        """Test push notification stats"""
+        logger.info("\n=== 4. PUSH NOTIFICATION STATS TESTS ===")
+        
+        # Test GET /api/push/stats
+        try:
+            response = self.session.get(f"{self.base_url}/push/stats")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["sent", "failed", "total"]
+                if all(key in data for key in expected_keys):
+                    # Verify total = sent + failed
+                    if data["total"] == data["sent"] + data["failed"]:
+                        self.log_test("Push Stats - GET /push/stats", True, data)
+                    else:
+                        self.log_test("Push Stats - GET /push/stats", False,
+                                    error=f"Total doesn't match sent+failed: {data}")
+                else:
+                    self.log_test("Push Stats - GET /push/stats", False,
+                                error=f"Missing expected keys in response: {list(data.keys())}")
+            else:
+                self.log_test("Push Stats - GET /push/stats", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Push Stats - GET /push/stats", False, error=str(e))
+
+    def test_existing_endpoints(self):
+        """Test existing endpoints to verify they still work"""
+        logger.info("\n=== 5. EXISTING ENDPOINTS VERIFICATION ===")
+        
+        # Test GET /api/provider/live-prices
+        try:
+            response = self.session.get(f"{self.base_url}/provider/live-prices")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["provider", "is_production", "timestamp", "prices"]
+                if all(key in data for key in expected_keys):
+                    # Check if prices have EURUSD and XAUUSD
+                    prices = data.get("prices", {})
+                    if "EURUSD" in prices and "XAUUSD" in prices:
+                        # Check price structure
+                        eurusd = prices["EURUSD"]
+                        if "bid" in eurusd and "ask" in eurusd and "status" in eurusd:
+                            self.log_test("Live Prices - GET /provider/live-prices", True, data)
+                        else:
+                            self.log_test("Live Prices - GET /provider/live-prices", False,
+                                        error=f"Missing price structure: {eurusd}")
+                    else:
+                        self.log_test("Live Prices - GET /provider/live-prices", False,
+                                    error=f"Missing EURUSD/XAUUSD in prices: {list(prices.keys())}")
+                else:
+                    self.log_test("Live Prices - GET /provider/live-prices", False,
+                                error=f"Missing expected keys in response: {list(data.keys())}")
+            else:
+                self.log_test("Live Prices - GET /provider/live-prices", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_test("Live Prices - GET /provider/live-prices", False, error=str(e))
+
+        # Test GET /api/provider/debug
+        try:
+            response = self.session.get(f"{self.base_url}/provider/debug")
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["timestamp", "api_key", "provider", "connection"]
+                if all(key in data for key in expected_keys):
+                    # Check sub-structure
                     provider_info = data.get("provider", {})
-                    is_production = provider_info.get("is_production", False)
-                    
-                    # Check connection status
                     connection_info = data.get("connection", {})
-                    is_connected = connection_info.get("is_connected", False)
-                    provider_name = connection_info.get("provider_name", "Unknown")
-                    
-                    success = api_key_loaded and is_production and is_connected
-                    details = f"API Key: {data.get('api_key', {}).get('status')}, Provider: {provider_name}, Production: {is_production}, Connected: {is_connected}"
-                    
-                    self.log_test("Provider Debug Info", success, details, data)
-                    return success, data
+                    if "is_production" in provider_info and "is_connected" in connection_info:
+                        self.log_test("Provider Debug - GET /provider/debug", True, data)
+                    else:
+                        self.log_test("Provider Debug - GET /provider/debug", False,
+                                    error=f"Missing sub-keys in provider/connection data")
                 else:
-                    self.log_test("Provider Debug Info", False, f"HTTP {response.status}")
-                    return False, None
+                    self.log_test("Provider Debug - GET /provider/debug", False,
+                                error=f"Missing expected keys in response: {list(data.keys())}")
+            else:
+                self.log_test("Provider Debug - GET /provider/debug", False,
+                            error=f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_test("Provider Debug Info", False, f"Error: {str(e)}")
-            return False, None
+            self.log_test("Provider Debug - GET /provider/debug", False, error=str(e))
 
-    async def test_provider_status(self):
-        """Test /api/provider/status endpoint"""
-        try:
-            async with self.session.get(f"{BASE_URL}/provider/status") as response:
-                if response.status == 200:
-                    data = await response.json()
-                    
-                    connected = data.get("connected", False)
-                    is_production = data.get("is_production", False)
-                    provider_name = data.get("provider_name", "Unknown")
-                    
-                    success = connected and is_production
-                    details = f"Connected: {connected}, Production: {is_production}, Provider: {provider_name}"
-                    
-                    self.log_test("Provider Status", success, details, data)
-                    return success, data
-                else:
-                    self.log_test("Provider Status", False, f"HTTP {response.status}")
-                    return False, None
-        except Exception as e:
-            self.log_test("Provider Status", False, f"Error: {str(e)}")
-            return False, None
-
-    async def test_live_prices(self):
-        """Test /api/provider/live-prices endpoint - CRITICAL TEST"""
-        try:
-            async with self.session.get(f"{BASE_URL}/provider/live-prices") as response:
-                if response.status == 200:
-                    data = await response.json()
-                    
-                    eurusd_data = data.get("prices", {}).get("EURUSD", {})
-                    xauusd_data = data.get("prices", {}).get("XAUUSD", {})
-                    
-                    # Check EURUSD
-                    eurusd_status = eurusd_data.get("status") == "LIVE"
-                    eurusd_bid = eurusd_data.get("bid")
-                    eurusd_ask = eurusd_data.get("ask")
-                    eurusd_realistic = False
-                    
-                    if eurusd_bid and eurusd_ask:
-                        # Check if EURUSD price is realistic (~1.165xx)
-                        eurusd_realistic = 1.10 <= float(eurusd_bid) <= 1.25 and 1.10 <= float(eurusd_ask) <= 1.25
-                    
-                    # Check XAUUSD
-                    xauusd_status = xauusd_data.get("status") == "LIVE"
-                    xauusd_bid = xauusd_data.get("bid")
-                    xauusd_ask = xauusd_data.get("ask")
-                    xauusd_realistic = False
-                    
-                    if xauusd_bid and xauusd_ask:
-                        # Check if XAUUSD price is realistic (~5228-5230)
-                        xauusd_realistic = 2500 <= float(xauusd_bid) <= 6000 and 2500 <= float(xauusd_ask) <= 6000
-                    
-                    # Check provider info
-                    provider_name = data.get("provider", "Unknown")
-                    is_production = data.get("is_production", False)
-                    
-                    success = (eurusd_status and eurusd_realistic and 
-                              xauusd_status and xauusd_realistic and 
-                              provider_name == "Twelve Data" and is_production)
-                    
-                    details = f"EURUSD: {eurusd_bid}/{eurusd_ask} ({eurusd_status}), XAUUSD: {xauusd_bid}/{xauusd_ask} ({xauusd_status}), Provider: {provider_name}"
-                    
-                    self.log_test("Live Prices", success, details, data)
-                    return success, data
-                else:
-                    self.log_test("Live Prices", False, f"HTTP {response.status}")
-                    return False, None
-        except Exception as e:
-            self.log_test("Live Prices", False, f"Error: {str(e)}")
-            return False, None
-
-    async def test_signal_generation(self, asset: str):
-        """Test signal generation with live data"""
-        try:
-            payload = {
-                "asset": asset,
-                "prop_profile_id": TEST_PROP_PROFILE_ID
-            }
-            
-            async with self.session.post(
-                f"{BASE_URL}/users/{TEST_USER_ID}/signals/generate",
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                
-                if response.status == 200:
-                    data = await response.json()
-                    
-                    # Check required live data fields
-                    live_bid = data.get("live_bid")
-                    live_ask = data.get("live_ask") 
-                    live_spread_pips = data.get("live_spread_pips")
-                    data_provider = data.get("data_provider")
-                    
-                    # Check signal quality
-                    signal_type = data.get("signal_type")
-                    confidence = data.get("confidence")
-                    success_probability = data.get("success_probability")
-                    
-                    has_live_data = all([live_bid, live_ask, live_spread_pips])
-                    is_twelve_data = data_provider == "Twelve Data"
-                    has_signal_data = all([signal_type, confidence, success_probability])
-                    
-                    success = has_live_data and is_twelve_data and has_signal_data
-                    
-                    details = f"Signal: {signal_type}, Confidence: {confidence}%, Live: {live_bid}/{live_ask}, Provider: {data_provider}"
-                    
-                    self.log_test(f"Signal Generation ({asset})", success, details, data)
-                    return success, data
-                else:
-                    error_text = await response.text()
-                    self.log_test(f"Signal Generation ({asset})", False, f"HTTP {response.status}: {error_text}")
-                    return False, None
-        except Exception as e:
-            self.log_test(f"Signal Generation ({asset})", False, f"Error: {str(e)}")
-            return False, None
-
-    async def run_all_tests(self):
-        """Run comprehensive backend tests"""
-        print("🚀 PropSignal Engine Backend Testing Suite")
-        print("=" * 60)
+    def run_all_tests(self):
+        """Run all tests"""
+        logger.info(f"🚀 Starting PropSignal Engine Backend Tests")
+        logger.info(f"📍 Backend URL: {self.base_url}")
         
-        # Test 1: Health Check
-        await self.test_health_check()
+        start_time = time.time()
         
-        # Test 2: Provider Debug (CRITICAL)
-        debug_success, debug_data = await self.test_provider_debug()
+        # Run all test suites
+        self.test_device_registration()
+        self.test_market_scanner_control()  
+        self.test_analytics_endpoints()
+        self.test_push_notification_stats()
+        self.test_existing_endpoints()
         
-        # Test 3: Provider Status
-        status_success, status_data = await self.test_provider_status()
-        
-        # Test 4: Live Prices (CRITICAL)
-        prices_success, prices_data = await self.test_live_prices()
-        
-        # Test 5: Signal Generation with Live Data (CRITICAL)
-        eurusd_signal_success, eurusd_signal_data = await self.test_signal_generation("EURUSD")
-        
-        # Test 6: Signal Generation for XAUUSD (CRITICAL)
-        xauusd_signal_success, xauusd_signal_data = await self.test_signal_generation("XAUUSD")
+        end_time = time.time()
+        duration = round(end_time - start_time, 2)
         
         # Summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
-        
         total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result["success"])
+        passed_tests = sum(1 for result in self.test_results if result['success'])
+        failed_tests = total_tests - passed_tests
         
-        print(f"Total Tests: {total_tests}")
-        print(f"Passed: {passed_tests}")
-        print(f"Failed: {total_tests - passed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"🏁 PROPNIGNAL ENGINE BACKEND TEST SUMMARY")
+        logger.info(f"{'='*60}")
+        logger.info(f"⏱️  Duration: {duration}s")
+        logger.info(f"📊 Total Tests: {total_tests}")
+        logger.info(f"✅ Passed: {passed_tests}")
+        logger.info(f"❌ Failed: {failed_tests}")
+        logger.info(f"🎯 Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
-        # Critical test results
-        critical_tests = [
-            ("Provider Debug", debug_success),
-            ("Live Prices", prices_success), 
-            ("EURUSD Signal Generation", eurusd_signal_success),
-            ("XAUUSD Signal Generation", xauusd_signal_success)
-        ]
-        
-        print("\n🎯 CRITICAL TEST RESULTS:")
-        for test_name, success in critical_tests:
-            status = "✅ PASS" if success else "❌ FAIL"
-            print(f"  {status} {test_name}")
-        
-        # Failed tests details
-        failed_tests = [result for result in self.test_results if not result["success"]]
-        if failed_tests:
-            print("\n❌ FAILED TESTS DETAILS:")
-            for test in failed_tests:
-                print(f"  • {test['test']}: {test['details']}")
-        
-        return self.test_results
-
-async def main():
-    """Main test execution"""
-    async with PropSignalTester() as tester:
-        await tester.run_all_tests()
+        if self.errors:
+            logger.info(f"\n❌ FAILED TESTS:")
+            for i, error in enumerate(self.errors, 1):
+                logger.info(f"  {i}. {error}")
+        else:
+            logger.info(f"\n🎉 ALL TESTS PASSED!")
+            
+        return passed_tests == total_tests
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    tester = PropSignalTester(BASE_API_URL)
+    success = tester.run_all_tests()
+    exit(0 if success else 1)

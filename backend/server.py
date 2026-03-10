@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from models import (
@@ -14,6 +14,9 @@ from models import (
     Asset, Timeframe, PropPhase, DrawdownType, AccountSettings, SignalType
 )
 from services.signal_orchestrator import enhanced_signal_orchestrator
+from services.market_scanner import init_market_scanner, market_scanner
+from services.analytics_service import create_analytics_service
+from services.push_notification_service import push_service
 from engines.prop_rule_engine import prop_rule_engine
 from providers.provider_manager import provider_manager
 
@@ -38,12 +41,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize services
+scanner = None
+analytics = None
+
 
 # ==================== STARTUP/SHUTDOWN EVENTS ====================
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize market data provider on startup"""
+    """Initialize market data provider and services on startup"""
+    global scanner, analytics
+    
     logger.info("🚀 Starting PropSignal Engine...")
     
     # Initialize provider manager
@@ -57,10 +66,27 @@ async def startup_event():
             logger.info(f"✅ Production data connected - Provider: {status.provider_name}")
     else:
         logger.error("❌ Failed to initialize market data provider")
+    
+    # Initialize market scanner
+    scanner = init_market_scanner(db)
+    logger.info("📊 Market Scanner initialized")
+    
+    # Initialize analytics service
+    analytics = create_analytics_service(db)
+    logger.info("📈 Analytics Service initialized")
+    
+    # Optionally auto-start scanner (disabled by default)
+    # await scanner.start()
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
+    global scanner
+    
+    if scanner:
+        await scanner.stop()
+    
+    await push_service.close()
     await provider_manager.shutdown()
     client.close()
     logger.info("PropSignal Engine shut down")
@@ -70,6 +96,12 @@ async def shutdown_event():
 
 class CreateUserRequest(BaseModel):
     email: Optional[str] = None
+
+class RegisterDeviceRequest(BaseModel):
+    push_token: str
+    platform: str  # "ios" or "android"
+    device_id: str
+    device_name: Optional[str] = None
 
 class CreatePropProfileRequest(BaseModel):
     name: str
@@ -590,6 +622,247 @@ async def debug_live_quote(asset: str):
         },
         "fetch_duration_seconds": round(fetch_duration, 3),
         "warning": "⚠️ SIMULATION MODE - NOT REAL DATA" if provider_manager.is_simulation_mode() else None
+    }
+
+
+# ==================== DEVICE REGISTRATION ====================
+
+@api_router.post("/register-device")
+async def register_device(request: RegisterDeviceRequest):
+    """
+    Register a device for push notifications
+    
+    This endpoint should be called when the app launches and obtains
+    an Expo push token.
+    """
+    # Check if device already exists
+    existing = await db.devices.find_one({"device_id": request.device_id})
+    
+    if existing:
+        # Update existing device
+        await db.devices.update_one(
+            {"device_id": request.device_id},
+            {
+                "$set": {
+                    "push_token": request.push_token,
+                    "platform": request.platform,
+                    "device_name": request.device_name,
+                    "is_active": True,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        logger.info(f"📱 Device updated: {request.device_id[:20]}...")
+        return {"status": "updated", "device_id": request.device_id}
+    
+    # Create new device
+    device = {
+        "id": str(datetime.utcnow().timestamp()),
+        "device_id": request.device_id,
+        "push_token": request.push_token,
+        "platform": request.platform,
+        "device_name": request.device_name,
+        "is_active": True,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.devices.insert_one(device)
+    logger.info(f"📱 New device registered: {request.device_id[:20]}...")
+    
+    return {"status": "registered", "device_id": request.device_id}
+
+@api_router.delete("/devices/{device_id}")
+async def unregister_device(device_id: str):
+    """Unregister a device from push notifications"""
+    result = await db.devices.update_one(
+        {"device_id": device_id},
+        {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Device not found")
+    
+    return {"status": "unregistered"}
+
+@api_router.get("/devices/count")
+async def get_device_count():
+    """Get count of registered devices"""
+    total = await db.devices.count_documents({})
+    active = await db.devices.count_documents({"is_active": True})
+    
+    return {
+        "total_devices": total,
+        "active_devices": active
+    }
+
+
+# ==================== MARKET SCANNER CONTROL ====================
+
+@api_router.post("/scanner/start")
+async def start_scanner():
+    """Start the background market scanner"""
+    if not scanner:
+        raise HTTPException(status_code=500, detail="Scanner not initialized")
+    
+    if scanner.is_running:
+        return {"status": "already_running", "message": "Scanner is already running"}
+    
+    await scanner.start()
+    return {"status": "started", "profile": scanner.active_profile.name}
+
+@api_router.post("/scanner/stop")
+async def stop_scanner():
+    """Stop the background market scanner"""
+    if not scanner:
+        raise HTTPException(status_code=500, detail="Scanner not initialized")
+    
+    if not scanner.is_running:
+        return {"status": "already_stopped", "message": "Scanner is not running"}
+    
+    await scanner.stop()
+    return {"status": "stopped"}
+
+@api_router.get("/scanner/status")
+async def get_scanner_status():
+    """Get current scanner status and statistics"""
+    if not scanner:
+        return {"error": "Scanner not initialized"}
+    
+    stats = scanner.get_stats()
+    return {
+        "is_running": stats["is_running"],
+        "active_profile": stats["active_profile"],
+        "scan_interval_seconds": stats["scan_interval"],
+        "statistics": {
+            "total_scans": stats["scans"],
+            "signals_generated": stats["signals_generated"],
+            "notifications_sent": stats["notifications_sent"]
+        }
+    }
+
+@api_router.post("/scanner/profile/{profile_name}")
+async def set_scanner_profile(profile_name: str):
+    """
+    Change the operational profile
+    
+    Available profiles:
+    - aggressive: Lower thresholds, more signals
+    - defensive: Higher thresholds, fewer but higher quality signals
+    - prop_firm_safe: Balanced for prop firm trading
+    """
+    if not scanner:
+        raise HTTPException(status_code=500, detail="Scanner not initialized")
+    
+    valid_profiles = ["aggressive", "defensive", "prop_firm_safe"]
+    if profile_name.lower() not in valid_profiles:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid profile. Choose from: {valid_profiles}"
+        )
+    
+    scanner.set_profile(profile_name)
+    return {"status": "profile_changed", "new_profile": scanner.active_profile.name}
+
+
+# ==================== ENHANCED ANALYTICS ====================
+
+@api_router.get("/analytics/performance")
+async def get_performance_analytics(user_id: Optional[str] = None):
+    """Get comprehensive performance analytics"""
+    if not analytics:
+        raise HTTPException(status_code=500, detail="Analytics service not initialized")
+    
+    metrics = await analytics.get_performance_metrics(user_id=user_id)
+    
+    return {
+        "summary": {
+            "total_signals": metrics.total_signals,
+            "buy_signals": metrics.buy_signals,
+            "sell_signals": metrics.sell_signals,
+            "next_signals": metrics.next_signals
+        },
+        "performance": {
+            "win_rate": round(metrics.win_rate, 1),
+            "loss_rate": round(metrics.loss_rate, 1),
+            "winning_trades": metrics.winning_trades,
+            "losing_trades": metrics.losing_trades,
+            "pending_trades": metrics.pending_trades
+        },
+        "risk_metrics": {
+            "average_rr_ratio": round(metrics.average_rr_ratio, 2),
+            "profit_factor": round(metrics.profit_factor, 2),
+            "expectancy": round(metrics.expectancy, 2),
+            "max_drawdown_pct": metrics.max_drawdown_pct,
+            "current_drawdown_pct": metrics.current_drawdown_pct
+        },
+        "streaks": {
+            "longest_winning": metrics.longest_winning_streak,
+            "longest_losing": metrics.longest_losing_streak
+        },
+        "by_asset": metrics.signals_per_asset,
+        "by_regime": metrics.signals_per_regime,
+        "win_rate_by_asset": metrics.win_rate_per_asset,
+        "win_rate_by_regime": metrics.win_rate_per_regime,
+        "activity": {
+            "signals_today": metrics.signals_today,
+            "signals_this_week": metrics.signals_this_week,
+            "signals_this_month": metrics.signals_this_month
+        }
+    }
+
+@api_router.get("/analytics/distribution")
+async def get_signal_distribution(user_id: Optional[str] = None, days: int = 30):
+    """Get signal distribution over time"""
+    if not analytics:
+        raise HTTPException(status_code=500, detail="Analytics service not initialized")
+    
+    return await analytics.get_signal_distribution(user_id=user_id, days=days)
+
+@api_router.get("/analytics/recent-trades")
+async def get_recent_trades(user_id: Optional[str] = None, limit: int = 10):
+    """Get recent trade summaries"""
+    if not analytics:
+        raise HTTPException(status_code=500, detail="Analytics service not initialized")
+    
+    return await analytics.get_recent_trades_summary(user_id=user_id, limit=limit)
+
+
+# ==================== PUSH NOTIFICATION STATS ====================
+
+@api_router.get("/push/stats")
+async def get_push_stats():
+    """Get push notification statistics"""
+    return push_service.get_stats()
+
+@api_router.post("/push/test")
+async def send_test_notification(device_id: Optional[str] = None):
+    """Send a test push notification"""
+    if device_id:
+        device = await db.devices.find_one({"device_id": device_id, "is_active": True})
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+        tokens = [device["push_token"]]
+    else:
+        devices = await db.devices.find({"is_active": True}).to_list(100)
+        tokens = [d["push_token"] for d in devices if d.get("push_token")]
+    
+    if not tokens:
+        return {"status": "no_devices", "message": "No active devices to send to"}
+    
+    results = await push_service.send_to_all_devices(
+        tokens=tokens,
+        title="🧪 Test Notification",
+        body="This is a test notification from PropSignal Engine",
+        data={"type": "test"}
+    )
+    
+    successful = sum(1 for r in results if r.success)
+    return {
+        "status": "sent",
+        "total": len(results),
+        "successful": successful,
+        "failed": len(results) - successful
     }
 
 
