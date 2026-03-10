@@ -445,6 +445,96 @@ async def get_provider_status():
         "error_message": status.error_message
     }
 
+@api_router.get("/provider/debug")
+async def get_provider_debug():
+    """DEBUG: Complete provider diagnostics"""
+    import os
+    from datetime import datetime
+    
+    # Check API key
+    api_key = os.getenv('TWELVE_DATA_API_KEY')
+    api_key_status = "LOADED" if api_key else "MISSING"
+    api_key_preview = f"{api_key[:8]}...{api_key[-4:]}" if api_key and len(api_key) > 12 else "N/A"
+    
+    # Provider status
+    provider = provider_manager.get_provider()
+    status = provider_manager.get_status()
+    
+    debug_info = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "api_key": {
+            "status": api_key_status,
+            "preview": api_key_preview
+        },
+        "provider": {
+            "initialized": provider is not None,
+            "type": type(provider).__name__ if provider else None,
+            "is_simulation": provider_manager.is_simulation_mode(),
+            "is_production": provider_manager.is_production_ready()
+        },
+        "connection": {
+            "is_connected": status.is_connected if status else False,
+            "is_healthy": status.is_healthy if status else False,
+            "provider_name": status.provider_name if status else "None",
+            "last_update": status.last_update.isoformat() if status and status.last_update else None,
+            "last_update_age_seconds": status.last_update_age_seconds if status else None,
+            "error_message": status.error_message if status else "No provider"
+        }
+    }
+    
+    return debug_info
+
+@api_router.get("/provider/live-prices")
+async def get_live_prices():
+    """Get current live prices for all assets with full debug info"""
+    from datetime import datetime
+    
+    provider = provider_manager.get_provider()
+    status = provider_manager.get_status()
+    
+    if not provider:
+        return {
+            "error": "No provider available",
+            "prices": {}
+        }
+    
+    prices = {}
+    
+    for asset in [Asset.EURUSD, Asset.XAUUSD]:
+        try:
+            start_time = datetime.utcnow()
+            quote = await provider.get_live_quote(asset)
+            fetch_time = (datetime.utcnow() - start_time).total_seconds()
+            
+            if quote:
+                prices[asset.value] = {
+                    "bid": quote.bid,
+                    "ask": quote.ask,
+                    "mid": quote.mid_price,
+                    "spread_pips": quote.spread_pips,
+                    "timestamp": quote.timestamp.isoformat(),
+                    "age_seconds": (datetime.utcnow() - quote.timestamp).total_seconds(),
+                    "fetch_time_ms": round(fetch_time * 1000, 1),
+                    "status": "LIVE"
+                }
+            else:
+                prices[asset.value] = {
+                    "status": "ERROR",
+                    "error": "Failed to fetch quote"
+                }
+        except Exception as e:
+            prices[asset.value] = {
+                "status": "ERROR",
+                "error": str(e)
+            }
+    
+    return {
+        "provider": status.provider_name if status else "Unknown",
+        "is_production": provider_manager.is_production_ready(),
+        "timestamp": datetime.utcnow().isoformat(),
+        "prices": prices
+    }
+
 @api_router.get("/debug/live-quote/{asset}")
 async def debug_live_quote(asset: str):
     """DEBUG: Get raw live quote data with full tracing"""

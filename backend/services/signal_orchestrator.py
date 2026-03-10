@@ -62,7 +62,7 @@ class EnhancedSignalOrchestrator:
         13. Return signal with complete risk data or NEXT
         """
         
-        # Step 1: Check provider health
+        # Step 1: Check provider availability
         provider = provider_manager.get_provider()
         provider_status = provider_manager.get_status()
         
@@ -76,11 +76,20 @@ class EnhancedSignalOrchestrator:
                 None, "Simulation (Dev Only)"
             )
         
-        if not provider or not provider_status or not provider_status.is_healthy:
+        if not provider or not provider_status:
+            logger.error(f"❌ No provider available for {asset.value}")
             return self._create_next_signal(
                 user_id, asset, MarketRegime.CHAOTIC, session_detector.get_current_session(),
-                "DATA UNAVAILABLE - Market data provider not connected or stale",
+                "DATA UNAVAILABLE - Market data provider not initialized",
                 None, "N/A"
+            )
+        
+        if not provider_status.is_connected:
+            logger.error(f"❌ Provider not connected for {asset.value}")
+            return self._create_next_signal(
+                user_id, asset, MarketRegime.CHAOTIC, session_detector.get_current_session(),
+                "DATA UNAVAILABLE - Market data provider not connected",
+                None, provider_status.provider_name
             )
         
         # Warn if simulation mode

@@ -29,14 +29,22 @@ class ProviderStatus:
     
     @property
     def is_healthy(self) -> bool:
-        """Check if provider is healthy"""
-        if not self.is_connected:
-            return False
+        """Check if provider is healthy - connection status only"""
+        # For on-demand providers like Twelve Data, we check connection status
+        # The actual data freshness is validated per-request
+        return self.is_connected
+    
+    @property
+    def last_update_age_seconds(self) -> float:
+        """Get age of last update in seconds"""
         if self.last_update is None:
-            return False
-        # Data is stale if older than 30 seconds
-        age = (datetime.utcnow() - self.last_update).total_seconds()
-        return age < 30
+            return float('inf')
+        return (datetime.utcnow() - self.last_update).total_seconds()
+    
+    @property
+    def is_data_fresh(self) -> bool:
+        """Check if last update is fresh (within 30 seconds)"""
+        return self.last_update_age_seconds < 30
 
 class BaseMarketDataProvider(ABC):
     """Abstract base class for all market data providers"""

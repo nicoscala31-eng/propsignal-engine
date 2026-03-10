@@ -23,7 +23,7 @@ export default function RootLayout() {
           }} 
         />
         <Stack.Screen 
-          name="signal/[symbol]" 
+          name="signal-detail" 
           options={{ 
             title: 'Signal Details',
             presentation: 'card'
@@ -37,10 +37,10 @@ export default function RootLayout() {
           }} 
         />
         <Stack.Screen 
-          name="+not-found" 
+          name="prop-profiles" 
           options={{ 
-            title: 'Not Found',
-            presentation: 'modal'
+            title: 'Prop Profiles',
+            presentation: 'card'
           }} 
         />
       </Stack>

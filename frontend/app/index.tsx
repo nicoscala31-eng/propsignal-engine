@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -34,7 +34,30 @@ interface Signal {
   next_reason?: string;
   prop_rule_safety: 'SAFE' | 'CAUTION' | 'BLOCKED';
   session: string;
+  live_bid?: number;
+  live_ask?: number;
+  live_spread_pips?: number;
+  data_provider?: string;
   created_at: string;
+}
+
+interface LivePrice {
+  bid: number;
+  ask: number;
+  mid: number;
+  spread_pips: number;
+  timestamp: string;
+  status: 'LIVE' | 'ERROR';
+  error?: string;
+}
+
+interface ProviderStatus {
+  provider: string;
+  is_production: boolean;
+  prices: {
+    EURUSD?: LivePrice;
+    XAUUSD?: LivePrice;
+  };
 }
 
 export default function HomeScreen() {
@@ -43,22 +66,34 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [eurusdSignal, setEurusdSignal] = useState<Signal | null>(null);
   const [xauusdSignal, setXauusdSignal] = useState<Signal | null>(null);
+  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  const fetchProviderStatus = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/provider/live-prices`);
+      if (response.ok) {
+        const data = await response.json();
+        setProviderStatus(data);
+        setLastUpdate(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching provider status:', error);
+    }
+  }, []);
 
   const fetchLatestSignals = async () => {
     try {
-      // Fetch EURUSD signal
-      const eurusdResponse = await fetch(
-        `${BACKEND_URL}/api/users/${MOCK_USER_ID}/signals/latest?asset=EURUSD`
-      );
+      const [eurusdResponse, xauusdResponse] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/users/${MOCK_USER_ID}/signals/latest?asset=EURUSD`),
+        fetch(`${BACKEND_URL}/api/users/${MOCK_USER_ID}/signals/latest?asset=XAUUSD`)
+      ]);
+
       if (eurusdResponse.ok) {
         const data = await eurusdResponse.json();
         setEurusdSignal(data);
       }
 
-      // Fetch XAUUSD signal
-      const xauusdResponse = await fetch(
-        `${BACKEND_URL}/api/users/${MOCK_USER_ID}/signals/latest?asset=XAUUSD`
-      );
       if (xauusdResponse.ok) {
         const data = await xauusdResponse.json();
         setXauusdSignal(data);
@@ -91,6 +126,9 @@ export default function HomeScreen() {
           setXauusdSignal(signal);
         }
 
+        // Refresh live prices after signal generation
+        await fetchProviderStatus();
+
         if (signal.signal_type !== 'NEXT') {
           Alert.alert(
             `${signal.signal_type} Signal`,
@@ -111,76 +149,137 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchLatestSignals();
+    await Promise.all([fetchLatestSignals(), fetchProviderStatus()]);
     setRefreshing(false);
   };
 
   useEffect(() => {
     fetchLatestSignals();
-  }, []);
+    fetchProviderStatus();
 
-  const renderSignalCard = (signal: Signal | null, asset: 'EURUSD' | 'XAUUSD') => {
-    if (!signal) {
+    // Auto-refresh prices every 10 seconds
+    const interval = setInterval(fetchProviderStatus, 10000);
+    return () => clearInterval(interval);
+  }, [fetchProviderStatus]);
+
+  const getLivePrice = (asset: 'EURUSD' | 'XAUUSD'): LivePrice | null => {
+    return providerStatus?.prices?.[asset] || null;
+  };
+
+  const formatPrice = (price: number | undefined, asset: 'EURUSD' | 'XAUUSD'): string => {
+    if (price === undefined) return '--';
+    return asset === 'EURUSD' ? price.toFixed(5) : price.toFixed(2);
+  };
+
+  const renderLivePriceBar = (asset: 'EURUSD' | 'XAUUSD') => {
+    const livePrice = getLivePrice(asset);
+    
+    if (!livePrice || livePrice.status === 'ERROR') {
       return (
-        <View style={styles.signalCard}>
-          <Text style={styles.assetTitle}>{asset}</Text>
-          <Text style={styles.noSignalText}>No signal available</Text>
-          <TouchableOpacity
-            style={styles.generateButton}
-            onPress={() => generateSignal(asset)}
-            disabled={loading}
-          >
-            <Text style={styles.generateButtonText}>Generate Signal</Text>
-          </TouchableOpacity>
+        <View style={styles.priceBarError}>
+          <Text style={styles.priceBarErrorText}>
+            Price unavailable - {livePrice?.error || 'Connecting...'}
+          </Text>
         </View>
       );
     }
 
-    const signalColor = 
-      signal.signal_type === 'BUY' ? '#00ff88' : 
-      signal.signal_type === 'SELL' ? '#ff3366' : 
-      '#888888';
+    return (
+      <View style={styles.priceBar}>
+        <View style={styles.priceCell}>
+          <Text style={styles.priceCellLabel}>BID</Text>
+          <Text style={styles.priceCellValue}>{formatPrice(livePrice.bid, asset)}</Text>
+        </View>
+        <View style={styles.priceCellSpread}>
+          <Text style={styles.spreadLabel}>SPREAD</Text>
+          <Text style={styles.spreadValue}>{livePrice.spread_pips.toFixed(1)}</Text>
+        </View>
+        <View style={styles.priceCell}>
+          <Text style={styles.priceCellLabel}>ASK</Text>
+          <Text style={styles.priceCellValue}>{formatPrice(livePrice.ask, asset)}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSignalCard = (signal: Signal | null, asset: 'EURUSD' | 'XAUUSD') => {
+    const livePrice = getLivePrice(asset);
 
     return (
-      <TouchableOpacity
-        style={[styles.signalCard, { borderLeftColor: signalColor, borderLeftWidth: 4 }]}
-        onPress={() => signal.signal_type !== 'NEXT' && router.push(`/signal-detail?id=${signal.id}`)}
-      >
+      <View style={styles.signalCard}>
         <View style={styles.signalHeader}>
           <Text style={styles.assetTitle}>{asset}</Text>
-          <View style={[styles.signalBadge, { backgroundColor: signalColor }]}>
-            <Text style={styles.signalBadgeText}>{signal.signal_type}</Text>
-          </View>
+          {signal && (
+            <View style={[
+              styles.signalBadge, 
+              { 
+                backgroundColor: signal.signal_type === 'BUY' ? '#00ff88' : 
+                                signal.signal_type === 'SELL' ? '#ff3366' : '#666666'
+              }
+            ]}>
+              <Text style={styles.signalBadgeText}>{signal.signal_type}</Text>
+            </View>
+          )}
         </View>
 
-        {signal.signal_type === 'NEXT' ? (
-          <View>
+        {/* Live Price Bar */}
+        {renderLivePriceBar(asset)}
+
+        {!signal ? (
+          <View style={styles.noSignalContainer}>
+            <Text style={styles.noSignalText}>No signal available</Text>
+            <TouchableOpacity
+              style={styles.generateButton}
+              onPress={() => generateSignal(asset)}
+              disabled={loading}
+            >
+              <Text style={styles.generateButtonText}>Generate Signal</Text>
+            </TouchableOpacity>
+          </View>
+        ) : signal.signal_type === 'NEXT' ? (
+          <View style={styles.nextSignalContainer}>
             <Text style={styles.nextReasonText}>{signal.next_reason}</Text>
-            <Text style={styles.regimeText}>Regime: {signal.market_regime}</Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.metaLabel}>Regime:</Text>
+              <Text style={styles.metaValue}>{signal.market_regime}</Text>
+            </View>
+            <View style={styles.metaRow}>
+              <Text style={styles.metaLabel}>Session:</Text>
+              <Text style={styles.metaValue}>{signal.session}</Text>
+            </View>
+            {signal.data_provider && (
+              <View style={styles.metaRow}>
+                <Text style={styles.metaLabel}>Provider:</Text>
+                <Text style={[styles.metaValue, { color: '#00ff88' }]}>{signal.data_provider}</Text>
+              </View>
+            )}
             <TouchableOpacity
               style={styles.regenButton}
               onPress={() => generateSignal(asset)}
               disabled={loading}
             >
-              <Text style={styles.regenButtonText}>Regenerate</Text>
+              <Text style={styles.regenButtonText}>Regenerate Signal</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <View>
+          <TouchableOpacity
+            onPress={() => router.push(`/signal-detail?id=${signal.id}`)}
+            style={styles.tradeSignalContainer}
+          >
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Entry:</Text>
-              <Text style={styles.priceValue}>{signal.entry_price?.toFixed(5)}</Text>
+              <Text style={styles.priceValue}>{formatPrice(signal.entry_price, asset)}</Text>
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Stop Loss:</Text>
               <Text style={[styles.priceValue, { color: '#ff3366' }]}>
-                {signal.stop_loss?.toFixed(5)}
+                {formatPrice(signal.stop_loss, asset)}
               </Text>
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>TP1:</Text>
               <Text style={[styles.priceValue, { color: '#00ff88' }]}>
-                {signal.take_profit_1?.toFixed(5)}
+                {formatPrice(signal.take_profit_1, asset)}
               </Text>
             </View>
 
@@ -191,7 +290,7 @@ export default function HomeScreen() {
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>Win Prob</Text>
-                <Text style={styles.statValue}>{signal.success_probability?.toFixed(0)}%</Text>
+                <Text style={styles.statValue}>{signal.success_probability?.toFixed(0) || '--'}%</Text>
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>Safety</Text>
@@ -204,12 +303,18 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            <Text style={styles.explanationText} numberOfLines={2}>
-              {signal.explanation}
-            </Text>
-          </View>
+            {signal.explanation && (
+              <Text style={styles.explanationText} numberOfLines={2}>
+                {signal.explanation}
+              </Text>
+            )}
+
+            <View style={styles.tapHint}>
+              <Text style={styles.tapHintText}>Tap for details</Text>
+            </View>
+          </TouchableOpacity>
         )}
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -217,7 +322,24 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>PropSignal Engine</Text>
-        <Text style={styles.headerSubtitle}>Professional Trading Signals</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerSubtitle}>Professional Trading Signals</Text>
+          {providerStatus && (
+            <View style={[
+              styles.providerBadge,
+              { backgroundColor: providerStatus.is_production ? '#00ff88' : '#ff9500' }
+            ]}>
+              <Text style={styles.providerBadgeText}>
+                {providerStatus.is_production ? 'LIVE' : 'SIM'}
+              </Text>
+            </View>
+          )}
+        </View>
+        {lastUpdate && (
+          <Text style={styles.lastUpdateText}>
+            Last update: {lastUpdate.toLocaleTimeString()}
+          </Text>
+        )}
       </View>
 
       <ScrollView
@@ -229,19 +351,28 @@ export default function HomeScreen() {
         {renderSignalCard(eurusdSignal, 'EURUSD')}
         {renderSignalCard(xauusdSignal, 'XAUUSD')}
 
+        {/* Provider Status Card */}
+        {providerStatus && (
+          <View style={styles.providerCard}>
+            <Text style={styles.providerCardTitle}>Data Provider</Text>
+            <View style={styles.providerInfo}>
+              <Text style={styles.providerName}>{providerStatus.provider}</Text>
+              <Text style={[
+                styles.providerMode,
+                { color: providerStatus.is_production ? '#00ff88' : '#ff9500' }
+              ]}>
+                {providerStatus.is_production ? 'Production Mode' : 'Simulation Mode'}
+              </Text>
+            </View>
+          </View>
+        )}
+
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push('/analytics')}
           >
-            <Text style={styles.actionButtonText}>📊 Analytics</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => router.push('/prop-profiles')}
-          >
-            <Text style={styles.actionButtonText}>⚙️ Prop Profiles</Text>
+            <Text style={styles.actionButtonText}>Analytics</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -273,9 +404,29 @@ const styles = StyleSheet.create({
     color: '#00ff88',
     marginBottom: 4,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   headerSubtitle: {
     fontSize: 14,
     color: '#888888',
+  },
+  providerBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  providerBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  lastUpdateText: {
+    fontSize: 11,
+    color: '#666666',
+    marginTop: 4,
   },
   content: {
     flex: 1,
@@ -293,7 +444,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   assetTitle: {
     fontSize: 24,
@@ -310,22 +461,116 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
+  priceBar: {
+    flexDirection: 'row',
+    backgroundColor: '#0a0a0a',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  priceBarError: {
+    backgroundColor: '#1a0a0a',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ff3366',
+  },
+  priceBarErrorText: {
+    color: '#ff6666',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  priceCell: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  priceCellSpread: {
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  priceCellLabel: {
+    fontSize: 10,
+    color: '#666666',
+    marginBottom: 2,
+  },
+  priceCellValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  spreadLabel: {
+    fontSize: 9,
+    color: '#666666',
+    marginBottom: 1,
+  },
+  spreadValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#00ff88',
+  },
+  noSignalContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
   noSignalText: {
     color: '#666666',
     fontSize: 16,
     marginBottom: 16,
-    textAlign: 'center',
   },
   generateButton: {
     backgroundColor: '#00ff88',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
+    width: '100%',
   },
   generateButtonText: {
     color: '#0a0a0a',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  nextSignalContainer: {
+    paddingVertical: 8,
+  },
+  nextReasonText: {
+    color: '#cccccc',
+    fontSize: 14,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  metaLabel: {
+    color: '#666666',
+    fontSize: 12,
+    width: 70,
+  },
+  metaValue: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  regenButton: {
+    backgroundColor: '#222222',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  regenButtonText: {
+    color: '#00ff88',
+    fontWeight: '600',
+  },
+  tradeSignalContainer: {
+    paddingVertical: 8,
   },
   priceRow: {
     flexDirection: 'row',
@@ -370,26 +615,44 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 8,
   },
-  nextReasonText: {
-    color: '#cccccc',
-    fontSize: 14,
-    marginBottom: 12,
-    lineHeight: 20,
+  tapHint: {
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#222222',
   },
-  regimeText: {
+  tapHintText: {
     color: '#666666',
     fontSize: 12,
-    marginBottom: 12,
   },
-  regenButton: {
-    backgroundColor: '#222222',
-    padding: 10,
-    borderRadius: 6,
+  providerCard: {
+    backgroundColor: '#111111',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#222222',
+  },
+  providerCardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#888888',
+    marginBottom: 8,
+  },
+  providerInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  regenButtonText: {
-    color: '#00ff88',
-    fontWeight: '600',
+  providerName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  providerMode: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   actionButtons: {
     flexDirection: 'row',

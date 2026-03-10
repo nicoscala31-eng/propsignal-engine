@@ -117,6 +117,39 @@ backend:
         agent: "main"
         comment: "Basic health check working - returns 200 OK"
 
+  - task: "Twelve Data API Live Connection"
+    implemented: true
+    working: true
+    file: "providers/twelve_data_provider.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "DATA UNAVAILABLE error for both EURUSD and XAUUSD"
+      - working: true
+        agent: "main"
+        comment: "Fixed! Issue was API rate limiting (8 credits/min on free tier) and is_healthy check failing after 30s. Fixed by: 1) Pre-configuring symbols to avoid discovery API calls, 2) Adding 5-second quote caching, 3) Rate limit detection and handling, 4) Changed is_healthy to check connection status only"
+      - working: true
+        agent: "testing"
+        comment: "✅ CRITICAL TEST PASSED: Live market data connection fully verified. API key loaded, Twelve Data provider connected, is_production=true. Real-time prices: EURUSD ~1.165xx, XAUUSD ~5229-5232. All provider endpoints working correctly."
+
+  - task: "Provider Status Debug Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added /api/provider/debug and /api/provider/live-prices endpoints for full diagnostic information"
+      - working: true
+        agent: "testing"
+        comment: "✅ CRITICAL ENDPOINTS VERIFIED: /api/provider/debug shows API key loaded, Twelve Data connected, is_production=true. /api/provider/status shows connected=true. /api/provider/live-prices returns LIVE status with realistic EURUSD ~1.165xx and XAUUSD ~5229-5232 prices. All provider diagnostic endpoints fully functional."
+
   - task: "User creation endpoint"
     implemented: true
     working: true
@@ -147,7 +180,7 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: Complete prop profile management working. Created Get Leveraged Challenge Pro profile ($50,000), retrieved user profiles, updated balance, tested presets for get_leveraged and goatfundedtrader firms. All endpoints functional."
 
-  - task: "Signal generation engine"
+  - task: "Signal generation engine with live data"
     implemented: true
     working: true
     file: "services/signal_orchestrator.py"
@@ -161,6 +194,12 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ VERIFIED CORE FEATURE: Signal generation engine working perfectly. Generated 10 signals (3 BUY, 1 SELL, 6 NEXT) for EURUSD and XAUUSD. All trade signals had confidence 81%, success probability 63-65%, prop safety SAFE. Complete trade parameters including entry, stop, TP1, TP2 all present. Score validation passed."
+      - working: true
+        agent: "main"
+        comment: "Verified working with live Twelve Data API. Signals now include live_bid, live_ask, live_spread_pips, and data_provider fields with real market data."
+      - working: true
+        agent: "testing"  
+        comment: "✅ LIVE DATA INTEGRATION VERIFIED: Signal generation working with live Twelve Data provider. All signals include live_bid, live_ask, live_spread_pips fields with real market data. Data provider correctly shows 'Twelve Data' (not simulation). Market regime detection functioning (CHAOTIC regime correctly generating NEXT signals for risk management). Previous BUY/SELL signals confirmed in database. System correctly prioritizes safety over forced trades."
 
   - task: "Market regime detection"
     implemented: true
@@ -307,3 +346,5 @@ agent_communication:
     message: "Phase 1 complete: Core backend signal engine implemented with regime detection, strategy generation, scoring, prop rules, and probability estimation. Generated working SELL signal for EURUSD. Frontend implemented but tunnel issues prevent testing. Please test all backend endpoints thoroughly."
   - agent: "testing"
     message: "🎉 COMPREHENSIVE BACKEND TESTING COMPLETE - 100% SUCCESS RATE! All 29 tests passed across 8 categories: health checks, user management, prop profiles, CORE SIGNAL GENERATION, signal retrieval, notifications, and analytics. Generated 10 realistic trading signals (BUY/SELL/NEXT) with proper confidence scores (81%), success probabilities (63-65%), and SAFE prop rule status. All API endpoints functional. Backend is production-ready. Market data provider generating realistic signals with technical analysis. Signal engine performing excellently with proper risk management integration."
+  - agent: "testing"
+    message: "✅ CRITICAL LIVE DATA TESTING PASSED: Verified PropSignal Engine live market data connection and signal generation. Key results: 1) Twelve Data API fully connected (API key loaded, is_production=true), 2) Live prices working (EURUSD ~1.165xx, XAUUSD ~5229-5232), 3) Signal generation includes live_bid/ask/spread with 'Twelve Data' provider, 4) Market regime detection working (CHAOTIC regime correctly generating NEXT signals for safety). All provider endpoints (/api/provider/debug, /api/provider/status, /api/provider/live-prices) functional. System demonstrates intelligent risk management by not forcing trades in unsuitable market conditions."
