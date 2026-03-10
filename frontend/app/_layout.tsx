@@ -17,8 +17,6 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="signal-detail" options={{ title: 'Signal Details' }} />
-        <Stack.Screen name="prop-profiles" options={{ title: 'Prop Profiles' }} />
-        <Stack.Screen name="create-profile" options={{ title: 'Create Profile' }} />
         <Stack.Screen name="analytics" options={{ title: 'Analytics' }} />
       </Stack>
     </SafeAreaProvider>
