@@ -445,6 +445,63 @@ async def get_provider_status():
         "error_message": status.error_message
     }
 
+@api_router.get("/debug/live-quote/{asset}")
+async def debug_live_quote(asset: str):
+    """DEBUG: Get raw live quote data with full tracing"""
+    try:
+        asset_enum = Asset(asset)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid asset: {asset}")
+    
+    provider = provider_manager.get_provider()
+    status = provider_manager.get_status()
+    
+    if not provider:
+        return {
+            "error": "No provider available",
+            "is_simulation": False,
+            "provider_name": "None"
+        }
+    
+    # Get quote
+    from datetime import datetime
+    start_time = datetime.utcnow()
+    quote = await provider.get_live_quote(asset_enum)
+    fetch_duration = (datetime.utcnow() - start_time).total_seconds()
+    
+    if not quote:
+        return {
+            "error": "Failed to fetch quote",
+            "provider_name": status.provider_name,
+            "is_simulation": provider_manager.is_simulation_mode(),
+            "is_production": provider_manager.is_production_ready(),
+            "fetch_duration_seconds": fetch_duration
+        }
+    
+    # Calculate age
+    quote_age_seconds = (datetime.utcnow() - quote.timestamp).total_seconds()
+    
+    return {
+        "asset": asset,
+        "provider_name": status.provider_name,
+        "is_simulation": provider_manager.is_simulation_mode(),
+        "is_production": provider_manager.is_production_ready(),
+        "quote": {
+            "bid": quote.bid,
+            "ask": quote.ask,
+            "mid": quote.mid_price,
+            "spread_pips": quote.spread_pips,
+            "timestamp": quote.timestamp.isoformat(),
+            "age_seconds": round(quote_age_seconds, 2)
+        },
+        "validation": {
+            "is_fresh": quote_age_seconds < 10,
+            "is_stale": quote_age_seconds > 30
+        },
+        "fetch_duration_seconds": round(fetch_duration, 3),
+        "warning": "⚠️ SIMULATION MODE - NOT REAL DATA" if provider_manager.is_simulation_mode() else None
+    }
+
 
 # Include the router in the main app
 app.include_router(api_router)

@@ -44,6 +44,8 @@ class EnhancedSignalOrchestrator:
         """
         Enhanced signal generation pipeline with institutional-grade filters
         
+        🚨 CRITICAL: Will BLOCK BUY/SELL signals if in simulation mode
+        
         Pipeline:
         1. Check market data provider health
         2. Get live quote (bid/ask/spread)
@@ -63,6 +65,16 @@ class EnhancedSignalOrchestrator:
         # Step 1: Check provider health
         provider = provider_manager.get_provider()
         provider_status = provider_manager.get_status()
+        
+        # 🚨 CRITICAL CHECK: Block signals if simulation mode
+        if provider_manager.is_simulation_mode():
+            logger.error(f"🚫 BLOCKED {asset.value}: Cannot generate BUY/SELL in SIMULATION MODE")
+            return self._create_next_signal(
+                user_id, asset, MarketRegime.CHAOTIC, session_detector.get_current_session(),
+                "⚠️ SIMULATION MODE - No real market data. "
+                "BUY/SELL signals BLOCKED. Add TWELVE_DATA_API_KEY for real data.",
+                None, "Simulation (Dev Only)"
+            )
         
         if not provider or not provider_status or not provider_status.is_healthy:
             return self._create_next_signal(
