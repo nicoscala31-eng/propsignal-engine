@@ -67,11 +67,24 @@ class PropPhase(str, Enum):
     FUNDED = "FUNDED"
 
 # Core Models
+class AccountSettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(datetime.utcnow().timestamp()))
+    user_id: str
+    account_size: float = 100000.0
+    account_currency: str = "USD"
+    risk_mode: str = "BALANCED"  # CONSERVATIVE, BALANCED, AGGRESSIVE
+    manual_risk_cap: Optional[float] = None  # Custom max risk %
+    daily_stop_cap: Optional[float] = None  # Custom daily stop %
+    max_simultaneous_signals: int = 2
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(datetime.utcnow().timestamp()))
     email: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     active_prop_profile_id: Optional[str] = None
+    account_settings_id: Optional[str] = None
     notification_token: Optional[str] = None
     preferences: Dict[str, Any] = Field(default_factory=dict)
 
@@ -138,6 +151,12 @@ class Signal(BaseModel):
     strategy_type: Optional[StrategyType] = None
     market_regime: MarketRegime
     
+    # Live market data
+    live_bid: Optional[float] = None
+    live_ask: Optional[float] = None
+    live_spread_pips: Optional[float] = None
+    data_provider: Optional[str] = None
+    
     # Trade details (None if NEXT)
     entry_price: Optional[float] = None
     entry_zone_low: Optional[float] = None
@@ -149,6 +168,13 @@ class Signal(BaseModel):
     # Risk metrics
     risk_reward_ratio: Optional[float] = None
     stop_distance_pips: Optional[float] = None
+    
+    # Position sizing
+    lot_size: Optional[float] = None
+    risk_percentage: Optional[float] = None
+    money_at_risk: Optional[float] = None
+    risk_mode: Optional[str] = None
+    risk_explanation: Optional[str] = None
     
     # Scoring
     confidence_score: float = 0.0

@@ -11,10 +11,11 @@ from datetime import datetime
 
 from models import (
     User, PropProfile, Signal, SignalHistory, Notification,
-    Asset, Timeframe, PropPhase, DrawdownType
+    Asset, Timeframe, PropPhase, DrawdownType, AccountSettings, SignalType
 )
-from services.signal_orchestrator import signal_orchestrator
+from services.signal_orchestrator import enhanced_signal_orchestrator
 from engines.prop_rule_engine import prop_rule_engine
+from providers.provider_manager import provider_manager
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -38,7 +39,34 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ==================== REQUEST/RESPONSE MODELS ====================
+# ==================== STARTUP/SHUTDOWN EVENTS ====================
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize market data provider on startup"""
+    logger.info("🚀 Starting PropSignal Engine...")
+    
+    # Initialize provider manager
+    success = await provider_manager.initialize()
+    
+    if success:
+        status = provider_manager.get_status()
+        if provider_manager.is_simulation_mode():
+            logger.warning(f"⚠️  SIMULATION MODE - Provider: {status.provider_name}")
+        else:
+            logger.info(f"✅ Production data connected - Provider: {status.provider_name}")
+    else:
+        logger.error("❌ Failed to initialize market data provider")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    await provider_manager.shutdown()
+    client.close()
+    logger.info("PropSignal Engine shut down")
+
+
+# ====================REQUEST/RESPONSE MODELS ====================
 
 class CreateUserRequest(BaseModel):
     email: Optional[str] = None
@@ -189,7 +217,7 @@ async def get_preset_profile(firm_name: str, user_id: str):
 
 @api_router.post("/users/{user_id}/signals/generate", response_model=Signal)
 async def generate_signal(user_id: str, request: GenerateSignalRequest):
-    """Generate a new trading signal"""
+    """Generate a new trading signal with live data and position sizing"""
     
     # Get prop profile
     profile_data = await db.prop_profiles.find_one({"id": request.prop_profile_id})
@@ -198,8 +226,32 @@ async def generate_signal(user_id: str, request: GenerateSignalRequest):
     
     profile = PropProfile(**profile_data)
     
-    # Generate signal
-    signal = await signal_orchestrator.generate_signal(user_id, request.asset, profile)
+    # Get or create account settings
+    settings_data = await db.account_settings.find_one({"user_id": user_id})
+    if not settings_data:
+        # Create default settings
+        settings = AccountSettings(user_id=user_id)
+        await db.account_settings.insert_one(settings.dict())
+    else:
+        settings = AccountSettings(**settings_data)
+    
+    # Calculate consecutive losses for risk adjustment
+    recent_signals = await db.signals.find({
+        "user_id": user_id,
+        "signal_type": {"$in": ["BUY", "SELL"]}
+    }).sort("created_at", -1).limit(5).to_list(5)
+    
+    consecutive_losses = 0
+    for sig in recent_signals:
+        if sig.get("sl_hit"):
+            consecutive_losses += 1
+        else:
+            break
+    
+    # Generate signal with enhanced orchestrator
+    signal = await enhanced_signal_orchestrator.generate_signal(
+        user_id, request.asset, profile, settings, consecutive_losses
+    )
     
     # Save signal to database
     await db.signals.insert_one(signal.dict())
@@ -214,11 +266,11 @@ async def generate_signal(user_id: str, request: GenerateSignalRequest):
     await db.signal_history.insert_one(history.dict())
     
     # Create notification if BUY or SELL
-    if signal.signal_type in ["BUY", "SELL"]:
+    if signal.signal_type in [SignalType.BUY, SignalType.SELL]:
         notification = Notification(
             user_id=user_id,
             title=f"{signal.signal_type.value} Signal: {signal.asset.value}",
-            body=f"{signal.explanation or 'New signal generated'}",
+            body=f"Lot: {signal.lot_size:.2f} | Risk: {signal.risk_percentage:.2f}% | {signal.explanation or 'New signal generated'}",
             notification_type="signal",
             data={"signal_id": signal.id}
         )
@@ -315,6 +367,10 @@ async def get_analytics_summary(user_id: str):
     trade_signals = [s for s in all_signals if s.get("signal_type") in ["BUY", "SELL"]]
     avg_confidence = sum(s.get("confidence_score", 0) for s in trade_signals) / len(trade_signals) if trade_signals else 0
     
+    # Average risk
+    avg_risk_pct = sum(s.get("risk_percentage", 0) for s in trade_signals) / len(trade_signals) if trade_signals else 0
+    avg_lot_size = sum(s.get("lot_size", 0) for s in trade_signals) / len(trade_signals) if trade_signals else 0
+    
     # By asset
     eurusd_count = sum(1 for s in all_signals if s.get("asset") == "EURUSD" and s.get("signal_type") != "NEXT")
     xauusd_count = sum(1 for s in all_signals if s.get("asset") == "XAUUSD" and s.get("signal_type") != "NEXT")
@@ -326,10 +382,67 @@ async def get_analytics_summary(user_id: str):
         "next_signals": next_signals,
         "trade_signals": len(trade_signals),
         "average_confidence": round(avg_confidence, 1),
+        "average_risk_pct": round(avg_risk_pct, 2),
+        "average_lot_size": round(avg_lot_size, 2),
         "by_asset": {
             "EURUSD": eurusd_count,
             "XAUUSD": xauusd_count
         }
+    }
+
+
+# ==================== ACCOUNT SETTINGS ====================
+
+@api_router.get("/users/{user_id}/settings", response_model=AccountSettings)
+async def get_account_settings(user_id: str):
+    """Get account settings for a user"""
+    settings_data = await db.account_settings.find_one({"user_id": user_id})
+    
+    if not settings_data:
+        # Create default settings
+        settings = AccountSettings(user_id=user_id)
+        await db.account_settings.insert_one(settings.dict())
+        return settings
+    
+    return AccountSettings(**settings_data)
+
+@api_router.put("/users/{user_id}/settings")
+async def update_account_settings(user_id: str, settings: AccountSettings):
+    """Update account settings"""
+    settings.updated_at = datetime.utcnow()
+    
+    result = await db.account_settings.update_one(
+        {"user_id": user_id},
+        {"$set": settings.dict()},
+        upsert=True
+    )
+    
+    return {"status": "updated"}
+
+
+# ==================== PROVIDER STATUS ====================
+
+@api_router.get("/provider/status")
+async def get_provider_status():
+    """Get market data provider status"""
+    status = provider_manager.get_status()
+    
+    if not status:
+        return {
+            "connected": False,
+            "provider_name": "None",
+            "is_simulation": False,
+            "error": "No provider initialized"
+        }
+    
+    return {
+        "connected": status.is_connected,
+        "is_healthy": status.is_healthy,
+        "provider_name": status.provider_name,
+        "is_simulation": provider_manager.is_simulation_mode(),
+        "is_production": provider_manager.is_production_ready(),
+        "last_update": status.last_update.isoformat() if status.last_update else None,
+        "error_message": status.error_message
     }
 
 
