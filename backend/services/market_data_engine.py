@@ -48,8 +48,8 @@ class LiveMarketDataEngine:
     
     def __init__(self):
         self.is_running = False
-        self.refresh_interval = 3  # seconds
-        self.max_stale_seconds = 30  # mark as stale after this
+        self.refresh_interval = 10  # seconds (adjusted for rate limits - 6 req/min)
+        self.max_stale_seconds = 60  # mark as stale after this
         
         # Price cache
         self.prices: Dict[Asset, PriceData] = {}

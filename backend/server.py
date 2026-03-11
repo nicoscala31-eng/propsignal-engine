@@ -799,52 +799,39 @@ async def get_provider_debug():
 
 @api_router.get("/provider/live-prices")
 async def get_live_prices():
-    """Get current live prices for all assets with full debug info"""
-    from datetime import datetime
+    """Get current live prices for all assets from the centralized market data engine"""
     
-    provider = provider_manager.get_provider()
+    # Use the centralized market data engine instead of direct provider calls
+    # This respects rate limits and provides cached data
+    engine_prices = market_data_engine.get_all_prices()
     status = provider_manager.get_status()
-    
-    if not provider:
-        return {
-            "error": "No provider available",
-            "prices": {}
-        }
     
     prices = {}
     
     for asset in [Asset.EURUSD, Asset.XAUUSD]:
-        try:
-            start_time = datetime.utcnow()
-            quote = await provider.get_live_quote(asset)
-            fetch_time = (datetime.utcnow() - start_time).total_seconds()
-            
-            if quote:
-                prices[asset.value] = {
-                    "bid": quote.bid,
-                    "ask": quote.ask,
-                    "mid": quote.mid_price,
-                    "spread_pips": quote.spread_pips,
-                    "timestamp": quote.timestamp.isoformat(),
-                    "age_seconds": (datetime.utcnow() - quote.timestamp).total_seconds(),
-                    "fetch_time_ms": round(fetch_time * 1000, 1),
-                    "status": "LIVE"
-                }
-            else:
-                prices[asset.value] = {
-                    "status": "ERROR",
-                    "error": "Failed to fetch quote"
-                }
-        except Exception as e:
+        engine_price = engine_prices.get(asset.value)
+        
+        if engine_price:
             prices[asset.value] = {
-                "status": "ERROR",
-                "error": str(e)
+                "bid": engine_price["bid"],
+                "ask": engine_price["ask"],
+                "mid": engine_price["mid"],
+                "spread_pips": engine_price["spread_pips"],
+                "timestamp": engine_price["timestamp"],
+                "age_seconds": engine_price["age_seconds"],
+                "status": "STALE" if engine_price["is_stale"] else "LIVE"
+            }
+        else:
+            prices[asset.value] = {
+                "status": "NO_DATA",
+                "error": "No data available yet - check /api/health for engine status"
             }
     
     return {
         "provider": status.provider_name if status else "Unknown",
         "is_production": provider_manager.is_production_ready(),
         "timestamp": datetime.utcnow().isoformat(),
+        "engine_running": market_data_engine.is_running,
         "prices": prices
     }
 
