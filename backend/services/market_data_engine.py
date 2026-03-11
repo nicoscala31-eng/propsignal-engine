@@ -40,16 +40,17 @@ class PriceData:
 class LiveMarketDataEngine:
     """
     Production-grade market data engine with:
-    - Automatic refresh every 2-5 seconds
+    - Automatic refresh every 30 seconds
     - Price caching and staleness detection
     - Resilient to API failures
     - Watchdog for health monitoring
+    - Rate limit and credit tracking
     """
     
     def __init__(self):
         self.is_running = False
-        self.refresh_interval = 10  # seconds (adjusted for rate limits - 6 req/min)
-        self.max_stale_seconds = 60  # mark as stale after this
+        self.refresh_interval = 30  # seconds (optimized for rate limits)
+        self.max_stale_seconds = 120  # mark as stale after this
         
         # Price cache
         self.prices: Dict[Asset, PriceData] = {}
@@ -60,6 +61,10 @@ class LiveMarketDataEngine:
         self.consecutive_failures = 0
         self.total_updates = 0
         self.total_failures = 0
+        
+        # Rate limit tracking
+        self.rate_limit_hits = 0
+        self.api_credits_used = 0
         
         # Watchdog
         self.watchdog_last_heartbeat: Optional[datetime] = None
@@ -142,6 +147,8 @@ class LiveMarketDataEngine:
             logger.error("❌ No market data provider available")
             return
         
+        self.api_credits_used += len(self.tracked_assets)  # Track API credits used
+        
         for asset in self.tracked_assets:
             try:
                 quote = await provider.get_live_quote(asset)
@@ -158,12 +165,19 @@ class LiveMarketDataEngine:
                     self.last_successful_update[asset] = datetime.utcnow()
                     self.total_updates += 1
                     
-                    logger.debug(f"📈 {asset.value}: {quote.bid}/{quote.ask} (spread: {quote.spread_pips:.1f} pips)")
+                    # Log successful price update
+                    logger.info(f"✅ {asset.value}: {quote.bid:.5f}/{quote.ask:.5f} (spread: {quote.spread_pips:.1f} pips) - Last update: {datetime.utcnow().strftime('%H:%M:%S')}")
                 else:
+                    # Check if rate limited
+                    if hasattr(provider, 'is_rate_limited') and provider.is_rate_limited:
+                        self.rate_limit_hits += 1
+                        logger.warning(f"⚠️  {asset.value}: Rate limited (hit #{self.rate_limit_hits})")
+                    else:
+                        logger.warning(f"⚠️  {asset.value}: No quote received from provider")
+                    
                     # Mark existing price as stale if we fail to update
                     if asset in self.prices:
                         self.prices[asset].is_stale = True
-                    logger.warning(f"⚠️  {asset.value}: No quote received from provider")
                     
             except Exception as e:
                 logger.error(f"❌ Failed to update {asset.value}: {e}")
@@ -194,20 +208,26 @@ class LiveMarketDataEngine:
         return result
     
     def get_health_status(self) -> dict:
-        """Get engine health status"""
+        """Get engine health status with rate limit and credit tracking"""
         return {
             "is_running": self.is_running,
             "refresh_interval_seconds": self.refresh_interval,
             "total_updates": self.total_updates,
             "total_failures": self.total_failures,
             "consecutive_failures": self.consecutive_failures,
+            "rate_limit_hits": self.rate_limit_hits,
+            "api_credits_used": self.api_credits_used,
             "last_update_attempt": self.last_update_attempt.isoformat() if self.last_update_attempt else None,
             "watchdog_last_heartbeat": self.watchdog_last_heartbeat.isoformat() if self.watchdog_last_heartbeat else None,
             "prices": {
                 asset.value: {
                     "last_successful_update": self.last_successful_update.get(asset).isoformat() if self.last_successful_update.get(asset) else None,
                     "has_data": asset in self.prices,
-                    "is_stale": self.prices[asset].is_stale if asset in self.prices else True
+                    "is_stale": self.prices[asset].is_stale if asset in self.prices else True,
+                    "current_price": {
+                        "bid": self.prices[asset].bid,
+                        "ask": self.prices[asset].ask
+                    } if asset in self.prices else None
                 }
                 for asset in self.tracked_assets
             }
