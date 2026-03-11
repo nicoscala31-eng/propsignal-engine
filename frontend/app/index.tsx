@@ -9,7 +9,8 @@ import {
   RefreshControl,
   Alert,
   AppState,
-  AppStateStatus
+  AppStateStatus,
+  Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -25,6 +26,16 @@ const MOCK_PROFILE_ID = '1773156903.940538';
 
 // Auto-refresh interval (30 seconds)
 const SIGNAL_POLL_INTERVAL = 30000;
+
+interface MarketAnalysis {
+  asset: string;
+  reason: string;
+  market_regime: string;
+  session: string;
+  waiting_for: string[];
+  current_conditions: string[];
+  recommendation: string;
+}
 
 interface Signal {
   id: string;
@@ -80,6 +91,9 @@ export default function HomeScreen() {
   const [autoScanEnabled, setAutoScanEnabled] = useState(false); // Disabled - backend scanner handles this
   const [backendScannerRunning, setBackendScannerRunning] = useState(false);
   const [pushToken, setPushToken] = useState<string | null>(null);
+  const [analysisModalVisible, setAnalysisModalVisible] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState<MarketAnalysis | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   
   // Track previous signal types to detect new BUY/SELL
   const prevEurusdType = useRef<string | null>(null);
@@ -300,6 +314,69 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchMarketAnalysis = async (asset: 'EURUSD' | 'XAUUSD') => {
+    setLoadingAnalysis(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/market-analysis/${asset}`);
+      if (response.ok) {
+        const analysis = await response.json();
+        setCurrentAnalysis(analysis);
+        setAnalysisModalVisible(true);
+      } else {
+        // Fallback analysis if endpoint doesn't exist
+        setCurrentAnalysis({
+          asset: asset,
+          reason: "Il mercato è attualmente in condizioni non favorevoli per operare.",
+          market_regime: "CHAOTIC",
+          session: getCurrentSession(),
+          waiting_for: [
+            "Trend più chiaro e definito",
+            "Volatilità ridotta",
+            "Supporti/Resistenze più evidenti",
+            "Conferme da indicatori tecnici"
+          ],
+          current_conditions: [
+            "Alta volatilità",
+            "Movimento laterale senza direzione",
+            "Mancanza di setup tecnici validi"
+          ],
+          recommendation: "Attendere condizioni di mercato più favorevoli prima di aprire posizioni. La pazienza è fondamentale nel trading."
+        });
+        setAnalysisModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Error fetching analysis:', error);
+      // Fallback
+      setCurrentAnalysis({
+        asset: asset,
+        reason: "Il mercato è attualmente in condizioni non favorevoli per operare.",
+        market_regime: "CHAOTIC",
+        session: getCurrentSession(),
+        waiting_for: [
+          "Trend più chiaro",
+          "Volatilità più bassa",
+          "Pattern tecnici riconoscibili"
+        ],
+        current_conditions: [
+          "Condizioni di mercato instabili",
+          "Nessun setup valido identificato"
+        ],
+        recommendation: "Attendere migliori condizioni di mercato."
+      });
+      setAnalysisModalVisible(true);
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
+
+  const getCurrentSession = (): string => {
+    const hour = new Date().getUTCHours();
+    if (hour >= 7 && hour < 16) return "London";
+    if (hour >= 13 && hour < 22) return "New York";
+    if (hour >= 0 && hour < 9) return "Tokyo";
+    return "Off-Hours";
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([fetchLatestSignals(), fetchProviderStatus()]);
@@ -423,13 +500,19 @@ export default function HomeScreen() {
 
         {!signal ? (
           <View style={styles.noSignalContainer}>
-            <Text style={styles.noSignalText}>No signal available</Text>
             <TouchableOpacity
-              style={styles.generateButton}
-              onPress={() => generateSignal(asset)}
-              disabled={loading}
+              style={styles.nextButton}
+              onPress={() => fetchMarketAnalysis(asset)}
+              disabled={loadingAnalysis}
             >
-              <Text style={styles.generateButtonText}>Generate Signal</Text>
+              {loadingAnalysis ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.nextButtonText}>NEXT</Text>
+                  <Text style={styles.nextSubText}>Tap per analisi</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         ) : signal.signal_type === 'NEXT' ? (
@@ -627,6 +710,82 @@ export default function HomeScreen() {
           <Text style={styles.loadingText}>Analyzing market...</Text>
         </View>
       )}
+
+      {/* Market Analysis Modal */}
+      <Modal
+        visible={analysisModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setAnalysisModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {currentAnalysis?.asset} - Analisi di Mercato
+              </Text>
+              <TouchableOpacity
+                onPress={() => setAnalysisModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {/* Reason */}
+              <View style={styles.analysisSection}>
+                <Text style={styles.analysisSectionTitle}>Perché NEXT?</Text>
+                <Text style={styles.analysisText}>{currentAnalysis?.reason}</Text>
+              </View>
+
+              {/* Market Regime */}
+              <View style={styles.analysisSection}>
+                <Text style={styles.analysisSectionTitle}>Regime di Mercato</Text>
+                <View style={styles.regimeBadge}>
+                  <Text style={styles.regimeBadgeText}>{currentAnalysis?.market_regime}</Text>
+                </View>
+                <Text style={styles.sessionText}>Sessione: {currentAnalysis?.session}</Text>
+              </View>
+
+              {/* Current Conditions */}
+              <View style={styles.analysisSection}>
+                <Text style={styles.analysisSectionTitle}>Condizioni Attuali</Text>
+                {currentAnalysis?.current_conditions.map((condition, index) => (
+                  <View key={index} style={styles.bulletItem}>
+                    <Text style={styles.bulletDot}>•</Text>
+                    <Text style={styles.bulletText}>{condition}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Waiting For */}
+              <View style={styles.analysisSection}>
+                <Text style={styles.analysisSectionTitle}>In Attesa Di...</Text>
+                {currentAnalysis?.waiting_for.map((item, index) => (
+                  <View key={index} style={styles.bulletItem}>
+                    <Text style={styles.bulletDot}>⏳</Text>
+                    <Text style={styles.bulletText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Recommendation */}
+              <View style={[styles.analysisSection, styles.recommendationSection]}>
+                <Text style={styles.analysisSectionTitle}>Raccomandazione</Text>
+                <Text style={styles.recommendationText}>{currentAnalysis?.recommendation}</Text>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.modalCloseButtonBottom}
+              onPress={() => setAnalysisModalVisible(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Chiudi</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -966,5 +1125,134 @@ const styles = StyleSheet.create({
     color: '#00ff88',
     marginTop: 12,
     fontSize: 16,
+  },
+  // NEXT Button Styles
+  nextButton: {
+    backgroundColor: '#333333',
+    paddingVertical: 20,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#ffaa00',
+  },
+  nextButtonText: {
+    color: '#ffaa00',
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  nextSubText: {
+    color: '#888888',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    width: '90%',
+    maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  modalTitle: {
+    color: '#ffaa00',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    padding: 8,
+  },
+  modalCloseText: {
+    color: '#888888',
+    fontSize: 20,
+  },
+  modalBody: {
+    padding: 16,
+  },
+  analysisSection: {
+    marginBottom: 20,
+  },
+  analysisSectionTitle: {
+    color: '#00ff88',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  analysisText: {
+    color: '#ffffff',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  regimeBadge: {
+    backgroundColor: '#ff3366',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  regimeBadgeText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  sessionText: {
+    color: '#888888',
+    fontSize: 13,
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  bulletDot: {
+    color: '#ffaa00',
+    fontSize: 16,
+    marginRight: 8,
+  },
+  bulletText: {
+    color: '#cccccc',
+    fontSize: 14,
+    flex: 1,
+  },
+  recommendationSection: {
+    backgroundColor: '#222222',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#00ff88',
+  },
+  recommendationText: {
+    color: '#ffffff',
+    fontSize: 14,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  modalCloseButtonBottom: {
+    backgroundColor: '#333333',
+    padding: 16,
+    alignItems: 'center',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  modalCloseButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
