@@ -50,7 +50,12 @@ def validate_environment():
     if missing:
         error_msg = "❌ CRITICAL: Missing required environment variables:\n" + "\n".join(missing)
         print(error_msg, file=sys.stderr)
-        raise RuntimeError(error_msg)
+        print("⚠️  Server will start but database features will not work!", file=sys.stderr)
+        # Set defaults to prevent crash
+        if not os.environ.get('MONGO_URL'):
+            os.environ['MONGO_URL'] = 'mongodb://localhost:27017'
+        if not os.environ.get('DB_NAME'):
+            os.environ['DB_NAME'] = 'propsignal'
     
     # Log optional vars status
     for var, description in optional_vars.items():
