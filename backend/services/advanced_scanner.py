@@ -4,6 +4,9 @@ Advanced Market Scanner v2 - Production-grade signal generation with MTF bias
 
 Implements:
 - Multi-Timeframe Bias Engine (H1 -> M15 -> M5)
+- Market Structure Break (MSB) Detection
+- Displacement Validation
+- Pullback Zone Detection
 - Multiple Setup Detection Modules
 - Weighted Scoring System (0-100)
 - Session-Aware Score Adjustments
@@ -11,10 +14,17 @@ Implements:
 - Complete Signal Metadata
 - Detailed Logging
 
+CRITICAL RULE: A signal can ONLY be generated if this sequence occurs:
+1. Market Structure Break (MSB) - Price breaks recent swing high/low
+2. Displacement - Break happens with strong impulsive move
+3. Controlled Pullback - Price retraces to a key technical zone
+4. M5 Trigger - Only after pullback is complete
+
 Design Goals:
 - Signal quality as TOP PRIORITY
 - Default threshold: 78 (only A/A+ signals)
 - Strict MTF alignment required
+- MSB + Displacement + Pullback sequence REQUIRED
 - Execution on M5 timeframe
 - Fast scanning (<5 seconds per cycle)
 """
@@ -35,6 +45,7 @@ from services.scanner_config import (
     ScannerConfig, DEFAULT_SCANNER_CONFIG, SetupType, SignalGrade
 )
 from engines.mtf_bias_engine import mtf_bias_engine, MultiTimeframeBias, TimeframeBias
+from engines.market_structure_engine import market_structure_engine, MSBSequence
 from engines.setup_modules import SETUP_MODULES, SetupCandidate
 from engines.advanced_scoring_engine import advanced_scoring_engine, SignalScore
 from engines.session_detector import session_detector
@@ -300,6 +311,52 @@ class AdvancedMarketScanner:
                 signal_generated=False,
                 rejection_reasons=rejection_reasons
             )
+        
+        # Step 2.5: CRITICAL - Validate MSB -> Displacement -> Pullback sequence
+        # This is the GATEKEEPER - no signal without valid structure sequence
+        msb_sequence = market_structure_engine.analyze_sequence(asset, m5_data)
+        
+        if not msb_sequence.is_complete:
+            rejection_reasons.append(f"MSB sequence incomplete: {msb_sequence.rejection_reason}")
+            logger.info(f"⏭️  {asset.value}: {rejection_reasons[-1]}")
+            return ScanCycleResult(
+                asset=asset,
+                scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                mtf_bias=mtf_bias,
+                candidates_found=0,
+                candidates_rejected=0,
+                signal_generated=False,
+                rejection_reasons=rejection_reasons
+            )
+        
+        if not msb_sequence.is_ready_for_trigger:
+            rejection_reasons.append(f"MSB sequence not ready for trigger - waiting for pullback completion")
+            logger.info(f"⏭️  {asset.value}: {rejection_reasons[-1]}")
+            return ScanCycleResult(
+                asset=asset,
+                scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                mtf_bias=mtf_bias,
+                candidates_found=0,
+                candidates_rejected=0,
+                signal_generated=False,
+                rejection_reasons=rejection_reasons
+            )
+        
+        # Verify MSB direction matches MTF bias direction
+        if msb_sequence.direction != mtf_bias.trade_direction:
+            rejection_reasons.append(f"MSB direction ({msb_sequence.direction}) mismatches MTF bias ({mtf_bias.trade_direction})")
+            logger.info(f"⏭️  {asset.value}: {rejection_reasons[-1]}")
+            return ScanCycleResult(
+                asset=asset,
+                scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                mtf_bias=mtf_bias,
+                candidates_found=0,
+                candidates_rejected=0,
+                signal_generated=False,
+                rejection_reasons=rejection_reasons
+            )
+        
+        logger.info(f"✅ {asset.value}: MSB sequence VALID - {msb_sequence.get_summary()}")
         
         # Step 3: Run setup detection modules
         candidates: List[SetupCandidate] = []

@@ -1087,6 +1087,76 @@ async def get_current_mtf_bias(asset: str):
         }
     }
 
+
+@api_router.get("/scanner/v2/structure/{asset}")
+async def get_msb_sequence(asset: str):
+    """
+    Get current Market Structure Break (MSB) sequence analysis for an asset
+    
+    Returns the MSB -> Displacement -> Pullback sequence analysis with:
+    - Structure break type and location
+    - Displacement strength and type
+    - Pullback zone and validation
+    - Whether sequence is ready for M5 trigger
+    
+    CRITICAL: Signal can only be generated if sequence is complete and ready
+    """
+    from engines.market_structure_engine import market_structure_engine
+    
+    try:
+        asset_enum = Asset(asset)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid asset. Use EURUSD or XAUUSD")
+    
+    if asset_enum not in market_structure_engine.last_analysis:
+        return {
+            "asset": asset,
+            "sequence": None,
+            "message": "No MSB sequence analysis available yet. Wait for next scan cycle."
+        }
+    
+    seq = market_structure_engine.last_analysis[asset_enum]
+    
+    response = {
+        "asset": asset,
+        "is_complete": seq.is_complete,
+        "is_ready_for_trigger": seq.is_ready_for_trigger,
+        "direction": seq.direction,
+        "sequence_score": seq.sequence_score,
+        "rejection_reason": seq.rejection_reason,
+        "summary": seq.get_summary() if seq.is_complete else None
+    }
+    
+    # Add structure break details if available
+    if seq.structure_break:
+        response["structure_break"] = {
+            "type": seq.structure_break.type.value,
+            "break_price": seq.structure_break.break_price,
+            "displacement_strength": seq.structure_break.displacement_strength,
+            "displacement_type": seq.structure_break.displacement_type.value,
+            "is_valid": seq.structure_break.is_valid
+        }
+    
+    # Add pullback zone details if available
+    if seq.pullback_zone:
+        response["pullback_zone"] = {
+            "zone_type": seq.pullback_zone.zone_type.value,
+            "zone_high": seq.pullback_zone.zone_high,
+            "zone_low": seq.pullback_zone.zone_low,
+            "strength": seq.pullback_zone.strength
+        }
+    
+    # Add pullback validation if available
+    if seq.pullback_validation:
+        response["pullback_validation"] = {
+            "is_valid": seq.pullback_validation.is_valid,
+            "pullback_depth": seq.pullback_validation.pullback_depth,
+            "pullback_type": seq.pullback_validation.pullback_type,
+            "reason": seq.pullback_validation.reason
+        }
+    
+    return response
+
 @api_router.post("/scanner/profile/{profile_name}")
 async def set_scanner_profile(profile_name: str):
     """
