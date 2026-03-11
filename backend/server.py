@@ -23,6 +23,8 @@ from services.push_notification_service import push_service
 from services.signal_outcome_tracker import init_outcome_tracker, outcome_tracker
 from services.macro_news_service import macro_news_service
 from services.market_data_engine import market_data_engine
+from services.market_data_fetch_engine import market_data_fetch_engine
+from services.market_data_cache import market_data_cache
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
@@ -139,7 +141,15 @@ async def startup_event():
         logger.error(f"❌ Provider initialization error: {e}")
     
     try:
-        # Start Live Market Data Engine
+        # Start Market Data Fetch Engine (centralized API calls)
+        logger.info("📡 Starting Market Data Fetch Engine (centralized fetch)...")
+        await market_data_fetch_engine.start()
+        logger.info("✅ Fetch Engine started - prices every 10s, candles every 60s")
+    except Exception as e:
+        logger.error(f"❌ Market Data Fetch Engine error: {e}")
+    
+    try:
+        # Start Live Market Data Engine (backward compatibility)
         logger.info("📈 Starting Live Market Data Engine...")
         await market_data_engine.start()
     except Exception as e:
@@ -186,6 +196,9 @@ async def shutdown_event():
     
     if tracker:
         await tracker.stop()
+    
+    # Stop fetch engine
+    await market_data_fetch_engine.stop()
     
     await push_service.close()
     await provider_manager.shutdown()
@@ -1156,6 +1169,67 @@ async def get_msb_sequence(asset: str):
         }
     
     return response
+
+
+@api_router.get("/data/cache/status")
+async def get_cache_status():
+    """
+    Get Market Data Cache status
+    
+    Returns:
+    - Cache statistics (reads, writes, hits, misses)
+    - Per-symbol freshness status
+    - Staleness warnings
+    """
+    return market_data_cache.get_cache_status()
+
+
+@api_router.get("/data/cache/{asset}")
+async def get_cached_symbol_data(asset: str):
+    """
+    Get cached data for a specific symbol
+    
+    Returns:
+    - Current price data
+    - Candle counts per timeframe
+    - Freshness status
+    """
+    try:
+        asset_enum = Asset(asset)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid asset. Use EURUSD or XAUUSD")
+    
+    summary = market_data_cache.get_symbol_summary(asset_enum)
+    
+    if not summary:
+        return {"asset": asset, "data": None, "message": "No cached data available"}
+    
+    return summary
+
+
+@api_router.get("/data/fetch-engine/status")
+async def get_fetch_engine_status():
+    """
+    Get Market Data Fetch Engine status
+    
+    Returns:
+    - Engine configuration (fetch intervals)
+    - API usage statistics
+    - Timing information
+    - Cache health
+    """
+    return market_data_fetch_engine.get_status()
+
+
+@api_router.get("/data/api-usage")
+async def get_api_usage_estimate():
+    """
+    Get estimated API usage per minute
+    
+    Helps monitor rate limits for Twelve Data free tier (8 credits/min)
+    """
+    return market_data_fetch_engine.get_estimated_api_usage()
+
 
 @api_router.post("/scanner/profile/{profile_name}")
 async def set_scanner_profile(profile_name: str):

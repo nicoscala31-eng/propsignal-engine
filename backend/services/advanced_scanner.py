@@ -2,6 +2,12 @@
 Advanced Market Scanner v2 - Production-grade signal generation with MTF bias
 ============================================================================
 
+ARCHITECTURE: Fetch/Scanner Separation
+- This scanner reads ONLY from the shared cache (market_data_cache)
+- NEVER calls external APIs directly
+- Runs every 5 seconds for fast signal detection
+- Market Data Fetch Engine handles all external API calls (every 10-15s)
+
 Implements:
 - Multi-Timeframe Bias Engine (H1 -> M15 -> M5)
 - Market Structure Break (MSB) Detection
@@ -26,7 +32,8 @@ Design Goals:
 - Strict MTF alignment required
 - MSB + Displacement + Pullback sequence REQUIRED
 - Execution on M5 timeframe
-- Fast scanning (<5 seconds per cycle)
+- Fast scanning (every 5 seconds, <1 second per cycle)
+- Zero external API calls during scan
 """
 
 import asyncio
@@ -44,13 +51,13 @@ from models import (
 from services.scanner_config import (
     ScannerConfig, DEFAULT_SCANNER_CONFIG, SetupType, SignalGrade
 )
+from services.market_data_cache import market_data_cache
 from engines.mtf_bias_engine import mtf_bias_engine, MultiTimeframeBias, TimeframeBias
 from engines.market_structure_engine import market_structure_engine, MSBSequence
 from engines.setup_modules import SETUP_MODULES, SetupCandidate
 from engines.advanced_scoring_engine import advanced_scoring_engine, SignalScore
 from engines.session_detector import session_detector
 from services.push_notification_service import push_service
-from providers.provider_manager import provider_manager
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +109,7 @@ class AdvancedMarketScanner:
         self.db = db
         self.config = config or DEFAULT_SCANNER_CONFIG
         self.is_running = False
-        self.scan_interval = 30  # seconds
+        self.scan_interval = 5  # seconds - FAST scanning (reads from cache only)
         self.scanner_task: Optional[asyncio.Task] = None
         
         # Recent signals for duplicate prevention
@@ -129,6 +136,13 @@ class AdvancedMarketScanner:
         self.start_time: Optional[datetime] = None
         self.last_scan_time: Optional[datetime] = None
         
+        # NEW: Detailed cycle statistics
+        self.total_scan_duration_ms = 0
+        self.avg_scan_duration_ms = 0
+        self.stale_data_skips = 0
+        self.duplicate_rejections = 0
+        self.cache_reads = 0
+        
         # Error tracking
         self.consecutive_errors = 0
         self.max_consecutive_errors = 5
@@ -136,7 +150,8 @@ class AdvancedMarketScanner:
         # Load state
         self._load_state()
         
-        logger.info("🚀 Advanced Scanner v2 initialized")
+        logger.info("🚀 Advanced Scanner v2 initialized (CACHE-BASED)")
+        logger.info(f"   Scan interval: {self.scan_interval}s (reads from cache)")
         logger.info(f"   Score threshold: {self.config.min_score_threshold}")
         logger.info(f"   Require HTF alignment: {self.config.require_htf_alignment}")
         logger.info(f"   Enabled setups: {[s.value for s, enabled in self.config.enabled_setups.items() if enabled]}")
@@ -240,34 +255,43 @@ class AdvancedMarketScanner:
                            f"signal: {result.signal_generated}")
     
     async def _scan_asset(self, asset: Asset) -> ScanCycleResult:
-        """Scan a single asset for signals"""
+        """
+        Scan a single asset for signals using CACHED data only
+        
+        IMPORTANT: This method NEVER calls external APIs.
+        All data is read from the shared market_data_cache.
+        """
         start_time = datetime.utcnow()
         rejection_reasons = []
+        self.cache_reads += 1
         
-        # Get provider
-        provider = provider_manager.get_provider()
-        if not provider or provider_manager.is_simulation_mode():
+        # Step 0: Check if cache has fresh data
+        if market_data_cache.is_stale(asset):
+            self.stale_data_skips += 1
+            rejection_reasons.append("Data is stale - waiting for fresh cache update")
+            logger.debug(f"⏭️  {asset.value}: Stale data, skipping scan")
             return ScanCycleResult(
                 asset=asset,
-                scan_duration_ms=0,
+                scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
                 mtf_bias=None,
                 candidates_found=0,
                 candidates_rejected=0,
                 signal_generated=False,
-                rejection_reasons=["No market data provider"]
+                rejection_reasons=rejection_reasons
             )
         
         # Get current session
         current_session = session_detector.get_current_session()
         session_name = self._get_session_name(current_session)
         
-        # Step 1: Fetch candles for all timeframes
-        try:
-            candles_h1 = await provider.get_candles(asset, Timeframe.H1, count=50)
-            candles_m15 = await provider.get_candles(asset, Timeframe.M15, count=100)
-            candles_m5 = await provider.get_candles(asset, Timeframe.M5, count=200)
-        except Exception as e:
-            logger.error(f"Failed to fetch candles for {asset.value}: {e}")
+        # Step 1: Read candles from cache (ZERO API calls)
+        h1_data = market_data_cache.get_candles(asset, Timeframe.H1)
+        m15_data = market_data_cache.get_candles(asset, Timeframe.M15)
+        m5_data = market_data_cache.get_candles(asset, Timeframe.M5)
+        
+        # Validate candle data availability
+        if not h1_data or not m15_data or not m5_data:
+            rejection_reasons.append("Insufficient cached candle data")
             return ScanCycleResult(
                 asset=asset,
                 scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
@@ -275,11 +299,11 @@ class AdvancedMarketScanner:
                 candidates_found=0,
                 candidates_rejected=0,
                 signal_generated=False,
-                rejection_reasons=[f"Candle fetch error: {e}"]
+                rejection_reasons=rejection_reasons
             )
         
-        # Validate candle data
-        if len(candles_h1) < 20 or len(candles_m15) < 50 or len(candles_m5) < 100:
+        if len(h1_data) < 20 or len(m15_data) < 50 or len(m5_data) < 100:
+            rejection_reasons.append(f"Insufficient candles: H1={len(h1_data)}, M15={len(m15_data)}, M5={len(m5_data)}")
             return ScanCycleResult(
                 asset=asset,
                 scan_duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
@@ -287,13 +311,8 @@ class AdvancedMarketScanner:
                 candidates_found=0,
                 candidates_rejected=0,
                 signal_generated=False,
-                rejection_reasons=["Insufficient candle data"]
+                rejection_reasons=rejection_reasons
             )
-        
-        # Convert candles to dict format for engines
-        h1_data = [{"open": c.open, "high": c.high, "low": c.low, "close": c.close} for c in candles_h1]
-        m15_data = [{"open": c.open, "high": c.high, "low": c.low, "close": c.close} for c in candles_m15]
-        m5_data = [{"open": c.open, "high": c.high, "low": c.low, "close": c.close} for c in candles_m5]
         
         # Step 2: Analyze MTF bias
         mtf_bias = mtf_bias_engine.analyze_bias(asset, h1_data, m15_data, m5_data)
@@ -330,7 +349,7 @@ class AdvancedMarketScanner:
             )
         
         if not msb_sequence.is_ready_for_trigger:
-            rejection_reasons.append(f"MSB sequence not ready for trigger - waiting for pullback completion")
+            rejection_reasons.append("MSB sequence not ready for trigger - waiting for pullback completion")
             logger.info(f"⏭️  {asset.value}: {rejection_reasons[-1]}")
             return ScanCycleResult(
                 asset=asset,
@@ -583,9 +602,11 @@ class AdvancedMarketScanner:
                             session: Session) -> Optional[Signal]:
         """Create and store signal with complete metadata"""
         try:
-            # Get live quote for entry refinement
-            provider = provider_manager.get_provider()
-            live_quote = await provider.get_live_quote(asset) if provider else None
+            # Get live quote from cache (no API call)
+            cached_price = market_data_cache.get_price(asset)
+            live_bid = cached_price.bid if cached_price else None
+            live_ask = cached_price.ask if cached_price else None
+            live_spread = cached_price.spread_pips if cached_price else None
             
             # Calculate R:R
             if candidate.direction == "LONG":
@@ -620,11 +641,11 @@ class AdvancedMarketScanner:
                 session=session,
                 market_regime=self._bias_to_regime(mtf_bias.overall_bias),
                 
-                # Live data
-                live_bid=live_quote.bid if live_quote else None,
-                live_ask=live_quote.ask if live_quote else None,
-                live_spread_pips=live_quote.spread_pips if live_quote else None,
-                data_provider="Twelve Data",
+                # Live data from cache
+                live_bid=live_bid,
+                live_ask=live_ask,
+                live_spread_pips=live_spread,
+                data_provider="Twelve Data (cached)",
                 
                 # Trade params
                 entry_price=candidate.entry_price,

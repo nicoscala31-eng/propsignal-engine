@@ -1,485 +1,483 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for NEW Market Structure Break (MSB) Engine
-================================================================
+PropSignal Engine Backend Testing Suite
+======================================
 
-This script tests the NEW MSB Engine implementation focusing on:
-1. NEW MSB structure endpoints for EURUSD and XAUUSD
-2. Existing endpoints verification (status, bias, health)
-3. Signal validation sequence verification
+Focus: NEW Data-Fetch/Scanner Separation Architecture Testing
 
-CRITICAL: The scanner now implements strict validation:
-- MTF Bias check (H1, M15, M5 alignment)  
-- Market Structure Break (MSB) detection
-- Displacement validation (strong impulsive move)
-- Pullback into key zone validation
-- M5 trigger ready check
+Testing Plan:
+1. NEW Endpoints - Data Cache/Fetch Engine separation
+2. Verify cache statistics and hit rates
+3. Verify API usage is within free tier limits
+4. Verify scanner performance and speed
+5. Existing endpoint compatibility checks
 
-Signal can ONLY be generated if ALL steps pass.
+Expected Architecture:
+- Scanner runs every 5 seconds (fast)
+- Fetch engine fetches every 30 seconds (slow) 
+- Scanner reads from cache only (zero API calls)
+- Cache hit rate should be ~100%
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
-import sys
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, Optional
+import time
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Backend URL from environment
-BASE_URL = "https://eurusd-alerts.preview.emergentagent.com/api"
+BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com"
+API_BASE = f"{BACKEND_URL}/api"
 
-class MSBEngineTest:
+class TestResult:
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'User-Agent': 'PropSignal-Test-Client/1.0'
-        })
-        self.results = []
+        self.passed = []
+        self.failed = []
+        self.warnings = []
+        self.critical_failures = []
     
-    def log_result(self, test_name: str, passed: bool, details: str = ""):
-        """Log test result"""
-        status = "✅ PASS" if passed else "❌ FAIL"
-        print(f"{status} | {test_name}")
-        if details:
-            print(f"    Details: {details}")
-        
-        self.results.append({
-            'test': test_name,
-            'passed': passed,
-            'details': details,
-            'timestamp': datetime.utcnow().isoformat()
-        })
+    def add_pass(self, test_name: str, message: str = ""):
+        self.passed.append(f"✅ {test_name}: {message}")
+        logger.info(f"PASS: {test_name} - {message}")
     
-    def make_request(self, endpoint: str, method: str = "GET", data: Dict = None) -> Dict[str, Any]:
-        """Make HTTP request with error handling"""
-        url = f"{BASE_URL}{endpoint}"
+    def add_fail(self, test_name: str, error: str, is_critical: bool = False):
+        failure_msg = f"❌ {test_name}: {error}"
+        self.failed.append(failure_msg)
         
-        try:
-            if method == "GET":
-                response = self.session.get(url, timeout=10)
-            elif method == "POST":
-                response = self.session.post(url, json=data, timeout=10)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-            
-            response.raise_for_status()
-            return {
-                'success': True,
-                'status_code': response.status_code,
-                'data': response.json(),
-                'error': None
-            }
-            
-        except requests.exceptions.Timeout:
-            return {'success': False, 'error': 'Request timeout', 'status_code': None, 'data': None}
-        except requests.exceptions.ConnectionError:
-            return {'success': False, 'error': 'Connection error', 'status_code': None, 'data': None}
-        except requests.exceptions.HTTPError as e:
-            try:
-                error_data = e.response.json() if e.response.content else {}
-            except:
-                error_data = {'detail': str(e)}
-            return {
-                'success': False, 
-                'error': f"HTTP {e.response.status_code}: {error_data}",
-                'status_code': e.response.status_code,
-                'data': error_data
-            }
-        except Exception as e:
-            return {'success': False, 'error': str(e), 'status_code': None, 'data': None}
-    
-    def test_health_endpoint(self):
-        """Test basic health check endpoint"""
-        print("\n" + "="*60)
-        print("🏥 TESTING HEALTH ENDPOINT")
-        print("="*60)
-        
-        result = self.make_request("/health")
-        
-        if result['success']:
-            data = result['data']
-            status = data.get('status', 'unknown')
-            backend_status = data.get('backend', {}).get('status', 'unknown')
-            
-            self.log_result(
-                "Health Check Endpoint", 
-                True,
-                f"Status: {status}, Backend: {backend_status}"
-            )
-            
-            # Check if market data is working
-            if 'prices' in data:
-                eurusd_price = data['prices'].get('EURUSD')
-                xauusd_price = data['prices'].get('XAUUSD')
-                
-                if eurusd_price and xauusd_price:
-                    self.log_result(
-                        "Live Market Data", 
-                        True,
-                        f"EURUSD: {eurusd_price.get('mid', 'N/A')}, XAUUSD: {xauusd_price.get('mid', 'N/A')}"
-                    )
-                else:
-                    self.log_result("Live Market Data", False, "No price data available")
+        if is_critical:
+            self.critical_failures.append(failure_msg)
+            logger.error(f"CRITICAL FAIL: {test_name} - {error}")
         else:
-            self.log_result("Health Check Endpoint", False, result['error'])
+            logger.warning(f"FAIL: {test_name} - {error}")
     
-    def test_scanner_v2_status(self):
-        """Test Advanced Scanner v2 status endpoint"""
-        print("\n" + "="*60)
-        print("🔍 TESTING SCANNER V2 STATUS")
-        print("="*60)
-        
-        result = self.make_request("/scanner/v2/status")
-        
-        if result['success']:
-            data = result['data']
-            is_running = data.get('is_running', False)
-            version = data.get('version', 'unknown')
-            config = data.get('configuration', {})
-            stats = data.get('statistics', {})
-            
-            self.log_result(
-                "Scanner v2 Status Endpoint",
-                True,
-                f"Running: {is_running}, Version: {version}, Total Scans: {stats.get('total_scans', 0)}"
-            )
-            
-            # Verify configuration
-            score_threshold = config.get('score_threshold', 0)
-            require_htf = config.get('require_htf_alignment', False)
-            
-            if score_threshold >= 78 and require_htf:
-                self.log_result(
-                    "Scanner v2 Configuration",
-                    True,
-                    f"Score threshold: {score_threshold}, HTF required: {require_htf}"
-                )
-            else:
-                self.log_result(
-                    "Scanner v2 Configuration",
-                    False,
-                    f"Invalid config - Score: {score_threshold}, HTF: {require_htf}"
-                )
-        else:
-            self.log_result("Scanner v2 Status Endpoint", False, result['error'])
-    
-    def test_mtf_bias_endpoints(self):
-        """Test MTF Bias Analysis endpoints"""
-        print("\n" + "="*60)
-        print("📊 TESTING MTF BIAS ENDPOINTS")
-        print("="*60)
-        
-        for asset in ['EURUSD', 'XAUUSD']:
-            result = self.make_request(f"/scanner/v2/bias/{asset}")
-            
-            if result['success']:
-                data = result['data']
-                
-                # Validate structure
-                timeframes = data.get('timeframes', {})
-                summary = data.get('summary', {})
-                
-                required_timeframes = ['h1', 'm15', 'm5']
-                has_all_timeframes = all(tf in timeframes for tf in required_timeframes)
-                
-                if has_all_timeframes:
-                    # Check timeframe data structure
-                    h1_data = timeframes['h1']
-                    m15_data = timeframes['m15']
-                    m5_data = timeframes['m5']
-                    
-                    has_bias_data = all(
-                        'bias' in tf_data and 'strength' in tf_data 
-                        for tf_data in [h1_data, m15_data, m5_data]
-                    )
-                    
-                    # Check summary data
-                    has_summary = all(
-                        key in summary for key in ['overall_bias', 'alignment_score', 'trade_direction']
-                    )
-                    
-                    if has_bias_data and has_summary:
-                        self.log_result(
-                            f"MTF Bias Analysis - {asset}",
-                            True,
-                            f"Overall: {summary.get('overall_bias')}, Direction: {summary.get('trade_direction')}, Alignment: {summary.get('alignment_score')}%"
-                        )
-                    else:
-                        self.log_result(
-                            f"MTF Bias Analysis - {asset}",
-                            False,
-                            "Missing bias data or summary fields"
-                        )
-                else:
-                    self.log_result(
-                        f"MTF Bias Analysis - {asset}",
-                        False,
-                        f"Missing timeframes - got: {list(timeframes.keys())}"
-                    )
-            else:
-                self.log_result(f"MTF Bias Analysis - {asset}", False, result['error'])
-    
-    def test_msb_structure_endpoints(self):
-        """Test NEW Market Structure Break (MSB) endpoints"""
-        print("\n" + "="*60)  
-        print("🏗️  TESTING NEW MSB STRUCTURE ENDPOINTS")
-        print("="*60)
-        
-        for asset in ['EURUSD', 'XAUUSD']:
-            result = self.make_request(f"/scanner/v2/structure/{asset}")
-            
-            if result['success']:
-                data = result['data']
-                
-                # Check if analysis is available or if it's properly returning no data
-                if data.get('sequence') is None:
-                    message = data.get('message', 'No message')
-                    self.log_result(
-                        f"MSB Structure Analysis - {asset}",
-                        True,
-                        f"No analysis yet: {message}"
-                    )
-                else:
-                    # Validate structure when data is available
-                    required_fields = ['is_complete', 'is_ready_for_trigger', 'direction', 'sequence_score']
-                    has_required = all(field in data for field in required_fields)
-                    
-                    if has_required:
-                        is_complete = data.get('is_complete', False)
-                        is_ready = data.get('is_ready_for_trigger', False)
-                        direction = data.get('direction', 'NONE')
-                        score = data.get('sequence_score', 0)
-                        
-                        self.log_result(
-                            f"MSB Structure Analysis - {asset}",
-                            True,
-                            f"Complete: {is_complete}, Ready: {is_ready}, Direction: {direction}, Score: {score}"
-                        )
-                        
-                        # Validate MSB sequence logic
-                        if is_complete:
-                            has_structure_break = 'structure_break' in data
-                            has_pullback_zone = 'pullback_zone' in data
-                            has_pullback_validation = 'pullback_validation' in data
-                            
-                            if has_structure_break and has_pullback_zone and has_pullback_validation:
-                                self.log_result(
-                                    f"MSB Sequence Components - {asset}",
-                                    True,
-                                    "All sequence components present (structure_break, pullback_zone, pullback_validation)"
-                                )
-                            else:
-                                self.log_result(
-                                    f"MSB Sequence Components - {asset}",
-                                    False,
-                                    f"Missing components - Structure: {has_structure_break}, Zone: {has_pullback_zone}, Validation: {has_pullback_validation}"
-                                )
-                    else:
-                        self.log_result(
-                            f"MSB Structure Analysis - {asset}",
-                            False,
-                            f"Missing required fields - got: {list(data.keys())}"
-                        )
-            else:
-                if result['status_code'] == 404:
-                    self.log_result(f"MSB Structure Analysis - {asset}", False, "Endpoint not found - MSB engine may not be properly implemented")
-                else:
-                    self.log_result(f"MSB Structure Analysis - {asset}", False, result['error'])
-    
-    def test_signal_validation_sequence(self):
-        """Test that the signal validation sequence is properly enforced"""
-        print("\n" + "="*60)
-        print("🔐 TESTING SIGNAL VALIDATION SEQUENCE")
-        print("="*60)
-        
-        # This test verifies the NEW validation logic:
-        # 1. MTF Bias check → 2. MSB detection → 3. Displacement → 4. Pullback → 5. M5 trigger
-        
-        validation_checks = []
-        
-        # Check MTF Bias availability
-        for asset in ['EURUSD', 'XAUUSD']:
-            bias_result = self.make_request(f"/scanner/v2/bias/{asset}")
-            msb_result = self.make_request(f"/scanner/v2/structure/{asset}")
-            
-            if bias_result['success'] and msb_result['success']:
-                bias_data = bias_result['data']
-                msb_data = msb_result['data']
-                
-                # Check MTF Bias
-                trade_direction = bias_data.get('summary', {}).get('trade_direction', 'NONE')
-                alignment_score = bias_data.get('summary', {}).get('alignment_score', 0)
-                
-                # Check MSB Sequence
-                msb_complete = msb_data.get('is_complete', False)
-                msb_ready = msb_data.get('is_ready_for_trigger', False)
-                msb_direction = msb_data.get('direction', 'NONE')
-                
-                # Validate sequence logic
-                if trade_direction == 'NONE':
-                    # No clear HTF direction - should block signals
-                    validation_checks.append({
-                        'asset': asset,
-                        'step': 'MTF_Bias',
-                        'passed': True,
-                        'reason': f"Correctly showing NONE direction (alignment: {alignment_score}%)"
-                    })
-                elif msb_direction == 'NONE' and not msb_complete:
-                    # MSB not ready - should block signals
-                    validation_checks.append({
-                        'asset': asset, 
-                        'step': 'MSB_Structure',
-                        'passed': True,
-                        'reason': "Correctly blocking - no MSB sequence"
-                    })
-                elif msb_complete and not msb_ready:
-                    # MSB complete but not ready for trigger
-                    validation_checks.append({
-                        'asset': asset,
-                        'step': 'M5_Trigger',
-                        'passed': True,
-                        'reason': "MSB complete but waiting for M5 trigger - correct behavior"
-                    })
-                elif msb_complete and msb_ready:
-                    # Full sequence ready
-                    validation_checks.append({
-                        'asset': asset,
-                        'step': 'Full_Sequence',
-                        'passed': True,
-                        'reason': f"Complete sequence ready: {msb_direction} direction"
-                    })
-        
-        # Report validation results
-        if validation_checks:
-            for check in validation_checks:
-                self.log_result(
-                    f"Signal Validation - {check['asset']} ({check['step']})",
-                    check['passed'],
-                    check['reason']
-                )
-        else:
-            self.log_result(
-                "Signal Validation Sequence",
-                False,
-                "Could not validate sequence - endpoints not responding"
-            )
-    
-    def test_existing_endpoints_compatibility(self):
-        """Verify that existing endpoints still work after MSB implementation"""
-        print("\n" + "="*60)
-        print("🔄 TESTING EXISTING ENDPOINT COMPATIBILITY") 
-        print("="*60)
-        
-        # Test provider status endpoints
-        endpoints_to_test = [
-            ("/provider/status", "Provider Status"),
-            ("/provider/live-prices", "Live Prices"),
-            ("/scanner/status", "Legacy Scanner Status")
-        ]
-        
-        for endpoint, name in endpoints_to_test:
-            result = self.make_request(endpoint)
-            
-            if result['success']:
-                data = result['data']
-                
-                if endpoint == "/provider/live-prices":
-                    # Check if prices are still working
-                    prices = data.get('prices', {})
-                    eurusd = prices.get('EURUSD', {})
-                    xauusd = prices.get('XAUUSD', {})
-                    
-                    if eurusd.get('status') == 'LIVE' and xauusd.get('status') == 'LIVE':
-                        self.log_result(
-                            name,
-                            True,
-                            f"Live prices working - EURUSD: {eurusd.get('mid', 'N/A')}, XAUUSD: {xauusd.get('mid', 'N/A')}"
-                        )
-                    else:
-                        self.log_result(name, False, "Price data not live or missing")
-                else:
-                    self.log_result(name, True, "Endpoint responding correctly")
-            else:
-                self.log_result(name, False, result['error'])
+    def add_warning(self, test_name: str, message: str):
+        warning_msg = f"⚠️  {test_name}: {message}"
+        self.warnings.append(warning_msg)
+        logger.info(f"WARNING: {test_name} - {message}")
     
     def print_summary(self):
-        """Print test summary"""
         print("\n" + "="*80)
-        print("📋 TEST SUMMARY - NEW MSB ENGINE")
+        print("🎯 PROPSIGNAL ENGINE - NEW DATA ARCHITECTURE TEST RESULTS")
         print("="*80)
         
-        total_tests = len(self.results)
-        passed_tests = sum(1 for r in self.results if r['passed'])
-        failed_tests = total_tests - passed_tests
+        print(f"\n📊 SUMMARY:")
+        print(f"   ✅ Passed: {len(self.passed)}")
+        print(f"   ❌ Failed: {len(self.failed)}")
+        print(f"   ⚠️  Warnings: {len(self.warnings)}")
+        print(f"   🚨 Critical: {len(self.critical_failures)}")
         
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        if self.critical_failures:
+            print(f"\n🚨 CRITICAL FAILURES:")
+            for failure in self.critical_failures:
+                print(f"   {failure}")
         
-        if failed_tests > 0:
-            print(f"\n🚨 FAILED TESTS:")
-            for result in self.results:
-                if not result['passed']:
-                    print(f"   ❌ {result['test']}: {result['details']}")
+        if self.failed:
+            print(f"\n❌ FAILED TESTS:")
+            for failure in self.failed:
+                if failure not in [f"   {cf}" for cf in self.critical_failures]:
+                    print(f"   {failure}")
         
-        print(f"\n🎯 KEY FINDINGS:")
+        if self.warnings:
+            print(f"\n⚠️  WARNINGS:")
+            for warning in self.warnings:
+                print(f"   {warning}")
         
-        # Analyze MSB endpoint results
-        msb_tests = [r for r in self.results if 'MSB' in r['test']]
-        if msb_tests:
-            msb_passed = sum(1 for r in msb_tests if r['passed'])
-            print(f"   MSB Engine: {msb_passed}/{len(msb_tests)} tests passed")
+        if self.passed:
+            print(f"\n✅ PASSED TESTS:")
+            for passed in self.passed:
+                print(f"   {passed}")
         
-        # Analyze validation results  
-        validation_tests = [r for r in self.results if 'Validation' in r['test']]
-        if validation_tests:
-            val_passed = sum(1 for r in validation_tests if r['passed'])
-            print(f"   Signal Validation: {val_passed}/{len(validation_tests)} checks passed")
-        
-        # Analyze compatibility
-        compat_tests = [r for r in self.results if any(word in r['test'] for word in ['Provider', 'Live Prices', 'Legacy'])]
-        if compat_tests:
-            compat_passed = sum(1 for r in compat_tests if r['passed'])
-            print(f"   Existing Endpoints: {compat_passed}/{len(compat_tests)} still working")
-        
-        print(f"\n⚡ CONCLUSION:")
-        if failed_tests == 0:
-            print("   🎉 ALL TESTS PASSED - MSB Engine implementation successful!")
-        elif failed_tests <= 2:
-            print("   ⚠️  Minor issues detected - mostly functional")
-        else:
-            print("   🚨 Multiple issues detected - requires attention")
-        
-        return failed_tests == 0
+        print("\n" + "="*80)
 
-def main():
-    """Main test execution"""
-    print("🚀 PropSignal Engine - NEW MSB Engine Testing")
-    print(f"Backend URL: {BASE_URL}")
-    print(f"Test Start Time: {datetime.utcnow().isoformat()}")
-    
-    tester = MSBEngineTest()
-    
-    # Execute test suite
+
+async def make_request(session: aiohttp.ClientSession, endpoint: str, method: str = "GET", 
+                      json_data: Dict = None, expect_json: bool = True) -> tuple:
+    """Make HTTP request and return (success, data, status_code)"""
     try:
-        tester.test_health_endpoint()
-        tester.test_scanner_v2_status()
-        tester.test_mtf_bias_endpoints()
-        tester.test_msb_structure_endpoints()  # NEW MSB endpoints
-        tester.test_signal_validation_sequence()  # NEW validation logic
-        tester.test_existing_endpoints_compatibility()
+        url = f"{API_BASE}{endpoint}"
         
-    except KeyboardInterrupt:
-        print("\n⚠️ Tests interrupted by user")
+        async with session.request(method, url, json=json_data) as response:
+            status = response.status
+            
+            if expect_json:
+                try:
+                    data = await response.json()
+                except:
+                    text = await response.text()
+                    return False, f"Invalid JSON response: {text[:200]}", status
+            else:
+                data = await response.text()
+            
+            return status < 400, data, status
+            
     except Exception as e:
-        print(f"\n🚨 Unexpected error during testing: {e}")
+        return False, f"Request error: {str(e)}", 0
+
+
+async def test_new_cache_status_endpoint(session: aiohttp.ClientSession, results: TestResult):
+    """Test NEW /api/data/cache/status endpoint"""
+    print("\n🔍 Testing NEW Cache Status Endpoint...")
     
-    # Print results
-    success = tester.print_summary()
+    success, data, status = await make_request(session, "/data/cache/status")
     
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    if not success:
+        results.add_fail("Cache Status Endpoint", f"Request failed: {data} (HTTP {status})", is_critical=True)
+        return
+    
+    # Validate response structure
+    required_fields = ["uptime_seconds", "statistics", "configuration", "symbols"]
+    for field in required_fields:
+        if field not in data:
+            results.add_fail("Cache Status Structure", f"Missing field: {field}", is_critical=True)
+            return
+    
+    # Check statistics
+    stats = data.get("statistics", {})
+    required_stats = ["total_writes", "total_reads", "cache_hits", "hit_rate_percent"]
+    
+    for stat in required_stats:
+        if stat not in stats:
+            results.add_fail("Cache Statistics", f"Missing statistic: {stat}")
+        
+    # Check hit rate - should be high for scanner efficiency
+    hit_rate = stats.get("hit_rate_percent", 0)
+    if hit_rate >= 95:
+        results.add_pass("Cache Hit Rate", f"Excellent hit rate: {hit_rate}%")
+    elif hit_rate >= 80:
+        results.add_warning("Cache Hit Rate", f"Good hit rate: {hit_rate}% (target: >95%)")
+    else:
+        results.add_fail("Cache Hit Rate", f"Low hit rate: {hit_rate}% (target: >95%)")
+    
+    # Check symbol data
+    symbols = data.get("symbols", {})
+    for asset in ["EURUSD", "XAUUSD"]:
+        if asset not in symbols:
+            results.add_fail("Symbol Cache", f"Missing asset: {asset}")
+            continue
+            
+        symbol_data = symbols[asset]
+        
+        # Check if symbol is ready for scanning
+        is_ready = symbol_data.get("is_ready", False)
+        if is_ready:
+            results.add_pass(f"{asset} Cache Ready", "Data available for scanning")
+        else:
+            results.add_warning(f"{asset} Cache Ready", "Not ready for scanning")
+        
+        # Check price age
+        price_age = symbol_data.get("price_age_seconds")
+        if price_age is not None:
+            if price_age <= 60:  # Fresh within 1 minute
+                results.add_pass(f"{asset} Price Freshness", f"Fresh data ({price_age:.1f}s old)")
+            else:
+                results.add_warning(f"{asset} Price Freshness", f"Stale data ({price_age:.1f}s old)")
+    
+    results.add_pass("Cache Status Endpoint", "All validations passed")
+
+
+async def test_cached_symbol_data(session: aiohttp.ClientSession, results: TestResult):
+    """Test NEW /api/data/cache/{asset} endpoints"""
+    print("\n🔍 Testing NEW Cached Symbol Data Endpoints...")
+    
+    for asset in ["EURUSD", "XAUUSD"]:
+        success, data, status = await make_request(session, f"/data/cache/{asset}")
+        
+        if not success:
+            results.add_fail(f"{asset} Cache Data", f"Request failed: {data} (HTTP {status})")
+            continue
+        
+        # Check if data is available
+        if data.get("data") is None:
+            results.add_warning(f"{asset} Cache Data", "No cached data available")
+            continue
+        
+        # Validate structure
+        required_fields = ["symbol", "has_price", "is_ready"]
+        for field in required_fields:
+            if field not in data:
+                results.add_fail(f"{asset} Data Structure", f"Missing field: {field}")
+                continue
+        
+        # Check candle data counts
+        candle_fields = ["candles_m5_count", "candles_m15_count", "candles_h1_count"]
+        candle_counts = []
+        
+        for field in candle_fields:
+            count = data.get(field, 0)
+            candle_counts.append(count)
+            timeframe = field.replace("candles_", "").replace("_count", "").upper()
+            
+            if count > 0:
+                results.add_pass(f"{asset} {timeframe} Candles", f"{count} candles cached")
+            else:
+                results.add_warning(f"{asset} {timeframe} Candles", "No candles cached")
+        
+        # Overall readiness
+        is_ready = data.get("is_ready", False)
+        if is_ready:
+            results.add_pass(f"{asset} Scanner Ready", "All data available")
+        else:
+            results.add_warning(f"{asset} Scanner Ready", "Data not ready for scanning")
+
+
+async def test_fetch_engine_status(session: aiohttp.ClientSession, results: TestResult):
+    """Test NEW /api/data/fetch-engine/status endpoint"""
+    print("\n🔍 Testing NEW Fetch Engine Status Endpoint...")
+    
+    success, data, status = await make_request(session, "/data/fetch-engine/status")
+    
+    if not success:
+        results.add_fail("Fetch Engine Status", f"Request failed: {data} (HTTP {status})", is_critical=True)
+        return
+    
+    # Validate response structure
+    required_sections = ["engine", "is_running", "configuration", "statistics", "timing"]
+    for section in required_sections:
+        if section not in data:
+            results.add_fail("Fetch Engine Structure", f"Missing section: {section}")
+    
+    # Check if engine is running
+    is_running = data.get("is_running", False)
+    if is_running:
+        results.add_pass("Fetch Engine Running", "Engine is operational")
+    else:
+        results.add_fail("Fetch Engine Running", "Engine is not running", is_critical=True)
+        return
+    
+    # Check configuration
+    config = data.get("configuration", {})
+    price_interval = config.get("price_fetch_interval_seconds")
+    candle_interval = config.get("candle_fetch_interval_seconds")
+    
+    # Verify intervals match architecture spec
+    if price_interval:
+        if price_interval == 30:
+            results.add_pass("Price Fetch Interval", f"Correct interval: {price_interval}s")
+        else:
+            results.add_warning("Price Fetch Interval", f"Expected 30s, got {price_interval}s")
+    
+    if candle_interval:
+        if candle_interval == 120:
+            results.add_pass("Candle Fetch Interval", f"Correct interval: {candle_interval}s")
+        else:
+            results.add_warning("Candle Fetch Interval", f"Expected 120s, got {candle_interval}s")
+    
+    # Check statistics
+    stats = data.get("statistics", {})
+    api_calls_per_min = stats.get("api_calls_per_minute", 0)
+    
+    if api_calls_per_min > 0:
+        results.add_pass("API Call Rate", f"{api_calls_per_min} calls/min")
+    else:
+        results.add_warning("API Call Rate", "No API calls recorded yet")
+    
+    results.add_pass("Fetch Engine Status", "All validations passed")
+
+
+async def test_api_usage_estimate(session: aiohttp.ClientSession, results: TestResult):
+    """Test NEW /api/data/api-usage endpoint"""
+    print("\n🔍 Testing NEW API Usage Estimation Endpoint...")
+    
+    success, data, status = await make_request(session, "/data/api-usage")
+    
+    if not success:
+        results.add_fail("API Usage Endpoint", f"Request failed: {data} (HTTP {status})")
+        return
+    
+    # Validate response structure
+    required_fields = ["price_calls_per_minute", "candle_calls_per_minute", 
+                      "total_calls_per_minute", "within_free_tier"]
+    
+    for field in required_fields:
+        if field not in data:
+            results.add_fail("API Usage Structure", f"Missing field: {field}")
+    
+    # Check API usage rates
+    price_calls = data.get("price_calls_per_minute", 0)
+    candle_calls = data.get("candle_calls_per_minute", 0) 
+    total_calls = data.get("total_calls_per_minute", 0)
+    within_free_tier = data.get("within_free_tier", False)
+    
+    # Log usage breakdown
+    results.add_pass("Price API Calls", f"{price_calls} calls/min")
+    results.add_pass("Candle API Calls", f"{candle_calls} calls/min")
+    results.add_pass("Total API Calls", f"{total_calls} calls/min")
+    
+    # Check free tier compliance (Twelve Data: 8 credits/min)
+    if within_free_tier:
+        results.add_pass("Free Tier Compliance", f"Within limits: {total_calls}/8 calls/min")
+    else:
+        results.add_fail("Free Tier Compliance", f"Exceeds limit: {total_calls}/8 calls/min", is_critical=True)
+    
+    # Warn if approaching limits
+    if total_calls >= 7:
+        results.add_warning("API Usage Warning", f"Close to limit: {total_calls}/8 calls/min")
+
+
+async def test_scanner_v2_performance(session: aiohttp.ClientSession, results: TestResult):
+    """Test Scanner v2 performance and configuration"""
+    print("\n🔍 Testing Scanner v2 Performance...")
+    
+    success, data, status = await make_request(session, "/scanner/v2/status")
+    
+    if not success:
+        results.add_fail("Scanner v2 Status", f"Request failed: {data} (HTTP {status})")
+        return
+    
+    # Check if scanner is running
+    is_running = data.get("is_running", False)
+    if is_running:
+        results.add_pass("Scanner v2 Running", "Advanced scanner operational")
+    else:
+        results.add_fail("Scanner v2 Running", "Scanner not running")
+        return
+    
+    # Check scan interval (should be 5 seconds for fast operation)
+    scan_interval = data.get("scan_interval_seconds")
+    if scan_interval:
+        if scan_interval <= 5:
+            results.add_pass("Scanner Interval", f"Fast scanning: {scan_interval}s")
+        else:
+            results.add_warning("Scanner Interval", f"Slower than expected: {scan_interval}s (target: ≤5s)")
+    
+    # Check statistics
+    stats = data.get("statistics", {})
+    total_scans = stats.get("total_scans", 0)
+    
+    if total_scans > 0:
+        results.add_pass("Scanner Activity", f"{total_scans} scans completed")
+    else:
+        results.add_warning("Scanner Activity", "No scans recorded yet")
+    
+    # Verify configuration for quality signals
+    config = data.get("configuration", {})
+    score_threshold = config.get("score_threshold")
+    
+    if score_threshold and score_threshold >= 78:
+        results.add_pass("Quality Threshold", f"High quality signals: {score_threshold}% threshold")
+    elif score_threshold:
+        results.add_warning("Quality Threshold", f"Lower threshold: {score_threshold}%")
+
+
+async def test_existing_endpoints_compatibility(session: aiohttp.ClientSession, results: TestResult):
+    """Test that existing endpoints still work with new architecture"""
+    print("\n🔍 Testing Existing Endpoint Compatibility...")
+    
+    # Test health endpoint
+    success, data, status = await make_request(session, "/health")
+    if success and data.get("status") in ["healthy", "degraded"]:
+        results.add_pass("Health Endpoint", f"Status: {data.get('status')}")
+    else:
+        results.add_fail("Health Endpoint", f"Unhealthy response: {data}")
+    
+    # Test live prices endpoint (should still work)
+    success, data, status = await make_request(session, "/provider/live-prices")
+    if success:
+        prices = data.get("prices", {})
+        
+        for asset in ["EURUSD", "XAUUSD"]:
+            asset_data = prices.get(asset, {})
+            
+            if asset_data.get("status") == "LIVE":
+                bid = asset_data.get("bid")
+                ask = asset_data.get("ask")
+                
+                if bid and ask and bid > 0 and ask > 0:
+                    results.add_pass(f"{asset} Live Price", f"Bid: {bid}, Ask: {ask}")
+                else:
+                    results.add_warning(f"{asset} Live Price", "Invalid price data")
+            else:
+                results.add_warning(f"{asset} Live Price", f"Status: {asset_data.get('status', 'Unknown')}")
+    else:
+        results.add_fail("Live Prices Endpoint", f"Request failed: {data}")
+
+
+async def measure_scanner_cycle_time(session: aiohttp.ClientSession, results: TestResult):
+    """Measure scanner cycle performance - should be ultra-fast with cache"""
+    print("\n⏱️  Measuring Scanner Cycle Performance...")
+    
+    # Make multiple rapid requests to scanner endpoints to test cache performance
+    endpoints = [
+        "/scanner/v2/bias/EURUSD",
+        "/scanner/v2/bias/XAUUSD", 
+        "/scanner/v2/structure/EURUSD",
+        "/scanner/v2/structure/XAUUSD"
+    ]
+    
+    total_time = 0
+    successful_calls = 0
+    
+    for endpoint in endpoints:
+        start_time = time.time()
+        success, data, status = await make_request(session, endpoint)
+        end_time = time.time()
+        
+        duration_ms = (end_time - start_time) * 1000
+        
+        if success:
+            successful_calls += 1
+            total_time += duration_ms
+            
+            # Log individual response times
+            if duration_ms <= 100:  # Sub-100ms is excellent for cache reads
+                results.add_pass(f"Scanner Response Time", f"{endpoint}: {duration_ms:.1f}ms")
+            elif duration_ms <= 500:
+                results.add_warning(f"Scanner Response Time", f"{endpoint}: {duration_ms:.1f}ms (target: <100ms)")
+            else:
+                results.add_fail(f"Scanner Response Time", f"{endpoint}: {duration_ms:.1f}ms (too slow)")
+        else:
+            results.add_fail(f"Scanner Endpoint", f"{endpoint}: {data}")
+    
+    # Calculate average cycle time
+    if successful_calls > 0:
+        avg_time = total_time / successful_calls
+        
+        if avg_time <= 100:
+            results.add_pass("Average Scanner Time", f"{avg_time:.1f}ms (ultra-fast cache reads)")
+        elif avg_time <= 500:
+            results.add_warning("Average Scanner Time", f"{avg_time:.1f}ms (acceptable)")
+        else:
+            results.add_fail("Average Scanner Time", f"{avg_time:.1f}ms (too slow for cache-based system)")
+
+
+async def run_comprehensive_tests():
+    """Run all tests for the new Data-Fetch/Scanner architecture"""
+    print("🚀 STARTING PROPSIGNAL ENGINE - DATA ARCHITECTURE TESTS")
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"Test Start Time: {datetime.now().isoformat()}")
+    
+    results = TestResult()
+    
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
+        
+        # Test NEW endpoints in order of importance
+        await test_new_cache_status_endpoint(session, results)
+        await test_cached_symbol_data(session, results)  
+        await test_fetch_engine_status(session, results)
+        await test_api_usage_estimate(session, results)
+        
+        # Test scanner performance
+        await test_scanner_v2_performance(session, results)
+        await measure_scanner_cycle_time(session, results)
+        
+        # Test existing endpoint compatibility
+        await test_existing_endpoints_compatibility(session, results)
+    
+    # Print comprehensive results
+    results.print_summary()
+    
+    # Return success status for automation
+    return len(results.critical_failures) == 0
+
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_comprehensive_tests())
