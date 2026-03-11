@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { notificationService } from '../services/NotificationService';
+import { pushNotificationService, NotificationState } from '../services/PushNotificationService';
 
 // Get backend URL from app.json extra config (works in production builds)
 const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://eurusd-alerts.preview.emergentagent.com';
@@ -87,10 +87,11 @@ export default function HomeScreen() {
   const [xauusdSignal, setXauusdSignal] = useState<Signal | null>(null);
   const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationState, setNotificationState] = useState<NotificationState>(NotificationState.UNKNOWN);
   const [autoScanEnabled, setAutoScanEnabled] = useState(false); // Disabled - backend scanner handles this
   const [backendScannerRunning, setBackendScannerRunning] = useState(false);
   const [pushToken, setPushToken] = useState<string | null>(null);
+  const [notificationError, setNotificationError] = useState<string | null>(null);
   const [analysisModalVisible, setAnalysisModalVisible] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<MarketAnalysis | null>(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
@@ -100,22 +101,27 @@ export default function HomeScreen() {
   const prevXauusdType = useRef<string | null>(null);
   const appState = useRef(AppState.currentState);
 
-  // Initialize notifications
+  // Initialize push notifications
   useEffect(() => {
     const initNotifications = async () => {
-      const token = await notificationService.initialize();
-      if (token) {
-        setNotificationsEnabled(true);
-        setPushToken(token);
-        console.log('Notifications enabled, token:', token);
-      } else {
-        console.log('Notifications not enabled');
-      }
+      // Check current permission status
+      const currentState = await pushNotificationService.checkPermissionStatus();
+      setNotificationState(currentState);
+      
+      // Set up state change listener
+      pushNotificationService.onStateChange = (state) => {
+        setNotificationState(state);
+      };
       
       // Handle notification tap - navigate to signal detail
-      notificationService.onNotificationTap = (signalId: string) => {
+      pushNotificationService.onNotificationTap = (signalId: string) => {
         router.push(`/signal-detail?id=${signalId}`);
       };
+      
+      // If already enabled, update token
+      if (currentState === NotificationState.ENABLED) {
+        setPushToken(pushNotificationService.getToken());
+      }
     };
     
     initNotifications();
@@ -124,34 +130,31 @@ export default function HomeScreen() {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     
     return () => {
-      notificationService.cleanup();
+      pushNotificationService.cleanup();
       subscription.remove();
     };
   }, []);
 
-  // Manual notification permission request
-  const requestNotificationPermission = async () => {
-    try {
-      const token = await notificationService.initialize();
-      if (token) {
-        setNotificationsEnabled(true);
-        setPushToken(token);
-        Alert.alert(
-          'Notifiche Attivate!',
-          'Riceverai notifiche push quando vengono generati segnali BUY/SELL.',
-          [{ text: 'OK' }]
-        );
-      } else {
-        // Permissions denied - guide user to settings
-        Alert.alert(
-          'Permessi Notifiche',
-          'Per ricevere notifiche push, devi abilitarle nelle Impostazioni del telefono.\n\nVai su: Impostazioni > Notifiche > Expo Go > Consenti notifiche',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error requesting permissions:', error);
-      Alert.alert('Errore', 'Impossibile attivare le notifiche');
+  // Enable push notifications handler
+  const enablePushNotifications = async () => {
+    setNotificationError(null);
+    
+    const result = await pushNotificationService.enableNotifications();
+    
+    if (result.success) {
+      setPushToken(result.token || null);
+      Alert.alert(
+        '✅ Notifiche Attivate!',
+        'Riceverai notifiche push quando vengono generati segnali BUY/SELL, anche con l\'app chiusa.',
+        [{ text: 'OK' }]
+      );
+    } else {
+      setNotificationError(result.error || 'Errore sconosciuto');
+      Alert.alert(
+        '❌ Errore Notifiche',
+        result.error || 'Impossibile attivare le notifiche',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -646,27 +649,50 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Test Notification Button */}
+        {/* Push Notification Enable Button */}
         <TouchableOpacity
-          style={styles.testNotificationButton}
-          onPress={async () => {
-            try {
-              // Send local notification (works on Expo Go)
-              await notificationService.sendLocalSignalNotification({
-                signalType: 'BUY',
-                asset: 'EURUSD',
-                entryPrice: 1.16550,
-                confidence: 85,
-                signalId: 'TEST_LOCAL_' + Date.now()
-              });
-              Alert.alert('✅ Notifica Inviata!', 'Controlla le notifiche del dispositivo.');
-            } catch (error) {
-              Alert.alert('Errore', 'Impossibile inviare notifica locale');
-            }
-          }}
+          style={[
+            styles.notificationButton,
+            notificationState === NotificationState.ENABLED && styles.notificationButtonEnabled,
+            notificationState === NotificationState.ENABLING && styles.notificationButtonEnabling,
+            notificationState === NotificationState.REGISTERING && styles.notificationButtonEnabling,
+            notificationState === NotificationState.FAILED && styles.notificationButtonFailed,
+            notificationState === NotificationState.PERMISSION_DENIED && styles.notificationButtonFailed,
+          ]}
+          onPress={enablePushNotifications}
+          disabled={
+            notificationState === NotificationState.ENABLED ||
+            notificationState === NotificationState.ENABLING ||
+            notificationState === NotificationState.REGISTERING
+          }
         >
-          <Text style={styles.testNotificationButtonText}>🔔 Test Notifica Locale</Text>
+          {(notificationState === NotificationState.ENABLING || 
+            notificationState === NotificationState.REGISTERING) ? (
+            <View style={styles.notificationButtonContent}>
+              <ActivityIndicator size="small" color="#0a0a0a" />
+              <Text style={styles.notificationButtonTextDark}>
+                {notificationState === NotificationState.ENABLING 
+                  ? 'Richiesta permessi...' 
+                  : 'Registrazione...'}
+              </Text>
+            </View>
+          ) : notificationState === NotificationState.ENABLED ? (
+            <Text style={styles.notificationButtonTextDark}>✅ Notifiche Attive</Text>
+          ) : notificationState === NotificationState.FAILED ? (
+            <Text style={styles.notificationButtonText}>❌ Riprova Attivazione</Text>
+          ) : notificationState === NotificationState.PERMISSION_DENIED ? (
+            <Text style={styles.notificationButtonText}>⚠️ Permesso Negato - Riprova</Text>
+          ) : (
+            <Text style={styles.notificationButtonText}>🔔 Attiva Notifiche Push</Text>
+          )}
         </TouchableOpacity>
+
+        {/* Notification Error Message */}
+        {notificationError && (
+          <View style={styles.errorMessageContainer}>
+            <Text style={styles.errorMessageText}>{notificationError}</Text>
+          </View>
+        )}
 
         <View style={styles.actionButtons}>
           <TouchableOpacity
@@ -693,12 +719,27 @@ export default function HomeScreen() {
         
         {/* Notification Status */}
         <View style={styles.notificationStatus}>
-          <Text style={styles.notificationStatusText}>
-            Notifications: {notificationsEnabled ? 'Enabled' : 'Disabled'}
+          <Text style={[
+            styles.notificationStatusText,
+            notificationState === NotificationState.ENABLED && { color: '#00ff88' },
+            notificationState === NotificationState.FAILED && { color: '#ff3366' },
+          ]}>
+            {notificationState === NotificationState.ENABLED 
+              ? '🔔 Notifiche Push: Attive' 
+              : notificationState === NotificationState.FAILED 
+                ? '❌ Notifiche: Errore'
+                : notificationState === NotificationState.PERMISSION_DENIED
+                  ? '⚠️ Notifiche: Permesso negato'
+                  : '🔕 Notifiche: Non attive'}
           </Text>
           {backendScannerRunning && (
             <Text style={styles.autoScanStatusText}>
-              Backend scanner active - checking every 30s
+              Backend scanner active - checking every 5s
+            </Text>
+          )}
+          {notificationState === NotificationState.ENABLED && (
+            <Text style={styles.notificationInfoText}>
+              Riceverai notifiche anche con app chiusa
             </Text>
           )}
         </View>
@@ -1097,19 +1138,61 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  testNotificationButton: {
+  notificationInfoText: {
+    color: '#00cc66',
+    fontSize: 11,
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  // Push Notification Button Styles
+  notificationButton: {
     backgroundColor: '#222222',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#00ff88',
   },
-  testNotificationButtonText: {
+  notificationButtonEnabled: {
+    backgroundColor: '#00ff88',
+    borderColor: '#00ff88',
+  },
+  notificationButtonEnabling: {
+    backgroundColor: '#ffaa00',
+    borderColor: '#ffaa00',
+  },
+  notificationButtonFailed: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#ff3366',
+  },
+  notificationButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notificationButtonText: {
     color: '#00ff88',
     fontSize: 16,
     fontWeight: '600',
+  },
+  notificationButtonTextDark: {
+    color: '#0a0a0a',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorMessageContainer: {
+    backgroundColor: '#1a0a0a',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ff3366',
+  },
+  errorMessageText: {
+    color: '#ff6666',
+    fontSize: 12,
+    textAlign: 'center',
   },
   loadingOverlay: {
     position: 'absolute',
