@@ -70,10 +70,21 @@ def validate_environment():
 # Run validation
 validate_environment()
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection - optional, lazy loading
+mongo_url = os.environ.get('MONGO_URL', '')
+db = None
+client = None
+
+if mongo_url and 'cluster.mongodb.net' not in mongo_url:
+    try:
+        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        db = client[os.environ.get('DB_NAME', 'propsignal')]
+        print("✅ MongoDB configured")
+    except Exception as e:
+        print(f"⚠️ MongoDB connection skipped: {e}")
+        db = None
+else:
+    print("⚠️ MongoDB not configured - running without database")
 
 # Create the main app without a prefix
 app = FastAPI(title="PropSignal Engine API", version="1.0.0")
@@ -134,14 +145,17 @@ async def startup_event():
     try:
         # Initialize market scanner
         logger.info("🔄 Initializing Market Scanner...")
-        scanner = init_market_scanner(db)
-        tracker = init_outcome_tracker(db)
-        analytics = create_analytics_service(db)
-        
-        # Start services
-        await scanner.start()
-        await tracker.start()
-        logger.info("✅ Scanner and Tracker started")
+        if db is not None:
+            scanner = init_market_scanner(db)
+            tracker = init_outcome_tracker(db)
+            analytics = create_analytics_service(db)
+            
+            # Start services
+            await scanner.start()
+            await tracker.start()
+            logger.info("✅ Scanner and Tracker started")
+        else:
+            logger.warning("⚠️ Scanner/Tracker disabled - no database")
     except Exception as e:
         logger.error(f"❌ Scanner/Tracker initialization error: {e}")
     
