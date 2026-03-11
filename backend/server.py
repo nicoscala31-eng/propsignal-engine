@@ -105,94 +105,48 @@ async def startup_event():
     logger.info("🚀 PROPSIGNAL ENGINE - PRODUCTION STARTUP")
     logger.info("=" * 60)
     logger.info(f"📊 Environment Configuration:")
-    logger.info(f"   - PORT: {os.environ.get('PORT', '8001 (default)')}")
+    logger.info(f"   - PORT: {os.environ.get('PORT', '8080 (default)')}")
     logger.info(f"   - MONGO_URL: {'✅ configured' if os.environ.get('MONGO_URL') else '❌ missing'}")
     logger.info(f"   - DB_NAME: {os.environ.get('DB_NAME', 'not set')}")
     logger.info(f"   - TWELVE_DATA_API_KEY: {'✅ configured' if os.environ.get('TWELVE_DATA_API_KEY') else '❌ missing'}")
     
-    # Initialize provider manager
-    logger.info("-" * 40)
-    logger.info("📡 Initializing Market Data Provider...")
-    success = await provider_manager.initialize()
-    
-    if success:
-        status = provider_manager.get_status()
-        if provider_manager.is_simulation_mode():
-            logger.warning(f"⚠️  SIMULATION MODE ACTIVE - Provider: {status.provider_name}")
-        else:
-            logger.info(f"✅ Production data connected - Provider: {status.provider_name}")
-        
-        # Test Twelve Data API with actual requests and log raw responses
+    try:
+        # Initialize provider manager
         logger.info("-" * 40)
-        logger.info("🔍 Testing Twelve Data API with real requests...")
+        logger.info("📡 Initializing Market Data Provider...")
+        success = await provider_manager.initialize()
         
-        try:
-            provider = provider_manager.get_provider()
-            if provider:
-                # Test EUR/USD
-                eurusd_quote = await provider.get_live_quote(Asset.EURUSD)
-                if eurusd_quote:
-                    logger.info(f"✅ EUR/USD TEST SUCCESS:")
-                    logger.info(f"   - Bid: {eurusd_quote.bid}")
-                    logger.info(f"   - Ask: {eurusd_quote.ask}")
-                    logger.info(f"   - Spread: {eurusd_quote.spread_pips:.2f} pips")
-                    logger.info(f"   - Timestamp: {eurusd_quote.timestamp}")
-                else:
-                    logger.error("❌ EUR/USD TEST FAILED: No quote returned")
-                
-                # Test XAU/USD
-                xauusd_quote = await provider.get_live_quote(Asset.XAUUSD)
-                if xauusd_quote:
-                    logger.info(f"✅ XAU/USD TEST SUCCESS:")
-                    logger.info(f"   - Bid: {xauusd_quote.bid}")
-                    logger.info(f"   - Ask: {xauusd_quote.ask}")
-                    logger.info(f"   - Spread: {xauusd_quote.spread_pips:.2f} pips")
-                    logger.info(f"   - Timestamp: {xauusd_quote.timestamp}")
-                else:
-                    logger.error("❌ XAU/USD TEST FAILED: No quote returned")
-            else:
-                logger.error("❌ No provider available for API tests")
-                
-        except Exception as e:
-            logger.error(f"❌ Twelve Data API test EXCEPTION: {type(e).__name__}: {e}")
-    else:
-        logger.error("❌ CRITICAL: Failed to initialize market data provider")
-        logger.error("   The app will continue but live prices will not be available")
+        if success:
+            status = provider_manager.get_status()
+            logger.info(f"✅ Provider initialized: {status.provider_name}")
+        else:
+            logger.warning("⚠️ Provider initialization returned False")
+    except Exception as e:
+        logger.error(f"❌ Provider initialization error: {e}")
     
-    # Start Live Market Data Engine (continuous price updates)
-    logger.info("-" * 40)
-    logger.info("📈 Starting Live Market Data Engine...")
-    await market_data_engine.start()
+    try:
+        # Start Live Market Data Engine
+        logger.info("📈 Starting Live Market Data Engine...")
+        await market_data_engine.start()
+    except Exception as e:
+        logger.error(f"❌ Market Data Engine error: {e}")
     
-    # Initialize market scanner with watchdog protection
-    logger.info("-" * 40)
-    logger.info("🔄 Initializing Market Scanner...")
-    scanner = init_market_scanner(db)
-    logger.info("📊 Market Scanner initialized")
-    
-    # Initialize outcome tracker
-    tracker = init_outcome_tracker(db)
-    logger.info("📈 Outcome Tracker initialized")
-    
-    # Initialize analytics service
-    analytics = create_analytics_service(db)
-    logger.info("📈 Analytics Service initialized")
-    
-    # Auto-start scanner and tracker for production
-    logger.info("-" * 40)
-    device_count = await db.devices.count_documents({"is_active": True})
-    logger.info(f"📱 Registered devices: {device_count}")
-    
-    # Always start scanner in production for continuous operation
-    logger.info("🚀 Starting scanner and tracker for continuous operation...")
-    await scanner.start()
-    await tracker.start()
+    try:
+        # Initialize market scanner
+        logger.info("🔄 Initializing Market Scanner...")
+        scanner = init_market_scanner(db)
+        tracker = init_outcome_tracker(db)
+        analytics = create_analytics_service(db)
+        
+        # Start services
+        await scanner.start()
+        await tracker.start()
+        logger.info("✅ Scanner and Tracker started")
+    except Exception as e:
+        logger.error(f"❌ Scanner/Tracker initialization error: {e}")
     
     logger.info("=" * 60)
     logger.info("✅ PROPSIGNAL ENGINE STARTUP COMPLETE")
-    logger.info(f"   Scanner: {'RUNNING' if scanner.is_running else 'STOPPED'}")
-    logger.info(f"   Tracker: {'RUNNING' if tracker.is_running else 'STOPPED'}")
-    logger.info(f"   Market Data Engine: {'RUNNING' if market_data_engine.is_running else 'STOPPED'}")
     logger.info("=" * 60)
 
 @app.on_event("shutdown")
