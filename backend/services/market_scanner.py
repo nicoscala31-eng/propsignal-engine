@@ -130,6 +130,7 @@ class MarketScanner:
         self.failed_notifications = 0
         self.invalid_tokens_removed = 0
         self.start_time: Optional[datetime] = None
+        self.last_scan_time: Optional[datetime] = None  # Track last scan timestamp
         
         # Error tracking for recovery
         self.consecutive_errors = 0
@@ -230,6 +231,7 @@ class MarketScanner:
     async def _scan_markets(self):
         """Scan all markets and generate signals"""
         self.scan_count += 1
+        self.last_scan_time = datetime.utcnow()  # Update last scan timestamp
         
         # Get all registered devices
         devices = await self.db.devices.find({"is_active": True}).to_list(1000)

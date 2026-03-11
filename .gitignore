@@ -78,3 +78,34 @@ agenthub/agents/youtube/db
 
 # Mobile development
 android-sdk/ 
+# Expo
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Metro
+.metro-cache/
+metro-cache/
+
+# Frontend node_modules
+frontend/node_modules/
+
+# Backend pycache
+backend/__pycache__/
+
+# Environment files - REMOVE BEFORE COMMITTING
+backend/.env
+frontend/.env
+
+# Test artifacts
+test_result.md
+backend_test_results.json
+
+# State files (will be created in production)
+backend/scanner_state.json
+

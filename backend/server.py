@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import sys
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
@@ -20,11 +21,49 @@ from services.analytics_service import create_analytics_service
 from services.push_notification_service import push_service
 from services.signal_outcome_tracker import init_outcome_tracker, outcome_tracker
 from services.macro_news_service import macro_news_service
+from services.market_data_engine import market_data_engine
 from engines.prop_rule_engine import prop_rule_engine
 from providers.provider_manager import provider_manager
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# ==================== ENVIRONMENT VALIDATION ====================
+
+def validate_environment():
+    """Validate required environment variables on startup"""
+    required_vars = {
+        'MONGO_URL': 'MongoDB connection string',
+        'DB_NAME': 'Database name',
+    }
+    
+    optional_vars = {
+        'TWELVE_DATA_API_KEY': 'Twelve Data API key for live market data',
+        'PORT': 'Server port (default: 8001)'
+    }
+    
+    missing = []
+    for var, description in required_vars.items():
+        if not os.environ.get(var):
+            missing.append(f"  - {var}: {description}")
+    
+    if missing:
+        error_msg = "❌ CRITICAL: Missing required environment variables:\n" + "\n".join(missing)
+        print(error_msg, file=sys.stderr)
+        raise RuntimeError(error_msg)
+    
+    # Log optional vars status
+    for var, description in optional_vars.items():
+        value = os.environ.get(var)
+        if value:
+            # Mask sensitive values
+            masked = value[:4] + "..." if len(value) > 8 else "****"
+            print(f"✅ {var}: configured ({masked})")
+        else:
+            print(f"⚠️  {var}: not set - {description}")
+
+# Run validation
+validate_environment()
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -32,7 +71,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI(title="PropSignal Engine API")
+app = FastAPI(title="PropSignal Engine API", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -57,46 +96,72 @@ async def startup_event():
     """Initialize market data provider and services on startup"""
     global scanner, analytics, tracker
     
-    logger.info("🚀 Starting PropSignal Engine...")
-    logger.info(f"📊 Environment: PORT={os.environ.get('PORT', 'not set')}")
-    logger.info(f"📊 MONGO_URL configured: {bool(os.environ.get('MONGO_URL'))}")
-    logger.info(f"📊 TWELVE_DATA_API_KEY configured: {bool(os.environ.get('TWELVE_DATA_API_KEY'))}")
+    logger.info("=" * 60)
+    logger.info("🚀 PROPSIGNAL ENGINE - PRODUCTION STARTUP")
+    logger.info("=" * 60)
+    logger.info(f"📊 Environment Configuration:")
+    logger.info(f"   - PORT: {os.environ.get('PORT', '8001 (default)')}")
+    logger.info(f"   - MONGO_URL: {'✅ configured' if os.environ.get('MONGO_URL') else '❌ missing'}")
+    logger.info(f"   - DB_NAME: {os.environ.get('DB_NAME', 'not set')}")
+    logger.info(f"   - TWELVE_DATA_API_KEY: {'✅ configured' if os.environ.get('TWELVE_DATA_API_KEY') else '❌ missing'}")
     
     # Initialize provider manager
+    logger.info("-" * 40)
+    logger.info("📡 Initializing Market Data Provider...")
     success = await provider_manager.initialize()
     
     if success:
         status = provider_manager.get_status()
         if provider_manager.is_simulation_mode():
-            logger.warning(f"⚠️  SIMULATION MODE - Provider: {status.provider_name}")
+            logger.warning(f"⚠️  SIMULATION MODE ACTIVE - Provider: {status.provider_name}")
         else:
             logger.info(f"✅ Production data connected - Provider: {status.provider_name}")
         
-        # Test Twelve Data API with actual requests
-        logger.info("🔍 Testing Twelve Data API...")
+        # Test Twelve Data API with actual requests and log raw responses
+        logger.info("-" * 40)
+        logger.info("🔍 Testing Twelve Data API with real requests...")
+        
         try:
-            from models import Asset
-            
-            # Test EUR/USD
-            eurusd_quote = await provider_manager.get_live_quote(Asset.EURUSD)
-            if eurusd_quote:
-                logger.info(f"✅ EUR/USD: bid={eurusd_quote.bid}, ask={eurusd_quote.ask}, spread={eurusd_quote.spread_pips:.1f} pips")
+            provider = provider_manager.get_provider()
+            if provider:
+                # Test EUR/USD
+                eurusd_quote = await provider.get_live_quote(Asset.EURUSD)
+                if eurusd_quote:
+                    logger.info(f"✅ EUR/USD TEST SUCCESS:")
+                    logger.info(f"   - Bid: {eurusd_quote.bid}")
+                    logger.info(f"   - Ask: {eurusd_quote.ask}")
+                    logger.info(f"   - Spread: {eurusd_quote.spread_pips:.2f} pips")
+                    logger.info(f"   - Timestamp: {eurusd_quote.timestamp}")
+                else:
+                    logger.error("❌ EUR/USD TEST FAILED: No quote returned")
+                
+                # Test XAU/USD
+                xauusd_quote = await provider.get_live_quote(Asset.XAUUSD)
+                if xauusd_quote:
+                    logger.info(f"✅ XAU/USD TEST SUCCESS:")
+                    logger.info(f"   - Bid: {xauusd_quote.bid}")
+                    logger.info(f"   - Ask: {xauusd_quote.ask}")
+                    logger.info(f"   - Spread: {xauusd_quote.spread_pips:.2f} pips")
+                    logger.info(f"   - Timestamp: {xauusd_quote.timestamp}")
+                else:
+                    logger.error("❌ XAU/USD TEST FAILED: No quote returned")
             else:
-                logger.error("❌ EUR/USD: Failed to get quote")
-            
-            # Test XAU/USD
-            xauusd_quote = await provider_manager.get_live_quote(Asset.XAUUSD)
-            if xauusd_quote:
-                logger.info(f"✅ XAU/USD: bid={xauusd_quote.bid}, ask={xauusd_quote.ask}, spread={xauusd_quote.spread_pips:.1f} pips")
-            else:
-                logger.error("❌ XAU/USD: Failed to get quote")
+                logger.error("❌ No provider available for API tests")
                 
         except Exception as e:
-            logger.error(f"❌ Twelve Data API test failed: {e}")
+            logger.error(f"❌ Twelve Data API test EXCEPTION: {type(e).__name__}: {e}")
     else:
-        logger.error("❌ Failed to initialize market data provider")
+        logger.error("❌ CRITICAL: Failed to initialize market data provider")
+        logger.error("   The app will continue but live prices will not be available")
     
-    # Initialize market scanner
+    # Start Live Market Data Engine (continuous price updates)
+    logger.info("-" * 40)
+    logger.info("📈 Starting Live Market Data Engine...")
+    await market_data_engine.start()
+    
+    # Initialize market scanner with watchdog protection
+    logger.info("-" * 40)
+    logger.info("🔄 Initializing Market Scanner...")
     scanner = init_market_scanner(db)
     logger.info("📊 Market Scanner initialized")
     
@@ -108,14 +173,22 @@ async def startup_event():
     analytics = create_analytics_service(db)
     logger.info("📈 Analytics Service initialized")
     
-    # Auto-start scanner and tracker if there are registered devices
+    # Auto-start scanner and tracker for production
+    logger.info("-" * 40)
     device_count = await db.devices.count_documents({"is_active": True})
-    if device_count > 0:
-        logger.info(f"📱 Found {device_count} active devices, auto-starting services...")
-        await scanner.start()
-        await tracker.start()
+    logger.info(f"📱 Registered devices: {device_count}")
     
-    logger.info("🚀 PropSignal Engine startup complete!")
+    # Always start scanner in production for continuous operation
+    logger.info("🚀 Starting scanner and tracker for continuous operation...")
+    await scanner.start()
+    await tracker.start()
+    
+    logger.info("=" * 60)
+    logger.info("✅ PROPSIGNAL ENGINE STARTUP COMPLETE")
+    logger.info(f"   Scanner: {'RUNNING' if scanner.is_running else 'STOPPED'}")
+    logger.info(f"   Tracker: {'RUNNING' if tracker.is_running else 'STOPPED'}")
+    logger.info(f"   Market Data Engine: {'RUNNING' if market_data_engine.is_running else 'STOPPED'}")
+    logger.info("=" * 60)
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -184,54 +257,57 @@ async def root():
 
 @api_router.get("/health")
 async def health_check():
-    """Enhanced health check with full diagnostics"""
+    """
+    Production health check endpoint with full diagnostics.
+    Returns status of all services, live prices, and configuration.
+    """
     global scanner, tracker
     
     # Get provider status
     provider_status = provider_manager.get_status()
     
-    # Get latest prices
-    eurusd_price = None
-    xauusd_price = None
-    price_error = None
+    # Get prices from the Market Data Engine
+    engine_prices = market_data_engine.get_all_prices()
+    engine_health = market_data_engine.get_health_status()
+    
+    # Also try to get direct prices from provider for comparison
+    direct_eurusd = None
+    direct_xauusd = None
+    direct_error = None
     
     try:
-        from models import Asset
         provider = provider_manager.get_provider()
-        
-        eurusd_quote = None
-        xauusd_quote = None
-        
         if provider:
             eurusd_quote = await provider.get_live_quote(Asset.EURUSD)
             xauusd_quote = await provider.get_live_quote(Asset.XAUUSD)
-        
-        if eurusd_quote:
-            eurusd_price = {
-                "bid": eurusd_quote.bid,
-                "ask": eurusd_quote.ask,
-                "mid": eurusd_quote.mid,
-                "spread_pips": eurusd_quote.spread_pips,
-                "timestamp": eurusd_quote.timestamp.isoformat() if eurusd_quote.timestamp else None
-            }
-        
-        if xauusd_quote:
-            xauusd_price = {
-                "bid": xauusd_quote.bid,
-                "ask": xauusd_quote.ask,
-                "mid": xauusd_quote.mid,
-                "spread_pips": xauusd_quote.spread_pips,
-                "timestamp": xauusd_quote.timestamp.isoformat() if xauusd_quote.timestamp else None
-            }
+            
+            if eurusd_quote:
+                direct_eurusd = {
+                    "bid": eurusd_quote.bid,
+                    "ask": eurusd_quote.ask,
+                    "mid": eurusd_quote.mid_price,
+                    "spread_pips": eurusd_quote.spread_pips,
+                    "timestamp": eurusd_quote.timestamp.isoformat() if eurusd_quote.timestamp else None
+                }
+            
+            if xauusd_quote:
+                direct_xauusd = {
+                    "bid": xauusd_quote.bid,
+                    "ask": xauusd_quote.ask,
+                    "mid": xauusd_quote.mid_price,
+                    "spread_pips": xauusd_quote.spread_pips,
+                    "timestamp": xauusd_quote.timestamp.isoformat() if xauusd_quote.timestamp else None
+                }
     except Exception as e:
-        price_error = str(e)
+        direct_error = str(e)
     
-    # Get scanner status
+    # Get scanner status with last cycle timestamp
     scanner_status = {
         "running": scanner.is_running if scanner else False,
         "total_scans": scanner.scan_count if scanner else 0,
         "signals_generated": scanner.signal_count if scanner else 0,
-        "active_profile": scanner.active_profile.name if (scanner and scanner.active_profile) else None
+        "active_profile": scanner.active_profile.name if (scanner and scanner.active_profile) else None,
+        "last_scan_timestamp": scanner.last_scan_time.isoformat() if (scanner and hasattr(scanner, 'last_scan_time') and scanner.last_scan_time) else None
     }
     
     # Get tracker status
@@ -240,25 +316,58 @@ async def health_check():
         "checks_performed": tracker.checks_performed if tracker else 0
     }
     
+    # Environment variables status
+    env_status = {
+        "MONGO_URL": bool(os.getenv('MONGO_URL')),
+        "DB_NAME": bool(os.getenv('DB_NAME')),
+        "TWELVE_DATA_API_KEY": bool(os.getenv('TWELVE_DATA_API_KEY')),
+        "PORT": os.getenv('PORT', '8001')
+    }
+    
+    # Determine overall health
+    is_healthy = (
+        (scanner and scanner.is_running) and
+        (tracker and tracker.is_running) and
+        market_data_engine.is_running
+    )
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if is_healthy else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
+        "uptime_check": "OK",
+        
         "backend": {
             "status": "running",
-            "version": "1.0.0"
+            "version": "1.0.0",
+            "host": "0.0.0.0",
+            "port": os.getenv('PORT', '8001')
         },
+        
+        "environment": env_status,
+        
         "twelve_data": {
-            "status": "connected" if provider_status.is_connected else "disconnected",
-            "provider": provider_status.provider_name,
+            "status": "connected" if (provider_status and provider_status.is_connected) else "disconnected",
+            "provider": provider_status.provider_name if provider_status else "none",
             "is_production": not provider_manager.is_simulation_mode(),
             "api_key_loaded": bool(os.getenv('TWELVE_DATA_API_KEY')),
-            "error": price_error
+            "error": direct_error
         },
+        
+        "market_data_engine": engine_health,
+        
         "prices": {
-            "EURUSD": eurusd_price,
-            "XAUUSD": xauusd_price,
-            "last_update": provider_status.last_update.isoformat() if provider_status.last_update else None
+            "EURUSD": engine_prices.get("EURUSD") or direct_eurusd,
+            "XAUUSD": engine_prices.get("XAUUSD") or direct_xauusd,
+            "source": "market_data_engine" if engine_prices.get("EURUSD") else "direct_provider"
         },
+        
+        "timestamps": {
+            "eurusd_last_update": engine_health['prices']['EURUSD']['last_successful_update'] if engine_health.get('prices', {}).get('EURUSD') else None,
+            "xauusd_last_update": engine_health['prices']['XAUUSD']['last_successful_update'] if engine_health.get('prices', {}).get('XAUUSD') else None,
+            "scanner_last_cycle": scanner_status.get('last_scan_timestamp'),
+            "server_time": datetime.utcnow().isoformat()
+        },
+        
         "scanner": scanner_status,
         "tracker": tracker_status
     }
