@@ -58,6 +58,9 @@ async def startup_event():
     global scanner, analytics, tracker
     
     logger.info("🚀 Starting PropSignal Engine...")
+    logger.info(f"📊 Environment: PORT={os.environ.get('PORT', 'not set')}")
+    logger.info(f"📊 MONGO_URL configured: {bool(os.environ.get('MONGO_URL'))}")
+    logger.info(f"📊 TWELVE_DATA_API_KEY configured: {bool(os.environ.get('TWELVE_DATA_API_KEY'))}")
     
     # Initialize provider manager
     success = await provider_manager.initialize()
@@ -68,6 +71,28 @@ async def startup_event():
             logger.warning(f"⚠️  SIMULATION MODE - Provider: {status.provider_name}")
         else:
             logger.info(f"✅ Production data connected - Provider: {status.provider_name}")
+        
+        # Test Twelve Data API with actual requests
+        logger.info("🔍 Testing Twelve Data API...")
+        try:
+            from models import Asset
+            
+            # Test EUR/USD
+            eurusd_quote = await provider_manager.get_live_quote(Asset.EURUSD)
+            if eurusd_quote:
+                logger.info(f"✅ EUR/USD: bid={eurusd_quote.bid}, ask={eurusd_quote.ask}, spread={eurusd_quote.spread_pips:.1f} pips")
+            else:
+                logger.error("❌ EUR/USD: Failed to get quote")
+            
+            # Test XAU/USD
+            xauusd_quote = await provider_manager.get_live_quote(Asset.XAUUSD)
+            if xauusd_quote:
+                logger.info(f"✅ XAU/USD: bid={xauusd_quote.bid}, ask={xauusd_quote.ask}, spread={xauusd_quote.spread_pips:.1f} pips")
+            else:
+                logger.error("❌ XAU/USD: Failed to get quote")
+                
+        except Exception as e:
+            logger.error(f"❌ Twelve Data API test failed: {e}")
     else:
         logger.error("❌ Failed to initialize market data provider")
     
@@ -89,6 +114,8 @@ async def startup_event():
         logger.info(f"📱 Found {device_count} active devices, auto-starting services...")
         await scanner.start()
         await tracker.start()
+    
+    logger.info("🚀 PropSignal Engine startup complete!")
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -157,7 +184,84 @@ async def root():
 
 @api_router.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+    """Enhanced health check with full diagnostics"""
+    global scanner, tracker
+    
+    # Get provider status
+    provider_status = provider_manager.get_status()
+    
+    # Get latest prices
+    eurusd_price = None
+    xauusd_price = None
+    price_error = None
+    
+    try:
+        from models import Asset
+        provider = provider_manager.get_provider()
+        
+        eurusd_quote = None
+        xauusd_quote = None
+        
+        if provider:
+            eurusd_quote = await provider.get_live_quote(Asset.EURUSD)
+            xauusd_quote = await provider.get_live_quote(Asset.XAUUSD)
+        
+        if eurusd_quote:
+            eurusd_price = {
+                "bid": eurusd_quote.bid,
+                "ask": eurusd_quote.ask,
+                "mid": eurusd_quote.mid,
+                "spread_pips": eurusd_quote.spread_pips,
+                "timestamp": eurusd_quote.timestamp.isoformat() if eurusd_quote.timestamp else None
+            }
+        
+        if xauusd_quote:
+            xauusd_price = {
+                "bid": xauusd_quote.bid,
+                "ask": xauusd_quote.ask,
+                "mid": xauusd_quote.mid,
+                "spread_pips": xauusd_quote.spread_pips,
+                "timestamp": xauusd_quote.timestamp.isoformat() if xauusd_quote.timestamp else None
+            }
+    except Exception as e:
+        price_error = str(e)
+    
+    # Get scanner status
+    scanner_status = {
+        "running": scanner.is_running if scanner else False,
+        "total_scans": scanner.scan_count if scanner else 0,
+        "signals_generated": scanner.signal_count if scanner else 0,
+        "active_profile": scanner.active_profile.name if (scanner and scanner.active_profile) else None
+    }
+    
+    # Get tracker status
+    tracker_status = {
+        "running": tracker.is_running if tracker else False,
+        "checks_performed": tracker.checks_performed if tracker else 0
+    }
+    
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "backend": {
+            "status": "running",
+            "version": "1.0.0"
+        },
+        "twelve_data": {
+            "status": "connected" if provider_status.is_connected else "disconnected",
+            "provider": provider_status.provider_name,
+            "is_production": not provider_manager.is_simulation_mode(),
+            "api_key_loaded": bool(os.getenv('TWELVE_DATA_API_KEY')),
+            "error": price_error
+        },
+        "prices": {
+            "EURUSD": eurusd_price,
+            "XAUUSD": xauusd_price,
+            "last_update": provider_status.last_update.isoformat() if provider_status.last_update else None
+        },
+        "scanner": scanner_status,
+        "tracker": tracker_status
+    }
 
 
 # ==================== USER MANAGEMENT ====================
@@ -1077,3 +1181,22 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# ==================== PRODUCTION SERVER ENTRY POINT ====================
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Get port from environment (Railway sets PORT)
+    port = int(os.environ.get("PORT", 8001))
+    
+    logger.info(f"🚀 Starting PropSignal Engine on 0.0.0.0:{port}")
+    
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=port,
+        log_level="info",
+        reload=False  # Disable reload in production
+    )
