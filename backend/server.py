@@ -17,12 +17,14 @@ from models import (
 )
 from services.signal_orchestrator import enhanced_signal_orchestrator
 from services.market_scanner import init_market_scanner, market_scanner
+from services.advanced_scanner import init_advanced_scanner, advanced_scanner
 from services.analytics_service import create_analytics_service
 from services.push_notification_service import push_service
 from services.signal_outcome_tracker import init_outcome_tracker, outcome_tracker
 from services.macro_news_service import macro_news_service
 from services.market_data_engine import market_data_engine
 from engines.prop_rule_engine import prop_rule_engine
+from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
 
 ROOT_DIR = Path(__file__).parent
@@ -101,6 +103,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize services
 scanner = None
+advanced_scanner_instance = None
 analytics = None
 tracker = None
 
@@ -110,7 +113,7 @@ tracker = None
 @app.on_event("startup")
 async def startup_event():
     """Initialize market data provider and services on startup"""
-    global scanner, analytics, tracker
+    global scanner, advanced_scanner_instance, analytics, tracker
     
     logger.info("=" * 60)
     logger.info("🚀 PROPSIGNAL ENGINE - PRODUCTION STARTUP")
@@ -143,17 +146,24 @@ async def startup_event():
         logger.error(f"❌ Market Data Engine error: {e}")
     
     try:
-        # Initialize market scanner
-        logger.info("🔄 Initializing Market Scanner...")
+        # Initialize market scanners
+        logger.info("🔄 Initializing Market Scanners...")
         if db is not None:
+            # Legacy scanner (kept for compatibility)
             scanner = init_market_scanner(db)
+            
+            # NEW: Advanced Scanner v2 with MTF Bias
+            logger.info("🚀 Initializing Advanced Scanner v2...")
+            advanced_scanner_instance = init_advanced_scanner(db)
+            
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
             
             # Start services
             await scanner.start()
+            await advanced_scanner_instance.start()  # Start advanced scanner
             await tracker.start()
-            logger.info("✅ Scanner and Tracker started")
+            logger.info("✅ Scanner, Advanced Scanner v2, and Tracker started")
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
     except Exception as e:
@@ -166,10 +176,13 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global scanner, tracker
+    global scanner, advanced_scanner_instance, tracker
     
     if scanner:
         await scanner.stop()
+    
+    if advanced_scanner_instance:
+        await advanced_scanner_instance.stop()
     
     if tracker:
         await tracker.stop()
@@ -979,6 +992,98 @@ async def get_scanner_status():
             "total_scans": stats["scans"],
             "signals_generated": stats["signals_generated"],
             "notifications_sent": stats["notifications_sent"]
+        }
+    }
+
+
+@api_router.get("/scanner/v2/status")
+async def get_advanced_scanner_status():
+    """
+    Get Advanced Scanner v2 status with MTF bias and scoring details
+    
+    Returns:
+    - Version and running state
+    - Configuration (thresholds, enabled setups)
+    - Statistics (scans, signals, notifications)
+    - Recent signals per asset
+    """
+    if not advanced_scanner_instance:
+        return {"error": "Advanced Scanner v2 not initialized"}
+    
+    stats = advanced_scanner_instance.get_stats()
+    
+    return {
+        "version": stats["version"],
+        "is_running": stats["is_running"],
+        "uptime_seconds": stats["uptime_seconds"],
+        "scan_interval_seconds": stats["scan_interval"],
+        
+        "configuration": stats["config"],
+        
+        "statistics": {
+            "total_scans": stats["scan_count"],
+            "signals_generated": stats["signal_count"],
+            "notifications_sent": stats["notification_count"]
+        },
+        
+        "recent_signals_count": stats["recent_signals"]
+    }
+
+
+@api_router.get("/scanner/v2/bias/{asset}")
+async def get_current_mtf_bias(asset: str):
+    """
+    Get current Multi-Timeframe Bias analysis for an asset
+    
+    Returns the most recent bias analysis with:
+    - H1, M15, M5 individual biases
+    - Overall bias and alignment score
+    - Trade direction recommendation
+    """
+    try:
+        asset_enum = Asset(asset)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid asset. Use EURUSD or XAUUSD")
+    
+    if asset_enum not in mtf_bias_engine.last_analysis:
+        return {
+            "asset": asset,
+            "bias": None,
+            "message": "No bias analysis available yet. Wait for next scan cycle."
+        }
+    
+    bias = mtf_bias_engine.last_analysis[asset_enum]
+    
+    return {
+        "asset": asset,
+        "analysis_timestamp": bias.analysis_timestamp.isoformat() if bias.analysis_timestamp else None,
+        
+        "timeframes": {
+            "h1": {
+                "bias": bias.h1_bias.bias.value,
+                "strength": bias.h1_bias.trend_strength,
+                "structure": bias.h1_bias.structure,
+                "momentum_aligned": bias.h1_bias.momentum_aligned
+            },
+            "m15": {
+                "bias": bias.m15_bias.bias.value,
+                "strength": bias.m15_bias.trend_strength,
+                "structure": bias.m15_bias.structure,
+                "momentum_aligned": bias.m15_bias.momentum_aligned
+            },
+            "m5": {
+                "bias": bias.m5_bias.bias.value,
+                "strength": bias.m5_bias.trend_strength,
+                "structure": bias.m5_bias.structure,
+                "momentum_aligned": bias.m5_bias.momentum_aligned
+            }
+        },
+        
+        "summary": {
+            "overall_bias": bias.overall_bias.value,
+            "alignment_score": bias.alignment_score,
+            "trade_direction": bias.trade_direction,
+            "is_countertrend": bias.is_countertrend
         }
     }
 

@@ -33,14 +33,22 @@ class TimeframeBias(Enum):
 
 @dataclass
 class ScoringWeights:
-    """Weights for signal scoring components (must sum to 100)"""
-    htf_bias_alignment: float = 20.0      # Higher timeframe bias alignment
-    market_structure: float = 15.0         # Structure quality (HH/HL or LL/LH)
+    """Weights for signal scoring components (must sum to 100)
+    
+    Per le priorità dell'utente:
+    - HTF Bias Alignment è CRITICO (30%) - H1+M15 devono allinearsi
+    - Market Structure importante (25%)
+    - Setup Quality (20%)
+    - Momentum (15%)
+    - Session (10%)
+    """
+    htf_bias_alignment: float = 30.0       # Higher timeframe bias alignment (CRITICO)
+    market_structure: float = 25.0         # Structure quality (HH/HL or LL/LH)
     setup_quality: float = 20.0            # Breakout/retest/pattern quality
     momentum_confirmation: float = 15.0    # RSI/MACD/Volume alignment
     session_quality: float = 10.0          # Trading session timing
-    volatility_quality: float = 10.0       # ATR/expansion quality
-    invalidation_cleanliness: float = 10.0 # Clean SL placement
+    volatility_quality: float = 0.0        # Removed to sum to 100
+    invalidation_cleanliness: float = 0.0  # Included in setup_quality
     
     def validate(self) -> bool:
         total = (
@@ -68,23 +76,34 @@ class SessionScoreAdjustments:
 
 @dataclass
 class DuplicateProtection:
-    """Settings for duplicate signal suppression"""
+    """Settings for duplicate signal suppression - STRONG as requested"""
     enabled: bool = True
-    price_zone_pips: float = 15.0       # Suppress signals within X pips of recent
-    direction_cooldown_minutes: int = 30 # Cooldown per direction
-    same_setup_cooldown_minutes: int = 60 # Cooldown for same setup type
-    max_signals_per_hour: int = 4        # Max signals per instrument per hour
+    price_zone_pips_eurusd: float = 20.0  # Suppress EURUSD signals within 20 pips
+    price_zone_pips_xauusd: float = 300.0 # Suppress XAUUSD signals within $3
+    direction_cooldown_minutes: int = 45   # Cooldown per direction (increased)
+    same_setup_cooldown_minutes: int = 90  # Cooldown for same setup type
+    max_signals_per_hour: int = 3          # Max signals per instrument per hour (reduced)
+    require_price_movement: float = 0.3    # Require 0.3% price move for new signal
 
 
 @dataclass
 class ScannerConfig:
-    """Master configuration for the advanced scanner"""
+    """Master configuration for the advanced scanner
     
-    # Score thresholds
-    min_score_threshold: float = 70.0    # Minimum score to generate signal
-    a_plus_threshold: float = 90.0       # A+ grade threshold
-    a_threshold: float = 80.0            # A grade threshold
-    b_threshold: float = 70.0            # B grade threshold
+    Priorità utente:
+    - Soglia alta (78) - Solo setup A e A+
+    - MTF bias OBBLIGATORIO
+    - Execution su M5
+    - Protezione duplicati forte
+    - Metadati completi sui segnali
+    - Sistema leggero (<5 sec per ciclo)
+    """
+    
+    # Score thresholds - HIGH as requested (78 = only A/A+ signals)
+    min_score_threshold: float = 78.0     # ALTA SOGLIA - solo A e A+
+    a_plus_threshold: float = 92.0        # A+ grade threshold
+    a_threshold: float = 85.0             # A grade threshold
+    b_threshold: float = 78.0             # B grade threshold (= min)
     
     # Scoring weights
     scoring_weights: ScoringWeights = field(default_factory=ScoringWeights)
@@ -104,20 +123,20 @@ class ScannerConfig:
         SetupType.SESSION_BREAKOUT: True,
     })
     
-    # Higher timeframe settings
+    # Higher timeframe settings - STRICT as requested
     htf_bias_timeframes: List[str] = field(default_factory=lambda: ["1h", "15min", "5min"])
-    require_htf_alignment: bool = True
-    allow_countertrend: bool = False
-    countertrend_score_penalty: float = 20.0  # -20 for countertrend signals
+    require_htf_alignment: bool = True    # OBBLIGATORIO
+    allow_countertrend: bool = False      # NO setup contro-trend
+    countertrend_score_penalty: float = 30.0  # -30 per segnali contro-trend
     
     # Signal limits
     max_concurrent_signals_per_asset: int = 2
     signal_expiry_minutes: int = 60
     
     # Trigger settings
-    trigger_aggressiveness: float = 1.0  # 0.5 = conservative, 1.0 = normal, 1.5 = aggressive
+    trigger_aggressiveness: float = 1.0
     
-    # Logging
+    # Logging - DETAILED as requested
     verbose_logging: bool = True
     log_rejected_signals: bool = True
     log_score_breakdown: bool = True
