@@ -10,6 +10,7 @@
     "newArchEnabled": true,
     "extra": {
       "router": {},
+      "backendUrl": "https://eurusd-alerts.preview.emergentagent.com",
       "eas": {
         "projectId": "639df9f4-f840-4ac8-8ce7-3d99f52b5cb6"
       }
@@ -23,7 +24,7 @@
     },
     "android": {
       "package": "com.propsignal.engine",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
