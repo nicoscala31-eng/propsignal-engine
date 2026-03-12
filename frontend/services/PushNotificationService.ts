@@ -207,7 +207,7 @@ class PushNotificationService {
       };
     }
 
-    // Step 3: Get push token
+    // Step 3: Get push token (may fail without FCM on Android)
     this.setState(NotificationState.REGISTERING);
     console.log('📱 Getting push token...');
 
@@ -223,14 +223,13 @@ class PushNotificationService {
           projectId: projectId,
         });
       } else {
-        // Fallback without projectId
         tokenData = await Notifications.getExpoPushTokenAsync();
       }
-
+      
       this.pushToken = tokenData.data;
       console.log('✅ Push token obtained:', this.pushToken);
 
-      if (!this.pushToken || !this.pushToken.startsWith('ExponentPushToken[')) {
+      if (!this.pushToken) {
         throw new Error('Token non valido ricevuto');
       }
     } catch (error: any) {
