@@ -235,24 +235,8 @@ export default function HomeScreen() {
             prevXauusdType.current = signal.signal_type;
           }
           
-          // Send notification for new BUY/SELL signals
-          if (signal.signal_type !== 'NEXT' && prevType !== signal.signal_type && notificationsEnabled) {
-            if (signal.signal_type === 'BUY') {
-              await notificationService.sendBuyNotification(
-                asset,
-                signal.entry_price || 0,
-                signal.confidence_score || 0,
-                signal.id
-              );
-            } else if (signal.signal_type === 'SELL') {
-              await notificationService.sendSellNotification(
-                asset,
-                signal.entry_price || 0,
-                signal.confidence_score || 0,
-                signal.id
-              );
-            }
-          }
+          // Push notifications are now handled by the backend
+          // When a signal is generated server-side, it sends push to registered devices
         }
       } catch (error) {
         console.error(`Auto-scan error for ${asset}:`, error);
@@ -260,7 +244,7 @@ export default function HomeScreen() {
     }
     
     await fetchProviderStatus();
-  }, [autoScanEnabled, notificationsEnabled, fetchProviderStatus]);
+  }, [autoScanEnabled, fetchProviderStatus]);
 
   const generateSignal = async (asset: 'EURUSD' | 'XAUUSD') => {
     setLoading(true);
@@ -291,14 +275,7 @@ export default function HomeScreen() {
         await fetchProviderStatus();
 
         if (signal.signal_type !== 'NEXT') {
-          // Send notification
-          if (notificationsEnabled) {
-            if (signal.signal_type === 'BUY') {
-              await notificationService.sendBuyNotification(asset, signal.entry_price, signal.confidence_score, signal.id);
-            } else {
-              await notificationService.sendSellNotification(asset, signal.entry_price, signal.confidence_score, signal.id);
-            }
-          }
+          // Push notification is handled by backend for registered devices
           
           Alert.alert(
             `${signal.signal_type} Signal`,
