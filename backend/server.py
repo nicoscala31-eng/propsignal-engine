@@ -439,7 +439,7 @@ async def create_prop_profile(user_id: str, request: CreatePropProfileRequest):
 @api_router.get("/users/{user_id}/prop-profiles", response_model=List[PropProfile])
 async def get_user_prop_profiles(user_id: str):
     """Get all prop profiles for a user"""
-    profiles = await db.prop_profiles.find({"user_id": user_id}).to_list(100)
+    profiles = await db.prop_profiles.find({"user_id": user_id}).limit(100).to_list(100)
     return [PropProfile(**p) for p in profiles]
 
 @api_router.get("/prop-profiles/{profile_id}", response_model=PropProfile)
@@ -542,10 +542,15 @@ async def generate_signal(user_id: str, request: GenerateSignalRequest):
 @api_router.get("/users/{user_id}/signals/active", response_model=List[Signal])
 async def get_active_signals(user_id: str):
     """Get all active signals for a user"""
+    projection = {
+        "id": 1, "signal_type": 1, "asset": 1, "entry_price": 1, 
+        "stop_loss": 1, "take_profit_1": 1, "confidence_score": 1, 
+        "created_at": 1, "is_active": 1, "user_id": 1
+    }
     signals = await db.signals.find({
         "user_id": user_id,
         "is_active": True
-    }).sort("created_at", -1).to_list(100)
+    }, projection).sort("created_at", -1).limit(100).to_list(100)
     
     return [Signal(**s) for s in signals]
 
@@ -669,8 +674,16 @@ async def mark_notification_read(notification_id: str):
 async def get_analytics_summary(user_id: str):
     """Get analytics summary for a user"""
     
-    # Get all signals
-    all_signals = await db.signals.find({"user_id": user_id}).to_list(1000)
+    # Get all signals with projection for needed fields only
+    projection = {
+        "signal_type": 1, 
+        "confidence_score": 1, 
+        "risk_percentage": 1, 
+        "lot_size": 1, 
+        "asset": 1, 
+        "_id": 0
+    }
+    all_signals = await db.signals.find({"user_id": user_id}, projection).to_list(1000)
     
     total_signals = len(all_signals)
     buy_signals = sum(1 for s in all_signals if s.get("signal_type") == "BUY")
