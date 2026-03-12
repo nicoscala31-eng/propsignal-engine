@@ -1,4 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -1483,6 +1485,100 @@ async def get_system_status():
             "total_signals": total_signals
         }
     }
+
+
+# ==================== APK DOWNLOAD ENDPOINT ====================
+
+@api_router.get("/download/apk")
+async def download_apk():
+    """Download the latest PropSignal APK"""
+    apk_path = Path("/app/backend/static/propsignal-v5.apk")
+    
+    if not apk_path.exists():
+        raise HTTPException(status_code=404, detail="APK not found")
+    
+    return FileResponse(
+        path=str(apk_path),
+        filename="propsignal-v5.apk",
+        media_type="application/vnd.android.package-archive"
+    )
+
+
+@api_router.get("/download/page")
+async def download_page():
+    """HTML page for APK download"""
+    from fastapi.responses import HTMLResponse
+    html = """
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download PropSignal APK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+        .container { text-align: center; padding: 40px; max-width: 400px; }
+        .logo { font-size: 64px; margin-bottom: 20px; }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #00ff88; }
+        .version { color: #888; margin-bottom: 30px; }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            padding: 18px 40px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .size { color: #666; font-size: 14px; margin-bottom: 30px; }
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .instructions h3 { color: #00ff88; margin-bottom: 15px; }
+        .instructions ol { padding-left: 20px; }
+        .instructions li { margin-bottom: 10px; color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📈</div>
+        <h1>PropSignal Engine</h1>
+        <p class="version">Versione 5 - Push Notifications</p>
+        
+        <a href="/api/download/apk" class="download-btn">⬇️ Scarica APK</a>
+        
+        <p class="size">Dimensione: 107 MB</p>
+        
+        <div class="instructions">
+            <h3>📱 Istruzioni:</h3>
+            <ol>
+                <li>Clicca "Scarica APK"</li>
+                <li>Apri il file scaricato</li>
+                <li>Abilita "Origini sconosciute" se richiesto</li>
+                <li>Completa l'installazione</li>
+                <li>Attiva le notifiche push!</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
+"""
+    return HTMLResponse(content=html)
 
 
 # Include the router in the main app
