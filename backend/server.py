@@ -1100,6 +1100,41 @@ async def get_advanced_scanner_status():
     }
 
 
+@api_router.get("/scanner/v3/status")
+async def get_signal_generator_v3_status():
+    """
+    Get status of Signal Generator v3 (confidence-based)
+    
+    This is the PRIMARY signal generator with:
+    - Minimum threshold: 60%
+    - Classification: STRONG (80+), GOOD (70-79), ACCEPTABLE (60-69), REJECTED (<60)
+    - No hidden thresholds
+    """
+    if not signal_generator_instance:
+        return {"error": "Signal Generator v3 not initialized"}
+    
+    stats = signal_generator_instance.get_stats()
+    
+    return {
+        "version": stats["version"],
+        "mode": stats["mode"],
+        "is_running": stats["is_running"],
+        "uptime_seconds": stats["uptime_seconds"],
+        "min_confidence_threshold": stats["min_confidence"],
+        "classification": stats["classification"],
+        
+        "statistics": {
+            "total_scans": stats["scan_count"],
+            "signals_generated": stats["signal_count"],
+            "notifications_sent": stats["notification_count"],
+            "rejections": stats["rejection_count"]
+        },
+        
+        "duplicate_window_minutes": stats["duplicate_window_minutes"],
+        "recent_signals_count": stats["recent_signals"]
+    }
+
+
 @api_router.get("/scanner/v2/bias/{asset}")
 async def get_current_mtf_bias(asset: str):
     """
