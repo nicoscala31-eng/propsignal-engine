@@ -20,6 +20,7 @@ from models import (
 from services.signal_orchestrator import enhanced_signal_orchestrator
 from services.market_scanner import init_market_scanner, market_scanner
 from services.advanced_scanner import init_advanced_scanner, advanced_scanner
+from services.signal_generator_v3 import init_signal_generator, signal_generator_v3
 from services.analytics_service import create_analytics_service
 from services.push_notification_service import push_service
 from services.signal_outcome_tracker import init_outcome_tracker, outcome_tracker
@@ -133,6 +134,7 @@ logger = logging.getLogger(__name__)
 # Initialize services
 scanner = None
 advanced_scanner_instance = None
+signal_generator_instance = None
 analytics = None
 tracker = None
 
@@ -142,7 +144,7 @@ tracker = None
 @app.on_event("startup")
 async def startup_event():
     """Initialize market data provider and services on startup"""
-    global scanner, advanced_scanner_instance, analytics, tracker
+    global scanner, advanced_scanner_instance, signal_generator_instance, analytics, tracker
     
     logger.info("=" * 60)
     logger.info("🚀 PROPSIGNAL ENGINE - PRODUCTION STARTUP")
@@ -184,23 +186,28 @@ async def startup_event():
     
     try:
         # Initialize market scanners
-        logger.info("🔄 Initializing Market Scanners...")
+        logger.info("🔄 Initializing Signal Generators...")
         if db is not None:
             # Legacy scanner (kept for compatibility)
             scanner = init_market_scanner(db)
             
-            # NEW: Advanced Scanner v2 with MTF Bias
-            logger.info("🚀 Initializing Advanced Scanner v2...")
+            # Advanced Scanner v2 (kept but running in parallel)
+            logger.info("📊 Initializing Advanced Scanner v2 (reference only)...")
             advanced_scanner_instance = init_advanced_scanner(db)
+            
+            # NEW: Signal Generator v3 - Confidence-based, min threshold 60
+            logger.info("🚀 Initializing Signal Generator v3 (PRIMARY - threshold 60%)...")
+            signal_generator_instance = await init_signal_generator(db)
             
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
             
             # Start services
             await scanner.start()
-            await advanced_scanner_instance.start()  # Start advanced scanner
+            await advanced_scanner_instance.start()  # Reference only
+            await signal_generator_instance.start()  # PRIMARY SIGNAL GENERATOR
             await tracker.start()
-            logger.info("✅ Scanner, Advanced Scanner v2, and Tracker started")
+            logger.info("✅ Signal Generator v3 (60% threshold) + Tracker started")
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
     except Exception as e:
@@ -213,13 +220,16 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global scanner, advanced_scanner_instance, tracker
+    global scanner, advanced_scanner_instance, signal_generator_instance, tracker
     
     if scanner:
         await scanner.stop()
     
     if advanced_scanner_instance:
         await advanced_scanner_instance.stop()
+    
+    if signal_generator_instance:
+        await signal_generator_instance.stop()
     
     if tracker:
         await tracker.stop()
