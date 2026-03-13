@@ -14,11 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
+import { BACKEND_URL } from '../config/api';
 import { pushNotificationService, NotificationState } from '../services/PushNotificationService';
-
-// Get backend URL from app.json extra config (works in production builds)
-const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://eurusd-alerts.preview.emergentagent.com';
 
 // Mock user ID for MVP (in production, this would come from auth)
 const MOCK_USER_ID = '1773156899.291813';

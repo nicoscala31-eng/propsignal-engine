@@ -1,10 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
-
-// Get backend URL from app.json extra config (works in production builds)
-const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://eurusd-alerts.preview.emergentagent.com';
+import { BACKEND_URL } from '../config/api';
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({

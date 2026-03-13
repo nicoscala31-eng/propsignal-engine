@@ -18,22 +18,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-
-// Backend URL from environment - dynamically set by deployment
-const getBackendUrl = (): string => {
-  // First check environment variable (set by deployment)
-  if (process.env.EXPO_PUBLIC_BACKEND_URL) {
-    return process.env.EXPO_PUBLIC_BACKEND_URL;
-  }
-  // Check expo config extra
-  if (Constants.expoConfig?.extra?.backendUrl) {
-    return Constants.expoConfig.extra.backendUrl;
-  }
-  // Fallback to Railway production URL
-  return 'https://propsignal-engine-production-b22b.up.railway.app';
-};
-
-const BACKEND_URL = getBackendUrl();
+import { BACKEND_URL } from '../config/api';
 
 // Notification states
 export enum NotificationState {
