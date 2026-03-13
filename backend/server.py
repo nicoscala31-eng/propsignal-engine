@@ -81,7 +81,7 @@ mongo_url = os.environ.get('MONGO_URL', '')
 db = None
 client = None
 
-if mongo_url and 'cluster.mongodb.net' not in mongo_url:
+if mongo_url:
     try:
         client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
         db = client[os.environ.get('DB_NAME', 'propsignal')]
@@ -917,42 +917,75 @@ async def register_device(request: RegisterDeviceRequest):
     This endpoint should be called when the app launches and obtains
     an Expo push token.
     """
-    # Check if device already exists
-    existing = await db.devices.find_one({"device_id": request.device_id})
+    # Log incoming request
+    logger.info(f"📱 Device registration request: platform={request.platform}, device_id={request.device_id[:20] if request.device_id else 'None'}...")
+    logger.info(f"📱 Token: {request.push_token[:30] if request.push_token else 'None'}...")
     
-    if existing:
-        # Update existing device
-        await db.devices.update_one(
-            {"device_id": request.device_id},
-            {
-                "$set": {
-                    "push_token": request.push_token,
-                    "platform": request.platform,
-                    "device_name": request.device_name,
-                    "is_active": True,
-                    "updated_at": datetime.utcnow()
+    # Validate token format
+    if not request.push_token:
+        logger.error("❌ Missing push_token")
+        raise HTTPException(status_code=400, detail="push_token is required")
+    
+    if not request.device_id:
+        logger.error("❌ Missing device_id")
+        raise HTTPException(status_code=400, detail="device_id is required")
+    
+    if not request.platform or request.platform not in ['ios', 'android', 'web']:
+        logger.error(f"❌ Invalid platform: {request.platform}")
+        raise HTTPException(status_code=400, detail="platform must be 'ios', 'android', or 'web'")
+    
+    # Validate Expo push token format (optional but helpful)
+    if not request.push_token.startswith('ExponentPushToken[') and not request.push_token.startswith('ExpoPushToken['):
+        logger.warning(f"⚠️ Unusual token format (not Expo): {request.push_token[:30]}...")
+    
+    # Check database connection
+    if db is None:
+        logger.error("❌ Database not connected")
+        raise HTTPException(status_code=503, detail="Database service unavailable")
+    
+    try:
+        # Check if device already exists
+        existing = await db.devices.find_one({"device_id": request.device_id})
+        
+        if existing:
+            # Update existing device
+            await db.devices.update_one(
+                {"device_id": request.device_id},
+                {
+                    "$set": {
+                        "push_token": request.push_token,
+                        "platform": request.platform,
+                        "device_name": request.device_name,
+                        "is_active": True,
+                        "updated_at": datetime.utcnow()
+                    }
                 }
-            }
-        )
-        logger.info(f"📱 Device updated: {request.device_id[:20]}...")
-        return {"status": "updated", "device_id": request.device_id}
-    
-    # Create new device
-    device = {
-        "id": str(datetime.utcnow().timestamp()),
-        "device_id": request.device_id,
-        "push_token": request.push_token,
-        "platform": request.platform,
-        "device_name": request.device_name,
-        "is_active": True,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
-    }
-    
-    await db.devices.insert_one(device)
-    logger.info(f"📱 New device registered: {request.device_id[:20]}...")
-    
-    return {"status": "registered", "device_id": request.device_id}
+            )
+            logger.info(f"✅ Device updated: {request.device_id[:20]}...")
+            return {"status": "updated", "device_id": request.device_id}
+        
+        # Create new device
+        device = {
+            "id": str(datetime.utcnow().timestamp()),
+            "device_id": request.device_id,
+            "push_token": request.push_token,
+            "platform": request.platform,
+            "device_name": request.device_name,
+            "is_active": True,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.devices.insert_one(device)
+        logger.info(f"✅ New device registered: {request.device_id[:20]}...")
+        
+        return {"status": "registered", "device_id": request.device_id}
+        
+    except Exception as e:
+        logger.error(f"❌ Database error during device registration: {str(e)}")
+        import traceback
+        logger.error(f"❌ Stack trace: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @api_router.delete("/devices/{device_id}")
 async def unregister_device(device_id: str):
@@ -970,13 +1003,20 @@ async def unregister_device(device_id: str):
 @api_router.get("/devices/count")
 async def get_device_count():
     """Get count of registered devices"""
-    total = await db.devices.count_documents({})
-    active = await db.devices.count_documents({"is_active": True})
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database service unavailable")
     
-    return {
-        "total_devices": total,
-        "active_devices": active
-    }
+    try:
+        total = await db.devices.count_documents({})
+        active = await db.devices.count_documents({"is_active": True})
+        
+        return {
+            "total_devices": total,
+            "active_devices": active
+        }
+    except Exception as e:
+        logger.error(f"❌ Error counting devices: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 # ==================== MARKET SCANNER CONTROL ====================
@@ -1343,32 +1383,55 @@ async def get_push_stats():
 @api_router.post("/push/test")
 async def send_test_notification(device_id: Optional[str] = None):
     """Send a test push notification"""
-    if device_id:
-        device = await db.devices.find_one({"device_id": device_id, "is_active": True})
-        if not device:
-            raise HTTPException(status_code=404, detail="Device not found")
-        tokens = [device["push_token"]]
-    else:
-        devices = await db.devices.find({"is_active": True}).to_list(100)
-        tokens = [d["push_token"] for d in devices if d.get("push_token")]
+    logger.info(f"📬 Test push notification requested for device: {device_id or 'all devices'}")
     
-    if not tokens:
-        return {"status": "no_devices", "message": "No active devices to send to"}
+    # Check database connection
+    if db is None:
+        logger.error("❌ Database not connected for push test")
+        raise HTTPException(status_code=503, detail="Database service unavailable")
     
-    results = await push_service.send_to_all_devices(
-        tokens=tokens,
-        title="🧪 Test Notification",
-        body="This is a test notification from PropSignal Engine",
-        data={"type": "test"}
-    )
-    
-    successful = sum(1 for r in results if r.success)
-    return {
-        "status": "sent",
-        "total": len(results),
-        "successful": successful,
-        "failed": len(results) - successful
-    }
+    try:
+        if device_id:
+            device = await db.devices.find_one({"device_id": device_id, "is_active": True})
+            if not device:
+                logger.warning(f"⚠️ Device not found: {device_id[:20]}...")
+                raise HTTPException(status_code=404, detail="Device not found")
+            tokens = [device["push_token"]]
+            logger.info(f"📬 Sending test to 1 device")
+        else:
+            devices = await db.devices.find({"is_active": True}).to_list(100)
+            tokens = [d["push_token"] for d in devices if d.get("push_token")]
+            logger.info(f"📬 Sending test to {len(tokens)} devices")
+        
+        if not tokens:
+            logger.warning("⚠️ No active devices to send test to")
+            return {"status": "no_devices", "message": "No active devices to send to"}
+        
+        results = await push_service.send_to_all_devices(
+            tokens=tokens,
+            title="🧪 Test Notification",
+            body="This is a test notification from PropSignal Engine",
+            data={"type": "test"}
+        )
+        
+        successful = sum(1 for r in results if r.success)
+        failed = len(results) - successful
+        
+        logger.info(f"📬 Test push results: {successful} successful, {failed} failed")
+        
+        return {
+            "status": "sent",
+            "total": len(results),
+            "successful": successful,
+            "failed": failed
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Test push error: {str(e)}")
+        import traceback
+        logger.error(f"❌ Stack trace: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Push error: {str(e)}")
 
 
 # ==================== OUTCOME TRACKER ====================
