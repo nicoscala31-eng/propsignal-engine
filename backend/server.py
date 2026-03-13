@@ -27,6 +27,7 @@ from services.macro_news_service import macro_news_service
 from services.market_data_engine import market_data_engine
 from services.market_data_fetch_engine import market_data_fetch_engine
 from services.market_data_cache import market_data_cache
+from services.device_storage_service import device_storage
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
@@ -938,8 +939,9 @@ async def register_device(request: RegisterDeviceRequest):
     """
     Register a device for push notifications
     
-    This endpoint should be called when the app launches and obtains
-    an Expo push token.
+    This endpoint uses resilient storage that works with:
+    - MongoDB (primary, when available)
+    - File-based storage (fallback, always available)
     """
     # Log incoming request
     logger.info(f"📱 Device registration request: platform={request.platform}, device_id={request.device_id[:20] if request.device_id else 'None'}...")
@@ -958,89 +960,55 @@ async def register_device(request: RegisterDeviceRequest):
         logger.error(f"❌ Invalid platform: {request.platform}")
         raise HTTPException(status_code=400, detail="platform must be 'ios', 'android', or 'web'")
     
-    # Validate Expo push token format (optional but helpful)
+    # Validate Expo push token format (warning only, not blocking)
     if not request.push_token.startswith('ExponentPushToken[') and not request.push_token.startswith('ExpoPushToken['):
         logger.warning(f"⚠️ Unusual token format (not Expo): {request.push_token[:30]}...")
     
-    # Check database connection
-    if db is None:
-        logger.error("❌ Database not connected")
-        raise HTTPException(status_code=503, detail="Database service unavailable")
-    
     try:
-        # Check if device already exists
-        existing = await db.devices.find_one({"device_id": request.device_id})
+        # Use resilient device storage
+        result = await device_storage.register_device(
+            device_id=request.device_id,
+            push_token=request.push_token,
+            platform=request.platform,
+            device_name=request.device_name
+        )
         
-        if existing:
-            # Update existing device
-            await db.devices.update_one(
-                {"device_id": request.device_id},
-                {
-                    "$set": {
-                        "push_token": request.push_token,
-                        "platform": request.platform,
-                        "device_name": request.device_name,
-                        "is_active": True,
-                        "updated_at": datetime.utcnow()
-                    }
-                }
-            )
-            logger.info(f"✅ Device updated: {request.device_id[:20]}...")
-            return {"status": "updated", "device_id": request.device_id}
+        logger.info(f"✅ Device {result['status']}: {request.device_id[:20]}... (backend: {result.get('storage_backend', 'unknown')})")
         
-        # Create new device
-        device = {
-            "id": str(datetime.utcnow().timestamp()),
-            "device_id": request.device_id,
-            "push_token": request.push_token,
-            "platform": request.platform,
-            "device_name": request.device_name,
-            "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+        return {
+            "status": result['status'],
+            "device_id": result['device_id']
         }
         
-        await db.devices.insert_one(device)
-        logger.info(f"✅ New device registered: {request.device_id[:20]}...")
-        
-        return {"status": "registered", "device_id": request.device_id}
-        
     except Exception as e:
-        logger.error(f"❌ Database error during device registration: {str(e)}")
+        logger.error(f"❌ Device registration error: {str(e)}")
         import traceback
         logger.error(f"❌ Stack trace: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration error: {str(e)}")
 
 @api_router.delete("/devices/{device_id}")
 async def unregister_device(device_id: str):
     """Unregister a device from push notifications"""
-    result = await db.devices.update_one(
-        {"device_id": device_id},
-        {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Device not found")
-    
-    return {"status": "unregistered"}
+    try:
+        success = await device_storage.deactivate_device(device_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Device not found")
+        return {"status": "unregistered"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error unregistering device: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @api_router.get("/devices/count")
 async def get_device_count():
     """Get count of registered devices"""
-    if db is None:
-        raise HTTPException(status_code=503, detail="Database service unavailable")
-    
     try:
-        total = await db.devices.count_documents({})
-        active = await db.devices.count_documents({"is_active": True})
-        
-        return {
-            "total_devices": total,
-            "active_devices": active
-        }
+        counts = await device_storage.get_device_count()
+        return counts
     except Exception as e:
         logger.error(f"❌ Error counting devices: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
 # ==================== MARKET SCANNER CONTROL ====================
@@ -1409,22 +1377,16 @@ async def send_test_notification(device_id: Optional[str] = None):
     """Send a test push notification"""
     logger.info(f"📬 Test push notification requested for device: {device_id or 'all devices'}")
     
-    # Check database connection
-    if db is None:
-        logger.error("❌ Database not connected for push test")
-        raise HTTPException(status_code=503, detail="Database service unavailable")
-    
     try:
         if device_id:
-            device = await db.devices.find_one({"device_id": device_id, "is_active": True})
-            if not device:
-                logger.warning(f"⚠️ Device not found: {device_id[:20]}...")
+            device = await device_storage.get_device(device_id)
+            if not device or not device.is_active:
+                logger.warning(f"⚠️ Device not found or inactive: {device_id[:20]}...")
                 raise HTTPException(status_code=404, detail="Device not found")
-            tokens = [device["push_token"]]
+            tokens = [device.push_token]
             logger.info(f"📬 Sending test to 1 device")
         else:
-            devices = await db.devices.find({"is_active": True}).to_list(100)
-            tokens = [d["push_token"] for d in devices if d.get("push_token")]
+            tokens = await device_storage.get_active_tokens()
             logger.info(f"📬 Sending test to {len(tokens)} devices")
         
         if not tokens:
@@ -1456,6 +1418,35 @@ async def send_test_notification(device_id: Optional[str] = None):
         import traceback
         logger.error(f"❌ Stack trace: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Push error: {str(e)}")
+
+@api_router.get("/push/health")
+async def get_push_health():
+    """
+    Get comprehensive push notification system health status
+    
+    Returns:
+    - Device storage status (MongoDB/File)
+    - Device counts
+    - Storage stats
+    - Push service stats
+    """
+    try:
+        storage_health = await device_storage.health_check()
+        push_stats = push_service.get_stats()
+        
+        return {
+            "status": "healthy",
+            "device_storage": storage_health,
+            "push_service": push_stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"❌ Health check error: {str(e)}")
+        return {
+            "status": "degraded",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
 
 
 # ==================== OUTCOME TRACKER ====================
