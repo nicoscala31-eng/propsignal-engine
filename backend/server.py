@@ -83,11 +83,24 @@ client = None
 
 if mongo_url:
     try:
-        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        # Configure connection options for MongoDB Atlas
+        connection_options = {
+            'serverSelectionTimeoutMS': 5000,
+            'connectTimeoutMS': 10000,
+            'retryWrites': True,
+            'w': 'majority'
+        }
+        
+        # Add TLS options for Atlas connections
+        if 'mongodb.net' in mongo_url or 'mongodb+srv' in mongo_url:
+            connection_options['tls'] = True
+            connection_options['tlsAllowInvalidCertificates'] = False
+        
+        client = AsyncIOMotorClient(mongo_url, **connection_options)
         db = client[os.environ.get('DB_NAME', 'propsignal')]
         print("✅ MongoDB configured")
     except Exception as e:
-        print(f"⚠️ MongoDB connection skipped: {e}")
+        print(f"⚠️ MongoDB connection error: {e}")
         db = None
 else:
     print("⚠️ MongoDB not configured - running without database")
