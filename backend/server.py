@@ -83,22 +83,33 @@ client = None
 
 if mongo_url:
     try:
+        import certifi
+        
         # Configure connection options for MongoDB Atlas
         connection_options = {
-            'serverSelectionTimeoutMS': 5000,
-            'connectTimeoutMS': 10000,
+            'serverSelectionTimeoutMS': 10000,
+            'connectTimeoutMS': 20000,
             'retryWrites': True,
             'w': 'majority'
         }
         
-        # Add TLS options for Atlas connections
+        # Add TLS options for Atlas connections with certifi
         if 'mongodb.net' in mongo_url or 'mongodb+srv' in mongo_url:
             connection_options['tls'] = True
-            connection_options['tlsAllowInvalidCertificates'] = False
+            connection_options['tlsCAFile'] = certifi.where()
         
         client = AsyncIOMotorClient(mongo_url, **connection_options)
         db = client[os.environ.get('DB_NAME', 'propsignal')]
         print("✅ MongoDB configured")
+    except ImportError:
+        print("⚠️ certifi not installed, trying without TLS config")
+        try:
+            client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+            db = client[os.environ.get('DB_NAME', 'propsignal')]
+            print("✅ MongoDB configured (no certifi)")
+        except Exception as e:
+            print(f"⚠️ MongoDB connection error: {e}")
+            db = None
     except Exception as e:
         print(f"⚠️ MongoDB connection error: {e}")
         db = None
