@@ -81,6 +81,24 @@ class TrackedSignal:
     time_to_outcome_seconds: float = 0.0
     moved_favorable_before_fail: bool = False
     
+    # === NEW: Trade Management States ===
+    # R-multiple tracking (observational)
+    reached_half_r: bool = False          # Reached +0.5R
+    reached_one_r: bool = False           # Reached +1R
+    reached_two_r: bool = False           # Reached +2R
+    
+    # Management analysis (what could have been)
+    breakeven_possible: bool = False      # Could have moved SL to BE
+    partial_profit_possible: bool = False # Could have taken partial at +1R
+    trailing_would_improve: bool = False  # Trailing SL would have improved outcome
+    
+    # Time in favorable/adverse territory
+    time_in_profit_seconds: float = 0.0
+    time_in_drawdown_seconds: float = 0.0
+    
+    # Peak profit before reversal (if lost)
+    peak_r_before_reversal: float = 0.0
+    
     def to_dict(self) -> Dict:
         return asdict(self)
     
@@ -234,30 +252,72 @@ class SignalOutcomeTracker:
                 signal.highest_price_seen = max(signal.highest_price_seen, current_price)
                 signal.lowest_price_seen = min(signal.lowest_price_seen, current_price)
                 
-                # Calculate excursions
+                # Calculate risk (1R)
+                risk = abs(signal.entry_price - signal.stop_loss)
+                
+                # Calculate excursions and R-multiples
                 if signal.direction == "BUY":
-                    signal.max_favorable_excursion = max(
-                        signal.max_favorable_excursion,
-                        current_price - signal.entry_price
-                    )
-                    signal.max_adverse_excursion = max(
-                        signal.max_adverse_excursion,
-                        signal.entry_price - current_price
-                    )
+                    favorable_move = current_price - signal.entry_price
+                    adverse_move = signal.entry_price - current_price
+                    
+                    signal.max_favorable_excursion = max(signal.max_favorable_excursion, favorable_move)
+                    signal.max_adverse_excursion = max(signal.max_adverse_excursion, adverse_move)
+                    
+                    # Track R-multiples
+                    if risk > 0:
+                        r_multiple = favorable_move / risk
+                        if r_multiple >= 0.5 and not signal.reached_half_r:
+                            signal.reached_half_r = True
+                        if r_multiple >= 1.0 and not signal.reached_one_r:
+                            signal.reached_one_r = True
+                            signal.breakeven_possible = True
+                            signal.partial_profit_possible = True
+                        if r_multiple >= 2.0 and not signal.reached_two_r:
+                            signal.reached_two_r = True
+                        
+                        # Track peak R before any reversal
+                        signal.peak_r_before_reversal = max(signal.peak_r_before_reversal, r_multiple)
+                    
+                    # Track time in profit vs drawdown
+                    if favorable_move > 0:
+                        signal.time_in_profit_seconds += self.PRICE_CHECK_INTERVAL
+                    else:
+                        signal.time_in_drawdown_seconds += self.PRICE_CHECK_INTERVAL
+                        
                 else:  # SELL
-                    signal.max_favorable_excursion = max(
-                        signal.max_favorable_excursion,
-                        signal.entry_price - current_price
-                    )
-                    signal.max_adverse_excursion = max(
-                        signal.max_adverse_excursion,
-                        current_price - signal.entry_price
-                    )
+                    favorable_move = signal.entry_price - current_price
+                    adverse_move = current_price - signal.entry_price
+                    
+                    signal.max_favorable_excursion = max(signal.max_favorable_excursion, favorable_move)
+                    signal.max_adverse_excursion = max(signal.max_adverse_excursion, adverse_move)
+                    
+                    # Track R-multiples
+                    if risk > 0:
+                        r_multiple = favorable_move / risk
+                        if r_multiple >= 0.5 and not signal.reached_half_r:
+                            signal.reached_half_r = True
+                        if r_multiple >= 1.0 and not signal.reached_one_r:
+                            signal.reached_one_r = True
+                            signal.breakeven_possible = True
+                            signal.partial_profit_possible = True
+                        if r_multiple >= 2.0 and not signal.reached_two_r:
+                            signal.reached_two_r = True
+                        
+                        signal.peak_r_before_reversal = max(signal.peak_r_before_reversal, r_multiple)
+                    
+                    if favorable_move > 0:
+                        signal.time_in_profit_seconds += self.PRICE_CHECK_INTERVAL
+                    else:
+                        signal.time_in_drawdown_seconds += self.PRICE_CHECK_INTERVAL
                 
                 # Check outcomes
                 outcome = self._check_outcome(signal, current_price, now)
                 
                 if outcome:
+                    # Determine if trailing would have helped
+                    if outcome == "sl_hit" and signal.reached_one_r:
+                        signal.trailing_would_improve = True
+                    
                     signals_to_complete.append((signal_id, outcome))
                 
             except Exception as e:
@@ -439,6 +499,14 @@ class SignalOutcomeTracker:
         avg_mfe = sum(mfe_values) / len(mfe_values) if mfe_values else 0
         avg_mae = sum(mae_values) / len(mae_values) if mae_values else 0
         
+        # Trade management statistics
+        all_signals = list(self.active_signals.values()) + self.completed_signals
+        reached_half_r = sum(1 for s in all_signals if s.reached_half_r)
+        reached_one_r = sum(1 for s in all_signals if s.reached_one_r)
+        reached_two_r = sum(1 for s in all_signals if s.reached_two_r)
+        be_possible = sum(1 for s in all_signals if s.breakeven_possible)
+        trailing_would_help = sum(1 for s in self.completed_signals if s.trailing_would_improve)
+        
         return {
             "summary": {
                 "total_tracked": self.stats["total_tracked"],
@@ -451,6 +519,13 @@ class SignalOutcomeTracker:
             "excursions": {
                 "avg_max_favorable": round(avg_mfe, 6),
                 "avg_max_adverse": round(avg_mae, 6)
+            },
+            "trade_management": {
+                "reached_half_r": reached_half_r,
+                "reached_one_r": reached_one_r,
+                "reached_two_r": reached_two_r,
+                "breakeven_possible_count": be_possible,
+                "trailing_would_improve_count": trailing_would_help
             },
             "by_asset": self.stats["by_asset"],
             "by_session": self.stats["by_session"],

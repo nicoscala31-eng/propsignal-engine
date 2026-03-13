@@ -155,16 +155,18 @@ class SignalGeneratorV3:
     """
     
     # Scoring weights (must sum to 100)
+    # NOTE: Added regime_quality as 10th factor, redistributed weights
     WEIGHTS = {
-        'h1_bias': 20.0,           # H1 directional bias
-        'm15_context': 15.0,       # M15 alignment/context
-        'market_structure': 15.0,  # Market structure quality
-        'momentum': 12.0,          # Momentum strength
-        'pullback_quality': 12.0,  # Pullback to key level
-        'key_level': 10.0,         # Reaction at key level
-        'session': 8.0,            # Session quality
+        'h1_bias': 18.0,           # H1 directional bias
+        'm15_context': 14.0,       # M15 alignment/context
+        'market_structure': 14.0,  # Market structure quality
+        'momentum': 11.0,          # Momentum strength
+        'pullback_quality': 11.0,  # Pullback to key level
+        'key_level': 9.0,          # Reaction at key level
+        'session': 7.0,            # Session quality
         'rr_ratio': 5.0,           # Risk/Reward ratio
         'volatility': 3.0,         # Volatility conditions
+        'regime_quality': 8.0,     # NEW: Market regime (trending/ranging/dead)
     }
     
     # Hard rejection thresholds
@@ -377,6 +379,10 @@ class SignalGeneratorV3:
         # 10. Volatility Score
         vol_score, vol_reason = self._score_volatility(atr, avg_atr)
         components.append(ScoreComponent("Volatility", self.WEIGHTS['volatility'], vol_score, vol_reason))
+        
+        # 11. Market Regime Score (NEW - lightweight regime detection)
+        regime_score, regime_reason = self._score_market_regime(m5_candles, atr, avg_atr)
+        components.append(ScoreComponent("Market Regime", self.WEIGHTS['regime_quality'], regime_score, regime_reason))
         
         # Calculate final score
         final_score = sum(c.weighted_score for c in components)
@@ -866,6 +872,82 @@ class SignalGeneratorV3:
             return 40, "High volatility risk"
         else:
             return 40, "Low volatility"
+    
+    def _score_market_regime(self, m5: List, atr: float, avg_atr: float) -> Tuple[float, str]:
+        """
+        Lightweight market regime detection
+        
+        Distinguishes between:
+        - Trending/expansion market (good for signals)
+        - Neutral/mixed market (small penalty)
+        - Dead/compressed market (stronger penalty)
+        
+        Uses simple inputs:
+        - ATR ratio (current vs average)
+        - Candle range compression
+        - Directional expansion vs overlap
+        
+        This is NOT a hard rejection - just affects score
+        """
+        if len(m5) < 20:
+            return 50, "Insufficient data for regime"
+        
+        # 1. ATR-based activity level
+        atr_ratio = atr / avg_atr if avg_atr > 0 else 1.0
+        
+        # 2. Calculate range compression over last 10 candles
+        recent_candles = m5[-10:]
+        ranges = [c.get('high', 0) - c.get('low', 0) for c in recent_candles]
+        avg_range = sum(ranges) / len(ranges) if ranges else 0
+        
+        # Older candles for comparison
+        older_candles = m5[-20:-10]
+        older_ranges = [c.get('high', 0) - c.get('low', 0) for c in older_candles]
+        older_avg_range = sum(older_ranges) / len(older_ranges) if older_ranges else avg_range
+        
+        range_ratio = avg_range / older_avg_range if older_avg_range > 0 else 1.0
+        
+        # 3. Calculate directional expansion (are candles moving directionally or overlapping?)
+        closes = [c.get('close', 0) for c in recent_candles]
+        if len(closes) >= 5:
+            first_half = sum(closes[:5]) / 5
+            second_half = sum(closes[5:]) / 5
+            directional_move = abs(second_half - first_half) / avg_range if avg_range > 0 else 0
+        else:
+            directional_move = 0.5
+        
+        # 4. Check for candle overlap (ranging behavior)
+        overlap_count = 0
+        for i in range(1, len(recent_candles)):
+            curr = recent_candles[i]
+            prev = recent_candles[i-1]
+            curr_low, curr_high = curr.get('low', 0), curr.get('high', 0)
+            prev_low, prev_high = prev.get('low', 0), prev.get('high', 0)
+            
+            # Candles overlap if ranges intersect significantly
+            overlap = min(curr_high, prev_high) - max(curr_low, prev_low)
+            if overlap > 0:
+                overlap_count += 1
+        
+        overlap_ratio = overlap_count / (len(recent_candles) - 1)
+        
+        # Score calculation
+        # Trending: ATR ratio >= 0.8, range_ratio >= 0.8, directional_move > 1, low overlap
+        # Ranging: ATR ratio ~1, moderate overlap, low directional move
+        # Dead: ATR ratio < 0.5, range compressed, high overlap
+        
+        if atr_ratio >= 1.2 and directional_move > 1.5 and overlap_ratio < 0.7:
+            return 95, "Strong trending regime"
+        elif atr_ratio >= 0.9 and directional_move > 1.0:
+            return 85, "Healthy trend regime"
+        elif atr_ratio >= 0.7 and range_ratio >= 0.7:
+            return 70, "Normal market regime"
+        elif atr_ratio >= 0.5 or range_ratio >= 0.5:
+            return 50, "Mixed/neutral regime"
+        elif atr_ratio < 0.4 and overlap_ratio > 0.8:
+            return 25, "Dead/compressed regime"
+        else:
+            return 40, "Low activity regime"
     
     def _calculate_atr(self, candles: List, period: int) -> float:
         """Calculate ATR"""
