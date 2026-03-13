@@ -202,12 +202,16 @@ async def startup_event():
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
             
+            # Start Outcome Tracker v2 (passive performance monitoring)
+            from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+            await signal_outcome_tracker.start()
+            
             # Start services
             await scanner.start()
             await advanced_scanner_instance.start()  # Reference only
             await signal_generator_instance.start()  # PRIMARY SIGNAL GENERATOR
             await tracker.start()
-            logger.info("✅ Signal Generator v3 (60% threshold) + Tracker started")
+            logger.info("✅ Signal Generator v3 (60% threshold) + Outcome Tracker started")
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
     except Exception as e:
@@ -233,6 +237,13 @@ async def shutdown_event():
     
     if tracker:
         await tracker.stop()
+    
+    # Stop outcome tracker
+    try:
+        from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+        await signal_outcome_tracker.stop()
+    except:
+        pass
     
     # Stop fetch engine
     await market_data_fetch_engine.stop()
@@ -1133,6 +1144,49 @@ async def get_signal_generator_v3_status():
         "duplicate_window_minutes": stats["duplicate_window_minutes"],
         "recent_signals_count": stats["recent_signals"]
     }
+
+
+# ==================== SIGNAL OUTCOME TRACKING ====================
+
+@api_router.get("/signals/tracking/stats")
+async def get_signal_tracking_stats():
+    """
+    Get signal outcome tracking statistics
+    
+    Returns:
+    - Win/loss counts and win rate
+    - Performance by asset
+    - Performance by session
+    - Performance by confidence bucket
+    - Average MFE/MAE
+    """
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    return signal_outcome_tracker.get_stats()
+
+
+@api_router.get("/signals/tracking/recent")
+async def get_recent_tracked_signals(limit: int = 20):
+    """
+    Get recently tracked signals
+    
+    Returns list of signals with their current status and outcome data
+    """
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    return signal_outcome_tracker.get_recent_signals(limit)
+
+
+@api_router.get("/signals/tracking/report")
+async def get_signal_performance_report():
+    """
+    Get comprehensive signal performance report
+    
+    Returns:
+    - Overall statistics
+    - Performance breakdown by asset, session, confidence
+    - Excursion analysis
+    """
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    return signal_outcome_tracker.get_performance_report()
 
 
 @api_router.get("/scanner/v2/bias/{asset}")

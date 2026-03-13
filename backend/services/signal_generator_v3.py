@@ -477,8 +477,45 @@ class SignalGeneratorV3:
         cutoff = datetime.utcnow() - timedelta(minutes=self.DUPLICATE_WINDOW_MINUTES)
         self.recent_signals = [s for s in self.recent_signals if s.timestamp > cutoff]
         
+        # PASSIVE OUTCOME TRACKING - does not affect signal flow
+        await self._track_signal_outcome(signal)
+        
         # Send notification
         await self._send_notification(signal)
+    
+    async def _track_signal_outcome(self, signal: GeneratedSignal):
+        """
+        Register signal for passive outcome tracking
+        
+        This is observational only - does not affect signal generation or notifications
+        """
+        try:
+            from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+            
+            # Prepare tracking data
+            tracking_data = {
+                'signal_id': signal.signal_id,
+                'timestamp': signal.timestamp.isoformat(),
+                'asset': signal.asset.value,
+                'direction': signal.direction,
+                'entry_price': signal.entry_price,
+                'stop_loss': signal.stop_loss,
+                'take_profit_1': signal.take_profit_1,
+                'take_profit_2': signal.take_profit_2,
+                'confidence_score': signal.confidence_score,
+                'confidence_level': signal.confidence_level.value,
+                'setup_type': signal.setup_type,
+                'session': signal.session,
+                'invalidation': signal.invalidation,
+                'risk_reward': signal.risk_reward,
+                'score_breakdown': signal.score_breakdown.to_dict() if signal.score_breakdown else {}
+            }
+            
+            await signal_outcome_tracker.track_signal(tracking_data)
+            
+        except Exception as e:
+            # Tracking failure should NEVER affect signal flow
+            logger.debug(f"Outcome tracking note: {e}")
     
     async def _send_notification(self, signal: GeneratedSignal):
         """Send push notification for signal"""
@@ -512,7 +549,12 @@ class SignalGeneratorV3:
     # ========== SCORING METHODS ==========
     
     def _analyze_direction(self, h1: List, m15: List, m5: List) -> Tuple[Optional[str], float, str]:
-        """Determine trade direction from multi-timeframe analysis"""
+        """
+        Determine trade direction from multi-timeframe analysis
+        
+        UPDATED: Reduced directional threshold from 0.3 to 0.2 for less restrictive
+        candidate detection. This allows more setups to proceed to scoring.
+        """
         # H1 trend
         h1_trend = self._get_trend(h1[-20:]) if len(h1) >= 20 else 0
         # M15 trend
@@ -523,11 +565,12 @@ class SignalGeneratorV3:
         # Combined score
         total = h1_trend * 0.5 + m15_trend * 0.3 + m5_momentum * 0.2
         
-        if total > 0.3:
+        # UPDATED: Reduced from 0.3 to 0.2 for less restrictive direction detection
+        if total > 0.2:
             return "BUY", total * 100, "Bullish bias across timeframes"
-        elif total < -0.3:
+        elif total < -0.2:
             return "SELL", abs(total) * 100, "Bearish bias across timeframes"
-        elif abs(m5_momentum) > 0.5:
+        elif abs(m5_momentum) > 0.4:  # UPDATED: Reduced from 0.5 to 0.4
             # Use M5 momentum when HTF is unclear
             direction = "BUY" if m5_momentum > 0 else "SELL"
             return direction, 50, "M5 momentum breakout"
@@ -535,15 +578,20 @@ class SignalGeneratorV3:
         return None, 0, "No clear direction"
     
     def _fallback_direction(self, m5: List) -> Optional[str]:
-        """Fallback direction detection from M5 only"""
+        """
+        Fallback direction detection from M5 only
+        
+        UPDATED: Reduced threshold from 0.05% to 0.03% for softer requirement
+        """
         if len(m5) < 5:
             return None
         
         # Simple: last 5 candles direction
+        # UPDATED: Reduced from 1.0005/0.9995 (0.05%) to 1.0003/0.9997 (0.03%)
         closes = [c.get('close', 0) for c in m5[-5:]]
-        if closes[-1] > closes[0] * 1.0005:  # 0.05% up
+        if closes[-1] > closes[0] * 1.0003:  # 0.03% up
             return "BUY"
-        elif closes[-1] < closes[0] * 0.9995:  # 0.05% down
+        elif closes[-1] < closes[0] * 0.9997:  # 0.03% down
             return "SELL"
         return None
     
