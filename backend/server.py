@@ -1032,6 +1032,29 @@ async def get_device_count():
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
+@api_router.get("/devices/list")
+async def list_devices():
+    """List all registered devices (for debugging)"""
+    try:
+        devices = await device_storage.get_active_devices()
+        return {
+            "count": len(devices),
+            "devices": [
+                {
+                    "device_id": d.device_id[:20] + "...",
+                    "platform": d.platform,
+                    "token_prefix": d.push_token[:40] + "..." if d.push_token else None,
+                    "is_active": d.is_active,
+                    "created_at": d.created_at
+                }
+                for d in devices
+            ]
+        }
+    except Exception as e:
+        logger.error(f"❌ Error listing devices: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
 # ==================== MARKET SCANNER CONTROL ====================
 
 @api_router.post("/scanner/start")
