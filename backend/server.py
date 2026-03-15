@@ -184,20 +184,39 @@ async def startup_event():
     except Exception as e:
         logger.error(f"❌ Market Data Engine error: {e}")
     
+    # ========== PRODUCTION CONTROL INITIALIZATION ==========
+    from services.production_control import production_control, EngineType
+    production_control.initialize()
+    logger.info("🛡️ Production Control Service ACTIVE")
+    
     try:
         # Initialize market scanners
         logger.info("🔄 Initializing Signal Generators...")
         if db is not None:
-            # Legacy scanner (kept for compatibility)
+            # ========== LEGACY SCANNERS - DISABLED FOR PRODUCTION ==========
+            # These are kept for reference/development ONLY
+            # They are NOT started and cannot generate production signals
+            
+            # Legacy scanner - BLOCKED in production
             scanner = init_market_scanner(db)
+            if not production_control.guard_production_startup(EngineType.MARKET_SCANNER_LEGACY):
+                logger.warning("🚫 Legacy Scanner BLOCKED - Not starting (production safety)")
+                scanner = None
             
-            # Advanced Scanner v2 (kept but running in parallel)
-            logger.info("📊 Initializing Advanced Scanner v2 (reference only)...")
+            # Advanced Scanner v2 - BLOCKED in production
+            logger.info("📊 Advanced Scanner v2 - checking production guard...")
             advanced_scanner_instance = init_advanced_scanner(db)
+            if not production_control.guard_production_startup(EngineType.ADVANCED_SCANNER_V2):
+                logger.warning("🚫 Advanced Scanner v2 BLOCKED - Not starting (production safety)")
+                advanced_scanner_instance = None
             
-            # NEW: Signal Generator v3 - Confidence-based, min threshold 60
+            # ========== AUTHORIZED PRODUCTION ENGINE ==========
+            # Signal Generator v3 - THE ONLY authorized production engine
             logger.info("🚀 Initializing Signal Generator v3 (PRIMARY - threshold 60%)...")
             signal_generator_instance = await init_signal_generator(db)
+            
+            if production_control.guard_production_startup(EngineType.SIGNAL_GENERATOR_V3):
+                logger.info("✅ Signal Generator v3 AUTHORIZED for production")
             
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
@@ -206,12 +225,20 @@ async def startup_event():
             from services.signal_outcome_tracker_v2 import signal_outcome_tracker
             await signal_outcome_tracker.start()
             
-            # Start services
-            await scanner.start()
-            await advanced_scanner_instance.start()  # Reference only
-            await signal_generator_instance.start()  # PRIMARY SIGNAL GENERATOR
+            # ========== START ONLY AUTHORIZED ENGINE ==========
+            # DO NOT start legacy scanners - they are blocked
+            # scanner.start() - REMOVED - Legacy scanner blocked
+            # advanced_scanner_instance.start() - REMOVED - Advanced scanner blocked
+            
+            await signal_generator_instance.start()  # ONLY PRODUCTION ENGINE
             await tracker.start()
-            logger.info("✅ Signal Generator v3 (60% threshold) + Outcome Tracker started")
+            
+            logger.info("=" * 60)
+            logger.info("🛡️ PRODUCTION SAFETY ACTIVE")
+            logger.info("   ✅ Signal Generator v3: RUNNING (authorized)")
+            logger.info("   🚫 Legacy Scanner: BLOCKED")
+            logger.info("   🚫 Advanced Scanner v2: BLOCKED")
+            logger.info("=" * 60)
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
     except Exception as e:
@@ -1208,6 +1235,92 @@ async def get_market_validation_status():
             "total_validations": stats["validation_count"],
             "total_rejections": stats["rejection_count"]
         }
+    }
+
+
+# ==================== PRODUCTION CONTROL ENDPOINTS ====================
+
+@api_router.get("/production/status")
+async def get_production_status():
+    """
+    Get production control status
+    
+    Returns:
+    - Scanner state (enabled/disabled)
+    - Notifications state (enabled/disabled)
+    - Authorized engine information
+    - Blocked engines list
+    - Statistics (blocks, unauthorized attempts)
+    
+    This is the SINGLE SOURCE OF TRUTH for production state.
+    """
+    from services.production_control import production_control
+    return production_control.get_status()
+
+
+@api_router.post("/production/scanner/{action}")
+async def control_scanner(action: str):
+    """
+    Control scanner state - backend-enforced
+    
+    Actions:
+    - enable: Allow scanning and signal generation
+    - disable: Block ALL scanning, signal generation, and notifications
+    
+    When scanner is DISABLED:
+    - No scans will run
+    - No candidates will be generated
+    - No scoring will occur
+    - No notifications will be sent
+    """
+    from services.production_control import production_control
+    
+    if action.lower() == "enable":
+        result = production_control.set_scanner_enabled(True, toggled_by="api")
+        return {"status": "success", "action": "enabled", **result}
+    elif action.lower() == "disable":
+        result = production_control.set_scanner_enabled(False, toggled_by="api")
+        return {"status": "success", "action": "disabled", **result}
+    else:
+        return {"status": "error", "message": f"Unknown action: {action}. Use 'enable' or 'disable'."}
+
+
+@api_router.post("/production/notifications/{action}")
+async def control_notifications(action: str):
+    """
+    Control notifications state - backend-enforced
+    
+    Actions:
+    - enable: Allow push notifications
+    - disable: Block ALL push notifications
+    
+    When notifications are DISABLED:
+    - No push notifications will be sent from ANY engine
+    - No legacy or parallel path can bypass this
+    """
+    from services.production_control import production_control
+    
+    if action.lower() == "enable":
+        result = production_control.set_notifications_enabled(True, toggled_by="api")
+        return {"status": "success", "action": "enabled", **result}
+    elif action.lower() == "disable":
+        result = production_control.set_notifications_enabled(False, toggled_by="api")
+        return {"status": "success", "action": "disabled", **result}
+    else:
+        return {"status": "error", "message": f"Unknown action: {action}. Use 'enable' or 'disable'."}
+
+
+@api_router.get("/production/audit")
+async def get_production_audit_log(limit: int = 20):
+    """
+    Get production control audit log
+    
+    Returns recent state changes and blocked attempts for traceability.
+    """
+    from services.production_control import production_control
+    return {
+        "audit_log": production_control.get_audit_log(limit),
+        "limit": limit
     }
 
 

@@ -2,17 +2,29 @@
 Signal Generator v3 - Confidence-Based Signal Engine
 =====================================================
 
+*** AUTHORIZED PRODUCTION ENGINE ***
+
+This is the ONLY engine authorized for production signal generation.
+All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
+
 DESIGN PHILOSOPHY:
 - Generate signals consistently instead of blocking almost everything
 - Use weighted scoring to assign confidence (0-100) to each signal
 - Only reject for truly invalid market conditions
 - Let confidence score reflect setup quality
 
+PRODUCTION CONTROLS:
+- Checks production_control.is_scanner_enabled() before scanning
+- Checks production_control.is_notifications_enabled() before sending push
+- All operations logged for traceability
+
 MINIMAL HARD REJECTION FILTERS (the only things that block signals):
 1. Abnormal/excessive spread
 2. Stale or missing market data
 3. Extremely low volatility (dead market)
 4. Technical data corruption
+5. Market closed (forex weekend hours)
+6. Scanner disabled (production control)
 
 ALL OTHER CONDITIONS contribute to score, don't block signals.
 
@@ -275,30 +287,40 @@ class SignalGeneratorV3:
     
     async def _scan_all_assets(self):
         """
-        Scan all assets with FULL market validation
+        Scan all assets with FULL market validation and production controls
         
-        CRITICAL: Market validation occurs BEFORE any candidate generation, 
-        scoring, or notification sending as per requirements.
+        PRODUCTION PIPELINE SEQUENCE:
+        1. Production control check (scanner enabled?)
+        2. Market validation (forex open, data fresh, not frozen)
+        3. Candidate generation
+        4. Scoring
+        5. Duplicate check
+        6. Notification send (if notifications enabled)
+        7. Outcome tracking
         
-        Validation checks (all must pass):
-        1. Forex market is open (not weekend)
-        2. Tick data is fresh (< 120s old)
-        3. Candle data is fresh (< 120s old)
-        4. Price feed is not frozen (changing within 60s)
-        5. Candles are advancing (not identical)
+        CRITICAL: All checks must pass BEFORE any signal generation.
         """
+        from services.production_control import production_control, EngineType
+        
         self.scan_count += 1
         
-        # FIRST: Quick check if forex market is open
+        # ========== STEP 1: PRODUCTION CONTROL CHECK ==========
+        authorized, reason = production_control.authorize_scan(EngineType.SIGNAL_GENERATOR_V3)
+        if not authorized:
+            if self.scan_count % 60 == 0:  # Log every 60 scans (5 minutes)
+                logger.info(f"🛡️ [PRODUCTION] Scan blocked: {reason}")
+            return
+        
+        # ========== STEP 2: MARKET VALIDATION - FOREX HOURS ==========
         if not market_validator.is_forex_open():
             # Market closed - skip all scanning silently
             if self.scan_count % 60 == 0:  # Log every 60 scans (5 minutes)
                 status = market_validator.get_market_status_summary()
-                logger.info(f"🌙 Forex market closed ({status['day_of_week']} {status['hour_utc']}:00 UTC) - Skipping scan")
+                logger.info(f"🌙 [MARKET] Forex closed ({status['day_of_week']} {status['hour_utc']}:00 UTC)")
             return
         
         for asset in [Asset.EURUSD, Asset.XAUUSD]:
-            # ========== FULL MARKET VALIDATION (MANDATORY) ==========
+            # ========== STEP 2b: FULL MARKET VALIDATION (MANDATORY) ==========
             # Must pass BEFORE any candidate generation, scoring, or notifications
             
             # Get data for validation
@@ -321,10 +343,11 @@ class SignalGeneratorV3:
                 # Logging already handled by market_validator
                 continue
             
-            # ========== VALIDATION PASSED - PROCEED WITH ANALYSIS ==========
+            # ========== STEP 3-5: CANDIDATE GENERATION, SCORING, DUPLICATE CHECK ==========
             signal = await self._analyze_asset(asset)
             
             if signal:
+                # ========== STEP 6-7: NOTIFICATION & TRACKING ==========
                 await self._process_signal(signal)
     
     async def _analyze_asset(self, asset: Asset) -> Optional[GeneratedSignal]:
@@ -601,7 +624,22 @@ class SignalGeneratorV3:
             logger.debug(f"Outcome tracking note: {e}")
     
     async def _send_notification(self, signal: GeneratedSignal):
-        """Send push notification for signal"""
+        """
+        Send push notification for signal
+        
+        PRODUCTION CONTROL: Checks notifications_enabled before sending
+        """
+        from services.production_control import production_control, EngineType
+        
+        # ========== PRODUCTION CONTROL: NOTIFICATION CHECK ==========
+        authorized, reason = production_control.authorize_notification(
+            EngineType.SIGNAL_GENERATOR_V3, 
+            signal.signal_id
+        )
+        if not authorized:
+            logger.info(f"📵 [PRODUCTION] Notification blocked for {signal.signal_id}: {reason}")
+            return
+        
         try:
             from services.device_storage_service import device_storage
             from services.push_notification_service import push_service
@@ -614,6 +652,9 @@ class SignalGeneratorV3:
             
             notif = signal.to_notification_dict()
             
+            # Log notification origin for traceability
+            logger.info(f"📤 [signal_generator_v3] Sending notification for signal {signal.signal_id}")
+            
             results = await push_service.send_to_all_devices(
                 tokens=tokens,
                 title=notif['title'],
@@ -624,7 +665,7 @@ class SignalGeneratorV3:
             successful = sum(1 for r in results if r.success)
             self.notification_count += 1
             
-            logger.info(f"📤 Notification sent: {successful}/{len(results)} devices")
+            logger.info(f"📤 [signal_generator_v3] Notification sent: {successful}/{len(results)} devices")
             
         except Exception as e:
             logger.error(f"❌ Failed to send notification: {e}")
