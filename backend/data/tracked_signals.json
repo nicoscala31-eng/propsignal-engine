@@ -4140,6 +4140,348 @@
       "time_in_profit_seconds": 0.0,
       "time_in_drawdown_seconds": 120.0,
       "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260315_110157",
+      "timestamp": "2026-03-15T11:01:57.651921",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.14693,
+      "stop_loss": 1.146845357142857,
+      "take_profit_1": 1.1470428571428575,
+      "take_profit_2": 1.147099285714286,
+      "confidence_score": 60.2,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup",
+      "session": "London",
+      "invalidation": "Below 1.14685",
+      "risk_reward": 1.3333333333342077,
+      "score_breakdown": {
+        "final_score": 60.2,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 18.0,
+            "score": 60,
+            "contribution": 10.8,
+            "reason": "Weak H1 bullish bias"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 14.0,
+            "score": 55,
+            "contribution": 7.7,
+            "reason": "M15 momentum aligned only"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 14.0,
+            "score": 45,
+            "contribution": 6.3,
+            "reason": "No clear bullish structure"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 11.0,
+            "score": 75,
+            "contribution": 8.2,
+            "reason": "Moderate bullish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 11.0,
+            "score": 50,
+            "contribution": 5.5,
+            "reason": "Moderate pullback"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 9.0,
+            "score": 60,
+            "contribution": 5.4,
+            "reason": "Near round number level"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 7.0,
+            "score": 85,
+            "contribution": 6.0,
+            "reason": "London session - good"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 5.0,
+            "score": 40,
+            "contribution": 2.0,
+            "reason": "Low R:R (1.3)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 8.0,
+            "score": 70,
+            "contribution": 5.6,
+            "reason": "Normal market regime"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-03-15T11:42:23.215040",
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0014100000000001334,
+      "highest_price_seen": 1.14693,
+      "lowest_price_seen": 1.1455199999999999,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 8.464285714304687e-05,
+      "time_to_outcome_seconds": 2425.563119,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 2520.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260315_110258",
+      "timestamp": "2026-03-15T11:02:58.513617",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.14693,
+      "stop_loss": 1.146845357142857,
+      "take_profit_1": 1.1470428571428575,
+      "take_profit_2": 1.147099285714286,
+      "confidence_score": 60.2,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup",
+      "session": "London",
+      "invalidation": "Below 1.14685",
+      "risk_reward": 1.3333333333342077,
+      "score_breakdown": {
+        "final_score": 60.2,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 18.0,
+            "score": 60,
+            "contribution": 10.8,
+            "reason": "Weak H1 bullish bias"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 14.0,
+            "score": 55,
+            "contribution": 7.7,
+            "reason": "M15 momentum aligned only"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 14.0,
+            "score": 45,
+            "contribution": 6.3,
+            "reason": "No clear bullish structure"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 11.0,
+            "score": 75,
+            "contribution": 8.2,
+            "reason": "Moderate bullish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 11.0,
+            "score": 50,
+            "contribution": 5.5,
+            "reason": "Moderate pullback"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 9.0,
+            "score": 60,
+            "contribution": 5.4,
+            "reason": "Near round number level"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 7.0,
+            "score": 85,
+            "contribution": 6.0,
+            "reason": "London session - good"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 5.0,
+            "score": 40,
+            "contribution": 2.0,
+            "reason": "Low R:R (1.3)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 8.0,
+            "score": 70,
+            "contribution": 5.6,
+            "reason": "Normal market regime"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-03-15T11:42:23.224125",
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0014100000000001334,
+      "highest_price_seen": 1.14693,
+      "lowest_price_seen": 1.1455199999999999,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 8.464285714304687e-05,
+      "time_to_outcome_seconds": 2364.710508,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 2460.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260315_110304",
+      "timestamp": "2026-03-15T11:03:04.880421",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.14693,
+      "stop_loss": 1.146845357142857,
+      "take_profit_1": 1.1470428571428575,
+      "take_profit_2": 1.147099285714286,
+      "confidence_score": 60.2,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup",
+      "session": "London",
+      "invalidation": "Below 1.14685",
+      "risk_reward": 1.3333333333342077,
+      "score_breakdown": {
+        "final_score": 60.2,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 18.0,
+            "score": 60,
+            "contribution": 10.8,
+            "reason": "Weak H1 bullish bias"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 14.0,
+            "score": 55,
+            "contribution": 7.7,
+            "reason": "M15 momentum aligned only"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 14.0,
+            "score": 45,
+            "contribution": 6.3,
+            "reason": "No clear bullish structure"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 11.0,
+            "score": 75,
+            "contribution": 8.2,
+            "reason": "Moderate bullish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 11.0,
+            "score": 50,
+            "contribution": 5.5,
+            "reason": "Moderate pullback"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 9.0,
+            "score": 60,
+            "contribution": 5.4,
+            "reason": "Near round number level"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 7.0,
+            "score": 85,
+            "contribution": 6.0,
+            "reason": "London session - good"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 5.0,
+            "score": 40,
+            "contribution": 2.0,
+            "reason": "Low R:R (1.3)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 8.0,
+            "score": 70,
+            "contribution": 5.6,
+            "reason": "Normal market regime"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-03-15T11:42:23.232615",
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0014100000000001334,
+      "highest_price_seen": 1.14693,
+      "lowest_price_seen": 1.1455199999999999,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 8.464285714304687e-05,
+      "time_to_outcome_seconds": 2358.352194,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 2430.0,
+      "peak_r_before_reversal": 0.0
     }
   ],
   "active": [
@@ -4253,8 +4595,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 2220.0,
-      "time_in_drawdown_seconds": 1140.0,
+      "time_in_profit_seconds": 3210.0,
+      "time_in_drawdown_seconds": 1740.0,
       "peak_r_before_reversal": 0.27614303492099207
     },
     {
@@ -4367,8 +4709,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 750.0,
-      "time_in_drawdown_seconds": 2340.0,
+      "time_in_profit_seconds": 1050.0,
+      "time_in_drawdown_seconds": 3630.0,
       "peak_r_before_reversal": 0.0516478428735883
     },
     {
@@ -4481,352 +4823,10 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 750.0,
-      "time_in_drawdown_seconds": 2310.0,
+      "time_in_profit_seconds": 1050.0,
+      "time_in_drawdown_seconds": 3600.0,
       "peak_r_before_reversal": 0.0516478428735883
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260315_110157",
-      "timestamp": "2026-03-15T11:01:57.651921",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.14693,
-      "stop_loss": 1.146845357142857,
-      "take_profit_1": 1.1470428571428575,
-      "take_profit_2": 1.147099285714286,
-      "confidence_score": 60.2,
-      "confidence_level": "ACCEPTABLE",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Below 1.14685",
-      "risk_reward": 1.3333333333342077,
-      "score_breakdown": {
-        "final_score": 60.2,
-        "confidence": "ACCEPTABLE",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 18.0,
-            "score": 60,
-            "contribution": 10.8,
-            "reason": "Weak H1 bullish bias"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 14.0,
-            "score": 55,
-            "contribution": 7.7,
-            "reason": "M15 momentum aligned only"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 14.0,
-            "score": 45,
-            "contribution": 6.3,
-            "reason": "No clear bullish structure"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 11.0,
-            "score": 75,
-            "contribution": 8.2,
-            "reason": "Moderate bullish momentum"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 11.0,
-            "score": 50,
-            "contribution": 5.5,
-            "reason": "Moderate pullback"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 9.0,
-            "score": 60,
-            "contribution": 5.4,
-            "reason": "Near round number level"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 7.0,
-            "score": 85,
-            "contribution": 6.0,
-            "reason": "London session - good"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 5.0,
-            "score": 40,
-            "contribution": 2.0,
-            "reason": "Low R:R (1.3)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 8.0,
-            "score": 70,
-            "contribution": 5.6,
-            "reason": "Normal market regime"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.0,
-      "highest_price_seen": 1.14693,
-      "lowest_price_seen": 1.14693,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 930.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260315_110258",
-      "timestamp": "2026-03-15T11:02:58.513617",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.14693,
-      "stop_loss": 1.146845357142857,
-      "take_profit_1": 1.1470428571428575,
-      "take_profit_2": 1.147099285714286,
-      "confidence_score": 60.2,
-      "confidence_level": "ACCEPTABLE",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Below 1.14685",
-      "risk_reward": 1.3333333333342077,
-      "score_breakdown": {
-        "final_score": 60.2,
-        "confidence": "ACCEPTABLE",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 18.0,
-            "score": 60,
-            "contribution": 10.8,
-            "reason": "Weak H1 bullish bias"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 14.0,
-            "score": 55,
-            "contribution": 7.7,
-            "reason": "M15 momentum aligned only"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 14.0,
-            "score": 45,
-            "contribution": 6.3,
-            "reason": "No clear bullish structure"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 11.0,
-            "score": 75,
-            "contribution": 8.2,
-            "reason": "Moderate bullish momentum"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 11.0,
-            "score": 50,
-            "contribution": 5.5,
-            "reason": "Moderate pullback"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 9.0,
-            "score": 60,
-            "contribution": 5.4,
-            "reason": "Near round number level"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 7.0,
-            "score": 85,
-            "contribution": 6.0,
-            "reason": "London session - good"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 5.0,
-            "score": 40,
-            "contribution": 2.0,
-            "reason": "Low R:R (1.3)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 8.0,
-            "score": 70,
-            "contribution": 5.6,
-            "reason": "Normal market regime"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.0,
-      "highest_price_seen": 1.14693,
-      "lowest_price_seen": 1.14693,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 870.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260315_110304",
-      "timestamp": "2026-03-15T11:03:04.880421",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.14693,
-      "stop_loss": 1.146845357142857,
-      "take_profit_1": 1.1470428571428575,
-      "take_profit_2": 1.147099285714286,
-      "confidence_score": 60.2,
-      "confidence_level": "ACCEPTABLE",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Below 1.14685",
-      "risk_reward": 1.3333333333342077,
-      "score_breakdown": {
-        "final_score": 60.2,
-        "confidence": "ACCEPTABLE",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 18.0,
-            "score": 60,
-            "contribution": 10.8,
-            "reason": "Weak H1 bullish bias"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 14.0,
-            "score": 55,
-            "contribution": 7.7,
-            "reason": "M15 momentum aligned only"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 14.0,
-            "score": 45,
-            "contribution": 6.3,
-            "reason": "No clear bullish structure"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 11.0,
-            "score": 75,
-            "contribution": 8.2,
-            "reason": "Moderate bullish momentum"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 11.0,
-            "score": 50,
-            "contribution": 5.5,
-            "reason": "Moderate pullback"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 9.0,
-            "score": 60,
-            "contribution": 5.4,
-            "reason": "Near round number level"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 7.0,
-            "score": 85,
-            "contribution": 6.0,
-            "reason": "London session - good"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 5.0,
-            "score": 40,
-            "contribution": 2.0,
-            "reason": "Low R:R (1.3)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 8.0,
-            "score": 70,
-            "contribution": 5.6,
-            "reason": "Normal market regime"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.0,
-      "highest_price_seen": 1.14693,
-      "lowest_price_seen": 1.14693,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 840.0,
-      "peak_r_before_reversal": 0.0
     }
   ],
-  "saved_at": "2026-03-15T11:16:21.289952"
+  "saved_at": "2026-03-15T11:42:23.237007"
 }
