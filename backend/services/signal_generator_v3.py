@@ -34,6 +34,7 @@ from enum import Enum
 
 from models import Asset, SignalType, Timeframe
 from services.market_data_cache import market_data_cache
+from services.market_validator import market_validator, MarketStatus
 from engines.session_detector import session_detector
 
 logger = logging.getLogger(__name__)
@@ -241,8 +242,16 @@ class SignalGeneratorV3:
             await asyncio.sleep(self.scan_interval)
     
     async def _scan_all_assets(self):
-        """Scan all assets"""
+        """Scan all assets with market validation"""
         self.scan_count += 1
+        
+        # FIRST: Check if forex market is open
+        if not market_validator.is_forex_open():
+            # Market closed - skip all scanning silently
+            if self.scan_count % 60 == 0:  # Log every 60 scans (5 minutes)
+                status = market_validator.get_market_status_summary()
+                logger.info(f"🌙 Forex market closed ({status['day_of_week']} {status['hour_utc']}:00 UTC) - Skipping scan")
+            return
         
         for asset in [Asset.EURUSD, Asset.XAUUSD]:
             signal = await self._analyze_asset(asset)
