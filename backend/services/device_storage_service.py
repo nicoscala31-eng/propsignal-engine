@@ -277,6 +277,35 @@ class DeviceStorageService:
             return True
         return False
     
+    async def deactivate_by_token(self, token: str) -> bool:
+        """
+        Deactivate a device by push token
+        
+        Used for invalid token cleanup when push notification fails.
+        """
+        await self._ensure_loaded()
+        
+        for device_id, record in self._devices.items():
+            if record.push_token == token:
+                record.is_active = False
+                record.updated_at = datetime.utcnow().isoformat()
+                await self._save_to_file()
+                
+                # Try MongoDB
+                if self._mongo_available and self._db:
+                    try:
+                        await self._db.devices.update_one(
+                            {'push_token': token},
+                            {'$set': {'is_active': False}}
+                        )
+                    except Exception:
+                        pass
+                
+                logger.info(f"🧹 Deactivated invalid token for device: {device_id[:20]}...")
+                return True
+        
+        return False
+    
     async def get_device_count(self) -> Dict[str, int]:
         """Get device counts"""
         await self._ensure_loaded()

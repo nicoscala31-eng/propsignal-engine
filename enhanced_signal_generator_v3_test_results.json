@@ -1,0 +1,268 @@
+{
+  "test_summary": {
+    "total_tests": 18,
+    "passed": 17,
+    "failed": 1,
+    "success_rate": 94.44444444444444,
+    "test_timestamp": "2026-03-15T15:44:13.373275"
+  },
+  "test_results": [
+    {
+      "test": "Enhanced Signal Generator v3 Prop Config",
+      "success": false,
+      "message": "Missing prop_config section - API endpoint needs to be updated to include prop_config and daily_risk_status fields",
+      "timestamp": "2026-03-15T15:44:08.016236",
+      "data": {
+        "version": "v3",
+        "mode": "confidence_based_enhanced",
+        "is_running": true,
+        "uptime_seconds": 286.430749,
+        "min_confidence_threshold": 60,
+        "classification": {
+          "strong": "80-100",
+          "good": "70-79",
+          "acceptable": "60-69",
+          "rejected": "<60"
+        },
+        "statistics": {
+          "total_scans": 62,
+          "signals_generated": 0,
+          "notifications_sent": 0,
+          "rejections": 0
+        },
+        "duplicate_window_minutes": 25,
+        "recent_signals_count": 0
+      }
+    },
+    {
+      "test": "Enhanced Signal Generator v3 Status",
+      "success": true,
+      "message": "Enhanced Signal Generator v3 running correctly but missing prop_config/daily_risk_status fields in API response",
+      "timestamp": "2026-03-15T15:44:08.016323",
+      "data": {
+        "is_running": true,
+        "version": "v3",
+        "mode": "confidence_based_enhanced",
+        "min_confidence_threshold": 60,
+        "statistics": {
+          "total_scans": 62,
+          "signals_generated": 0,
+          "notifications_sent": 0,
+          "rejections": 0
+        },
+        "issue": "API endpoint does not expose prop_config and daily_risk_status from get_stats() method"
+      }
+    },
+    {
+      "test": "Production Status",
+      "success": true,
+      "message": "All production status fields validated",
+      "timestamp": "2026-03-15T15:44:08.142536",
+      "data": {
+        "scanner_enabled": true,
+        "notifications_enabled": true,
+        "authorized_engine": "signal_generator_v3",
+        "blocked_engines": [
+          "advanced_scanner_v2",
+          "market_scanner_legacy",
+          "signal_orchestrator"
+        ]
+      }
+    },
+    {
+      "test": "Market Validation Status",
+      "success": true,
+      "message": "Market validation working with proper forex market hours detection",
+      "timestamp": "2026-03-15T15:44:08.245379",
+      "data": {
+        "forex_status": "closed_weekend",
+        "configuration": {
+          "price_staleness_threshold_seconds": 120,
+          "candle_staleness_threshold_seconds": 120,
+          "price_freeze_threshold_seconds": 60,
+          "forex_market_hours": "Sunday 22:00 UTC to Friday 22:00 UTC"
+        },
+        "validation_statistics": {
+          "total_validations": 0,
+          "total_rejections": 0,
+          "rejection_rate": 0.0
+        }
+      }
+    },
+    {
+      "test": "Legacy Scanner Status",
+      "success": true,
+      "message": "Legacy scanner not running",
+      "timestamp": "2026-03-15T15:44:08.350227",
+      "data": {
+        "is_running": null,
+        "message": "Scanner correctly not running"
+      }
+    },
+    {
+      "test": "Advanced Scanner v2 Status",
+      "success": true,
+      "message": "Advanced scanner v2 not running",
+      "timestamp": "2026-03-15T15:44:08.464067",
+      "data": {
+        "is_running": null,
+        "message": "Scanner correctly not running"
+      }
+    },
+    {
+      "test": "Health Endpoint",
+      "success": true,
+      "message": "Health endpoint working",
+      "timestamp": "2026-03-15T15:44:08.750959",
+      "data": {
+        "status": "degraded",
+        "uptime_check": "OK"
+      }
+    },
+    {
+      "test": "Market Validation Status",
+      "success": true,
+      "message": "Market validation endpoint working",
+      "timestamp": "2026-03-15T15:44:08.852034",
+      "data": {
+        "forex_status": "closed_weekend",
+        "validations": {
+          "total_validations": 0,
+          "total_rejections": 0,
+          "rejection_rate": 0.0
+        }
+      }
+    },
+    {
+      "test": "Provider Live Prices",
+      "success": true,
+      "message": "Provider live prices working",
+      "timestamp": "2026-03-15T15:44:12.024209",
+      "data": {
+        "provider": "Twelve Data",
+        "is_production": true,
+        "eurusd_status": "LIVE",
+        "xauusd_status": "LIVE"
+      }
+    },
+    {
+      "test": "Scanner Disable",
+      "success": true,
+      "message": "Scanner disable command executed",
+      "timestamp": "2026-03-15T15:44:12.234032",
+      "data": {
+        "status": "success",
+        "action": "disabled",
+        "scanner_enabled": false,
+        "previous_state": true,
+        "toggled_by": "api",
+        "timestamp": "2026-03-15T15:44:12.217007"
+      }
+    },
+    {
+      "test": "Scanner Status After Disable",
+      "success": true,
+      "message": "Scanner correctly shows disabled",
+      "timestamp": "2026-03-15T15:44:12.341650",
+      "data": {
+        "enabled": false
+      }
+    },
+    {
+      "test": "Scanner Enable",
+      "success": true,
+      "message": "Scanner enable command executed",
+      "timestamp": "2026-03-15T15:44:12.473092",
+      "data": {
+        "status": "success",
+        "action": "enabled",
+        "scanner_enabled": true,
+        "previous_state": false,
+        "toggled_by": "api",
+        "timestamp": "2026-03-15T15:44:12.455308"
+      }
+    },
+    {
+      "test": "Scanner Status After Enable",
+      "success": true,
+      "message": "Scanner correctly shows enabled",
+      "timestamp": "2026-03-15T15:44:12.569938",
+      "data": {
+        "enabled": true
+      }
+    },
+    {
+      "test": "Notifications Disable",
+      "success": true,
+      "message": "Notifications disable command executed",
+      "timestamp": "2026-03-15T15:44:12.814421",
+      "data": {
+        "status": "success",
+        "action": "disabled",
+        "notifications_enabled": false,
+        "previous_state": true,
+        "toggled_by": "api",
+        "timestamp": "2026-03-15T15:44:12.797514"
+      }
+    },
+    {
+      "test": "Notifications Status After Disable",
+      "success": true,
+      "message": "Notifications correctly shows disabled",
+      "timestamp": "2026-03-15T15:44:13.003891",
+      "data": {
+        "enabled": false
+      }
+    },
+    {
+      "test": "Notifications Enable",
+      "success": true,
+      "message": "Notifications enable command executed",
+      "timestamp": "2026-03-15T15:44:13.140527",
+      "data": {
+        "status": "success",
+        "action": "enabled",
+        "notifications_enabled": true,
+        "previous_state": false,
+        "toggled_by": "api",
+        "timestamp": "2026-03-15T15:44:13.113576"
+      }
+    },
+    {
+      "test": "Notifications Status After Enable",
+      "success": true,
+      "message": "Notifications correctly shows enabled",
+      "timestamp": "2026-03-15T15:44:13.262092",
+      "data": {
+        "enabled": true
+      }
+    },
+    {
+      "test": "Production Audit Log",
+      "success": true,
+      "message": "Audit log retrieved with 16 entries, 3 startup events",
+      "timestamp": "2026-03-15T15:44:13.372909",
+      "data": {
+        "total_entries": 16,
+        "startup_blocks": 3,
+        "recent_entries": [
+          {
+            "timestamp": "2026-03-15T15:44:12.455311",
+            "event_type": "SCANNER",
+            "message": "Scanner ENABLED by api"
+          },
+          {
+            "timestamp": "2026-03-15T15:44:12.797516",
+            "event_type": "NOTIFICATIONS",
+            "message": "Notifications DISABLED by api"
+          },
+          {
+            "timestamp": "2026-03-15T15:44:13.113580",
+            "event_type": "NOTIFICATIONS",
+            "message": "Notifications ENABLED by api"
+          }
+        ]
+      }
+    }
+  ]
+}
