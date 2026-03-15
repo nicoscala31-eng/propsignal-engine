@@ -141,7 +141,6 @@ export default function AnalyticsScreen() {
       console.error('Error toggling scanner:', err);
     }
   };
-  };
 
   if (loading) {
     return (

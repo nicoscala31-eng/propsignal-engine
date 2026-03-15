@@ -4482,9 +4482,7 @@
       "time_in_profit_seconds": 0.0,
       "time_in_drawdown_seconds": 2430.0,
       "peak_r_before_reversal": 0.0
-    }
-  ],
-  "active": [
+    },
     {
       "signal_id": "XAUUSD_BUY_20260314_175112",
       "timestamp": "2026-03-14T17:51:12.378214",
@@ -4576,18 +4574,18 @@
           }
         ]
       },
-      "status": "generated",
+      "status": "expired",
       "notified_at": null,
       "entry_triggered_at": null,
-      "closed_at": null,
+      "closed_at": "2026-03-15T17:51:32.775574",
       "max_favorable_excursion": 0.11000000000058208,
       "max_adverse_excursion": 0.03999999999996362,
       "highest_price_seen": 5019.8,
       "lowest_price_seen": 5019.65,
-      "final_outcome": null,
+      "final_outcome": "expired",
       "pips_gained": 0.0,
       "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
+      "time_to_outcome_seconds": 86420.39736,
       "moved_favorable_before_fail": false,
       "reached_half_r": false,
       "reached_one_r": false,
@@ -4595,10 +4593,12 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 4350.0,
-      "time_in_drawdown_seconds": 2400.0,
+      "time_in_profit_seconds": 4680.0,
+      "time_in_drawdown_seconds": 2670.0,
       "peak_r_before_reversal": 0.27614303492099207
-    },
+    }
+  ],
+  "active": [
     {
       "signal_id": "XAUUSD_BUY_20260314_175512",
       "timestamp": "2026-03-14T17:55:12.010687",
@@ -4709,8 +4709,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1470.0,
-      "time_in_drawdown_seconds": 5010.0,
+      "time_in_profit_seconds": 1590.0,
+      "time_in_drawdown_seconds": 5490.0,
       "peak_r_before_reversal": 0.0516478428735883
     },
     {
@@ -4823,10 +4823,10 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1470.0,
-      "time_in_drawdown_seconds": 4980.0,
+      "time_in_profit_seconds": 1590.0,
+      "time_in_drawdown_seconds": 5460.0,
       "peak_r_before_reversal": 0.0516478428735883
     }
   ],
-  "saved_at": "2026-03-15T15:45:31.518628"
+  "saved_at": "2026-03-15T17:51:32.780202"
 }
