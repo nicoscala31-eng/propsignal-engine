@@ -1169,7 +1169,10 @@ async def get_signal_generator_v3_status():
     This is the PRIMARY signal generator with:
     - Minimum threshold: 60%
     - Classification: STRONG (80+), GOOD (70-79), ACCEPTABLE (60-69), REJECTED (<60)
-    - No hidden thresholds
+    - Position Sizing Engine (lot_size, money_at_risk, risk_percent, pip_risk)
+    - Prop Firm Awareness ($100k account, $3k max daily loss)
+    - News Risk Detection
+    - Advanced MTF Bias Scoring
     """
     if not signal_generator_instance:
         return {"error": "Signal Generator v3 not initialized"}
@@ -1188,11 +1191,16 @@ async def get_signal_generator_v3_status():
             "total_scans": stats["scan_count"],
             "signals_generated": stats["signal_count"],
             "notifications_sent": stats["notification_count"],
-            "rejections": stats["rejection_count"]
+            "rejections": stats["rejection_count"],
+            "invalid_tokens_removed": stats.get("invalid_tokens_removed", 0)
         },
         
         "duplicate_window_minutes": stats["duplicate_window_minutes"],
-        "recent_signals_count": stats["recent_signals"]
+        "recent_signals_count": stats["recent_signals"],
+        
+        # NEW: Prop firm configuration and risk status
+        "prop_config": stats.get("prop_config", {}),
+        "daily_risk_status": stats.get("daily_risk_status", {})
     }
 
 
