@@ -107,11 +107,43 @@ class GeneratedSignal:
     timestamp: datetime
     
     def to_notification_dict(self) -> Dict:
-        """Format for push notification"""
+        """
+        Format for push notification
+        
+        NOTIFICATION BODY FORMAT (per user requirements):
+        - Symbol (in title)
+        - Direction (in title)
+        - Entry Price
+        - Stop Loss (SL)
+        - Take Profit (TP)
+        - Confidence %
+        - Risk/Reward Ratio
+        
+        All values are exact internal values from signal engine.
+        """
         emoji = "🟢" if self.direction == "BUY" else "🔴"
+        
+        # Format prices based on asset (5 decimals for EURUSD, 2 for XAUUSD)
+        if self.asset == Asset.EURUSD:
+            entry_str = f"{self.entry_price:.5f}"
+            sl_str = f"{self.stop_loss:.5f}"
+            tp_str = f"{self.take_profit_1:.5f}"
+        else:  # XAUUSD
+            entry_str = f"{self.entry_price:.2f}"
+            sl_str = f"{self.stop_loss:.2f}"
+            tp_str = f"{self.take_profit_1:.2f}"
+        
+        # Build comprehensive notification body with ALL required fields
+        body_lines = [
+            f"Entry: {entry_str}",
+            f"SL: {sl_str} | TP: {tp_str}",
+            f"Conf: {self.confidence_score:.0f}% | R:R: {self.risk_reward:.1f}"
+        ]
+        body = "\n".join(body_lines)
+        
         return {
             "title": f"{emoji} {self.direction} {self.asset.value}",
-            "body": f"Entry: {self.entry_price:.5f} | Conf: {self.confidence_score:.0f}% | R:R {self.risk_reward:.1f}",
+            "body": body,
             "data": {
                 "type": "signal",
                 "signal_id": self.signal_id,
@@ -242,10 +274,22 @@ class SignalGeneratorV3:
             await asyncio.sleep(self.scan_interval)
     
     async def _scan_all_assets(self):
-        """Scan all assets with market validation"""
+        """
+        Scan all assets with FULL market validation
+        
+        CRITICAL: Market validation occurs BEFORE any candidate generation, 
+        scoring, or notification sending as per requirements.
+        
+        Validation checks (all must pass):
+        1. Forex market is open (not weekend)
+        2. Tick data is fresh (< 120s old)
+        3. Candle data is fresh (< 120s old)
+        4. Price feed is not frozen (changing within 60s)
+        5. Candles are advancing (not identical)
+        """
         self.scan_count += 1
         
-        # FIRST: Check if forex market is open
+        # FIRST: Quick check if forex market is open
         if not market_validator.is_forex_open():
             # Market closed - skip all scanning silently
             if self.scan_count % 60 == 0:  # Log every 60 scans (5 minutes)
@@ -254,6 +298,30 @@ class SignalGeneratorV3:
             return
         
         for asset in [Asset.EURUSD, Asset.XAUUSD]:
+            # ========== FULL MARKET VALIDATION (MANDATORY) ==========
+            # Must pass BEFORE any candidate generation, scoring, or notifications
+            
+            # Get data for validation
+            price_data = market_data_cache.get_price(asset)
+            m5_candles = market_data_cache.get_candles(asset, Timeframe.M5)
+            m15_candles = market_data_cache.get_candles(asset, Timeframe.M15)
+            h1_candles = market_data_cache.get_candles(asset, Timeframe.H1)
+            
+            # Run comprehensive validation
+            validation_result = market_validator.validate_for_signal_generation(
+                asset=asset,
+                price_data=price_data,
+                candles_m5=m5_candles,
+                candles_m15=m15_candles,
+                candles_h1=h1_candles
+            )
+            
+            if not validation_result.is_valid:
+                # Validation failed - do NOT generate signal, do NOT score, do NOT notify
+                # Logging already handled by market_validator
+                continue
+            
+            # ========== VALIDATION PASSED - PROCEED WITH ANALYSIS ==========
             signal = await self._analyze_asset(asset)
             
             if signal:

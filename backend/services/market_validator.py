@@ -82,12 +82,12 @@ class MarketValidator:
     FOREX_OPEN_HOUR_SUNDAY = 22  # Sunday 22:00 UTC
     FOREX_CLOSE_HOUR_FRIDAY = 22  # Friday 22:00 UTC
     
-    # Staleness thresholds
-    PRICE_MAX_AGE_SECONDS = 120  # 2 minutes
-    CANDLE_MAX_AGE_SECONDS = 300  # 5 minutes
+    # Staleness thresholds (configured per user requirements)
+    PRICE_MAX_AGE_SECONDS = 120  # 120 seconds - tick data freshness threshold
+    CANDLE_MAX_AGE_SECONDS = 120  # 120 seconds - candle data freshness threshold (aligned with tick)
     
-    # Freeze detection
-    PRICE_FREEZE_THRESHOLD = 60  # seconds without price change = frozen
+    # Freeze detection (configured per user requirements)
+    PRICE_FREEZE_THRESHOLD = 60  # 60 seconds without price change = frozen
     CANDLE_FREEZE_COUNT = 5  # number of identical candles = frozen
     
     def __init__(self):

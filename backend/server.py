@@ -1169,6 +1169,48 @@ async def get_signal_generator_v3_status():
     }
 
 
+@api_router.get("/market/validation/status")
+async def get_market_validation_status():
+    """
+    Get market validation status and statistics
+    
+    Returns:
+    - Current forex market status (open/closed)
+    - Validation statistics (total checks, rejections)
+    - Configuration (staleness thresholds, freeze detection settings)
+    - Last rejection reasons per asset
+    
+    This endpoint helps monitor the data-validity and market-session safety layer.
+    """
+    from services.market_validator import market_validator
+    
+    summary = market_validator.get_market_status_summary()
+    stats = market_validator.get_stats()
+    
+    return {
+        "market_status": {
+            "current_time_utc": summary["current_time_utc"],
+            "day_of_week": summary["day_of_week"],
+            "hour_utc": summary["hour_utc"],
+            "forex_status": summary["forex_status"],
+            "forex_open": summary["forex_open"]
+        },
+        "validation_statistics": summary["validation_stats"],
+        "configuration": {
+            "price_staleness_threshold_seconds": 120,
+            "candle_staleness_threshold_seconds": 120,
+            "price_freeze_threshold_seconds": 60,
+            "forex_market_hours": "Sunday 22:00 UTC to Friday 22:00 UTC"
+        },
+        "last_rejections_by_asset": summary["last_rejections"],
+        "summary": {
+            "is_forex_open": stats["forex_open"],
+            "total_validations": stats["validation_count"],
+            "total_rejections": stats["rejection_count"]
+        }
+    }
+
+
 # ==================== SIGNAL OUTCOME TRACKING ====================
 
 @api_router.get("/signals/tracking/stats")
