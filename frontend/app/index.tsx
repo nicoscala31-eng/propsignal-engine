@@ -55,6 +55,19 @@ interface Signal {
   live_spread_pips?: number;
   data_provider?: string;
   created_at: string;
+  // NEW: Position sizing fields
+  lot_size?: number;
+  money_at_risk?: number;
+  risk_percent?: number;
+  pip_risk?: number;
+  prop_warnings?: string[];
+  // NEW: News risk fields
+  news_risk?: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  news_event?: string;
+  news_warning?: string;
+  // NEW: Risk/Reward
+  risk_reward?: number;
+  spread_pips?: number;
 }
 
 interface LivePrice {
@@ -76,6 +89,38 @@ interface ProviderStatus {
   };
 }
 
+// NEW: Scanner v3 status with prop config
+interface ScannerV3Status {
+  version: string;
+  mode: string;
+  is_running: boolean;
+  uptime_seconds: number;
+  min_confidence_threshold: number;
+  statistics: {
+    total_scans: number;
+    signals_generated: number;
+    notifications_sent: number;
+    rejections: number;
+    invalid_tokens_removed?: number;
+  };
+  prop_config?: {
+    account_size: number;
+    max_daily_loss: number;
+    operational_warning: number;
+    risk_per_trade: string;
+  };
+  daily_risk_status?: {
+    account_size: number;
+    max_daily_loss: number;
+    operational_warning: number;
+    daily_risk_used: number;
+    daily_risk_remaining: number;
+    at_warning_level: boolean;
+    trades_allowed: boolean;
+    risk_per_trade_range: string;
+  };
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -85,6 +130,7 @@ export default function HomeScreen() {
   const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [notificationState, setNotificationState] = useState<NotificationState>(NotificationState.UNKNOWN);
+  const [scannerV3Status, setScannerV3Status] = useState<ScannerV3Status | null>(null);
   const [autoScanEnabled, setAutoScanEnabled] = useState(false); // Disabled - backend scanner handles this
   const [backendScannerRunning, setBackendScannerRunning] = useState(false);
   const [pushToken, setPushToken] = useState<string | null>(null);
@@ -175,6 +221,20 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error('Error fetching provider status:', error);
+    }
+  }, []);
+
+  // NEW: Fetch Scanner v3 status with prop config and daily risk
+  const fetchScannerV3Status = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scanner/v3/status`);
+      if (response.ok) {
+        const data = await response.json();
+        setScannerV3Status(data);
+        setBackendScannerRunning(data.is_running);
+      }
+    } catch (error) {
+      console.error('Error fetching scanner v3 status:', error);
     }
   }, []);
 
@@ -356,30 +416,35 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchLatestSignals(), fetchProviderStatus()]);
+    await Promise.all([fetchLatestSignals(), fetchProviderStatus(), fetchScannerV3Status()]);
     setRefreshing(false);
   };
 
   useEffect(() => {
     fetchLatestSignals();
     fetchProviderStatus();
+    fetchScannerV3Status();
 
     // Auto-refresh prices every 10 seconds
     const priceInterval = setInterval(fetchProviderStatus, 10000);
+    // Refresh scanner status every 30 seconds
+    const scannerInterval = setInterval(fetchScannerV3Status, 30000);
     
     return () => {
       clearInterval(priceInterval);
+      clearInterval(scannerInterval);
     };
-  }, [fetchProviderStatus]);
+  }, [fetchProviderStatus, fetchScannerV3Status]);
   
-  // Check backend scanner status instead of frontend auto-scan
+  // Check backend scanner status (using v3 endpoint now)
   useEffect(() => {
     const checkScannerStatus = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/scanner/status`);
+        const response = await fetch(`${BACKEND_URL}/api/scanner/v3/status`);
         if (response.ok) {
           const data = await response.json();
           setBackendScannerRunning(data.is_running);
+          setScannerV3Status(data);
         }
       } catch (error) {
         console.log('Could not check scanner status');
@@ -665,6 +730,79 @@ export default function HomeScreen() {
         {notificationError && (
           <View style={styles.errorMessageContainer}>
             <Text style={styles.errorMessageText}>{notificationError}</Text>
+          </View>
+        )}
+
+        {/* NEW: Prop Risk Dashboard */}
+        {scannerV3Status?.daily_risk_status && (
+          <View style={styles.propRiskDashboard}>
+            <Text style={styles.propRiskTitle}>Prop Risk Dashboard</Text>
+            
+            <View style={styles.propRiskRow}>
+              <View style={styles.propRiskItem}>
+                <Text style={styles.propRiskLabel}>Account Size</Text>
+                <Text style={styles.propRiskValue}>
+                  ${scannerV3Status.daily_risk_status.account_size.toLocaleString()}
+                </Text>
+              </View>
+              <View style={styles.propRiskItem}>
+                <Text style={styles.propRiskLabel}>Daily Limit</Text>
+                <Text style={styles.propRiskValue}>
+                  ${scannerV3Status.daily_risk_status.max_daily_loss.toLocaleString()}
+                </Text>
+              </View>
+            </View>
+            
+            <View style={styles.propRiskRow}>
+              <View style={styles.propRiskItem}>
+                <Text style={styles.propRiskLabel}>Risk Used Today</Text>
+                <Text style={[
+                  styles.propRiskValue,
+                  scannerV3Status.daily_risk_status.at_warning_level && { color: '#ffaa00' }
+                ]}>
+                  ${scannerV3Status.daily_risk_status.daily_risk_used.toFixed(0)}
+                </Text>
+              </View>
+              <View style={styles.propRiskItem}>
+                <Text style={styles.propRiskLabel}>Remaining</Text>
+                <Text style={[
+                  styles.propRiskValue,
+                  { color: scannerV3Status.daily_risk_status.daily_risk_remaining > 1500 ? '#00ff88' : '#ffaa00' }
+                ]}>
+                  ${scannerV3Status.daily_risk_status.daily_risk_remaining.toFixed(0)}
+                </Text>
+              </View>
+            </View>
+            
+            {/* Progress Bar */}
+            <View style={styles.riskProgressContainer}>
+              <View style={styles.riskProgressBg}>
+                <View style={[
+                  styles.riskProgressFill,
+                  { 
+                    width: `${Math.min(100, (scannerV3Status.daily_risk_status.daily_risk_used / scannerV3Status.daily_risk_status.max_daily_loss) * 100)}%`,
+                    backgroundColor: scannerV3Status.daily_risk_status.at_warning_level ? '#ffaa00' : '#00ff88'
+                  }
+                ]} />
+              </View>
+              <Text style={styles.riskProgressText}>
+                {((scannerV3Status.daily_risk_status.daily_risk_used / scannerV3Status.daily_risk_status.max_daily_loss) * 100).toFixed(0)}% of daily limit
+              </Text>
+            </View>
+
+            {scannerV3Status.daily_risk_status.at_warning_level && (
+              <View style={styles.riskWarningBanner}>
+                <Text style={styles.riskWarningText}>
+                  ⚠️ Approaching daily risk limit - trade sizes will be reduced
+                </Text>
+              </View>
+            )}
+            
+            <View style={styles.propConfigRow}>
+              <Text style={styles.propConfigText}>
+                Risk per trade: {scannerV3Status.daily_risk_status.risk_per_trade_range}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -1311,5 +1449,80 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // NEW: Prop Risk Dashboard Styles
+  propRiskDashboard: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#333366',
+  },
+  propRiskTitle: {
+    color: '#00ff88',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  propRiskRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  propRiskItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  propRiskLabel: {
+    color: '#888888',
+    fontSize: 11,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  propRiskValue: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  riskProgressContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  riskProgressBg: {
+    height: 8,
+    backgroundColor: '#333333',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  riskProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  riskProgressText: {
+    color: '#888888',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  riskWarningBanner: {
+    backgroundColor: '#442200',
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  riskWarningText: {
+    color: '#ffaa00',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  propConfigRow: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  propConfigText: {
+    color: '#666666',
+    fontSize: 11,
   },
 });
