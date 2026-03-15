@@ -49,12 +49,25 @@ interface PerformanceData {
 
 interface ScannerStatus {
   is_running: boolean;
-  active_profile: string;
-  scan_interval_seconds: number;
+  version?: string;
+  mode?: string;
+  min_confidence_threshold?: number;
   statistics: {
     total_scans: number;
     signals_generated: number;
     notifications_sent: number;
+    rejections?: number;
+  };
+  prop_config?: {
+    account_size: number;
+    max_daily_loss: number;
+    operational_warning: number;
+    risk_per_trade: string;
+  };
+  daily_risk_status?: {
+    daily_risk_used: number;
+    daily_risk_remaining: number;
+    at_warning_level: boolean;
   };
 }
 
@@ -68,14 +81,20 @@ export default function AnalyticsScreen() {
 
   const fetchData = useCallback(async () => {
     try {
+      setError(null);
       const [perfResponse, scannerResponse] = await Promise.all([
         fetch(`${BACKEND_URL}/api/analytics/performance`),
-        fetch(`${BACKEND_URL}/api/scanner/status`)
+        fetch(`${BACKEND_URL}/api/scanner/v3/status`)  // Use v3 endpoint
       ]);
 
       if (perfResponse.ok) {
         const perfData = await perfResponse.json();
         setPerformance(perfData);
+      }
+
+      if (scannerResponse.ok) {
+        const scannerData = await scannerResponse.json();
+        setScannerStatus(scannerData);
       }
 
       if (scannerResponse.ok) {
@@ -104,14 +123,15 @@ export default function AnalyticsScreen() {
 
   const toggleScanner = async () => {
     try {
-      const endpoint = scannerStatus?.is_running ? 'stop' : 'start';
-      const response = await fetch(`${BACKEND_URL}/api/scanner/${endpoint}`, {
+      // Use production control endpoint
+      const endpoint = scannerStatus?.is_running ? 'disable' : 'enable';
+      const response = await fetch(`${BACKEND_URL}/api/production/scanner/${endpoint}`, {
         method: 'POST'
       });
 
       if (response.ok) {
         // Refresh status
-        const statusResponse = await fetch(`${BACKEND_URL}/api/scanner/status`);
+        const statusResponse = await fetch(`${BACKEND_URL}/api/scanner/v3/status`);
         if (statusResponse.ok) {
           const data = await statusResponse.json();
           setScannerStatus(data);
@@ -121,24 +141,6 @@ export default function AnalyticsScreen() {
       console.error('Error toggling scanner:', err);
     }
   };
-
-  const setProfile = async (profileName: string) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/scanner/profile/${profileName}`, {
-        method: 'POST'
-      });
-
-      if (response.ok) {
-        // Refresh status
-        const statusResponse = await fetch(`${BACKEND_URL}/api/scanner/status`);
-        if (statusResponse.ok) {
-          const data = await statusResponse.json();
-          setScannerStatus(data);
-        }
-      }
-    } catch (err) {
-      console.error('Error setting profile:', err);
-    }
   };
 
   if (loading) {
@@ -195,12 +197,18 @@ export default function AnalyticsScreen() {
           {scannerStatus && (
             <View style={styles.scannerStats}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Profile</Text>
-                <Text style={styles.statValue}>{scannerStatus.active_profile}</Text>
+                <Text style={styles.statLabel}>Mode</Text>
+                <Text style={styles.statValue}>
+                  {scannerStatus.mode === 'confidence_based_enhanced' ? 'Enhanced' : 'Standard'}
+                </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Scans</Text>
                 <Text style={styles.statValue}>{scannerStatus.statistics.total_scans}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Signals</Text>
+                <Text style={styles.statValue}>{scannerStatus.statistics.signals_generated}</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Notifications</Text>
@@ -209,27 +217,35 @@ export default function AnalyticsScreen() {
             </View>
           )}
 
-          {/* Profile Selection */}
-          <View style={styles.profileSelector}>
-            <Text style={styles.profileLabel}>Mode:</Text>
-            {['aggressive', 'defensive', 'prop_firm_safe'].map((profile) => (
-              <TouchableOpacity
-                key={profile}
-                style={[
-                  styles.profileButton,
-                  scannerStatus?.active_profile.toLowerCase().replace(' ', '_') === profile && styles.profileButtonActive
-                ]}
-                onPress={() => setProfile(profile)}
-              >
-                <Text style={[
-                  styles.profileButtonText,
-                  scannerStatus?.active_profile.toLowerCase().replace(' ', '_') === profile && styles.profileButtonTextActive
-                ]}>
-                  {profile.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Prop Risk Status */}
+          {scannerStatus?.daily_risk_status && (
+            <View style={styles.propRiskSection}>
+              <Text style={styles.propRiskTitle}>Daily Risk Status</Text>
+              <View style={styles.propRiskRow}>
+                <View style={styles.propRiskItem}>
+                  <Text style={styles.propRiskLabel}>Used</Text>
+                  <Text style={[
+                    styles.propRiskValue,
+                    scannerStatus.daily_risk_status.at_warning_level && { color: '#ffaa00' }
+                  ]}>
+                    ${scannerStatus.daily_risk_status.daily_risk_used.toFixed(0)}
+                  </Text>
+                </View>
+                <View style={styles.propRiskItem}>
+                  <Text style={styles.propRiskLabel}>Remaining</Text>
+                  <Text style={[
+                    styles.propRiskValue,
+                    { color: scannerStatus.daily_risk_status.daily_risk_remaining > 1500 ? '#00ff88' : '#ffaa00' }
+                  ]}>
+                    ${scannerStatus.daily_risk_status.daily_risk_remaining.toFixed(0)}
+                  </Text>
+                </View>
+              </View>
+              {scannerStatus.daily_risk_status.at_warning_level && (
+                <Text style={styles.warningText}>⚠️ Approaching daily limit</Text>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Performance Overview */}
@@ -586,5 +602,46 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ff6666',
     textAlign: 'center',
+  },
+  // NEW: Prop Risk Section Styles
+  propRiskSection: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#0a0a1a',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#333366',
+  },
+  propRiskTitle: {
+    color: '#00ff88',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  propRiskRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 8,
+  },
+  propRiskItem: {
+    alignItems: 'center',
+  },
+  propRiskLabel: {
+    color: '#888888',
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  propRiskValue: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  warningText: {
+    color: '#ffaa00',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

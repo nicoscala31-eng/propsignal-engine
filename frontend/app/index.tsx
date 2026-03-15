@@ -458,22 +458,27 @@ export default function HomeScreen() {
 
   const toggleBackendScanner = async () => {
     try {
-      const endpoint = backendScannerRunning ? 'stop' : 'start';
-      const response = await fetch(`${BACKEND_URL}/api/scanner/${endpoint}`, {
+      // Use production control endpoint instead of legacy scanner
+      const endpoint = backendScannerRunning ? 'disable' : 'enable';
+      const response = await fetch(`${BACKEND_URL}/api/production/scanner/${endpoint}`, {
         method: 'POST'
       });
       if (response.ok) {
+        const data = await response.json();
         setBackendScannerRunning(!backendScannerRunning);
         Alert.alert(
-          backendScannerRunning ? 'Scanner Stopped' : 'Scanner Started',
+          backendScannerRunning ? 'Scanner Disattivato' : 'Scanner Attivato',
           backendScannerRunning 
-            ? 'Background signal scanning has been stopped.'
-            : 'Background scanner will check for BUY/SELL signals every 30 seconds and send push notifications.',
+            ? 'La scansione dei segnali è stata disattivata.'
+            : 'Lo scanner cercherà segnali BUY/SELL ogni 5 secondi e invierà notifiche push.',
           [{ text: 'OK' }]
         );
+      } else {
+        Alert.alert('Errore', 'Impossibile cambiare stato scanner');
       }
     } catch (error) {
-      Alert.alert('Error', 'Could not toggle scanner');
+      console.error('Toggle scanner error:', error);
+      Alert.alert('Errore', 'Errore di connessione');
     }
   };
 
