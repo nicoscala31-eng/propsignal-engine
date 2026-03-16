@@ -84,12 +84,14 @@ export default function AnalyticsScreen() {
       setError(null);
       const [perfResponse, scannerResponse] = await Promise.all([
         fetch(`${BACKEND_URL}/api/analytics/performance`),
-        fetch(`${BACKEND_URL}/api/scanner/v3/status`)  // Use v3 endpoint
+        fetch(`${BACKEND_URL}/api/scanner/v3/status`)
       ]);
 
       if (perfResponse.ok) {
         const perfData = await perfResponse.json();
         setPerformance(perfData);
+      } else {
+        console.error('Analytics response not ok:', perfResponse.status);
       }
 
       if (scannerResponse.ok) {
@@ -97,15 +99,9 @@ export default function AnalyticsScreen() {
         setScannerStatus(scannerData);
       }
 
-      if (scannerResponse.ok) {
-        const scannerData = await scannerResponse.json();
-        setScannerStatus(scannerData);
-      }
-
-      setError(null);
     } catch (err) {
       console.error('Error fetching analytics:', err);
-      setError('Failed to load analytics');
+      setError('Failed to load analytics. Check your connection.');
     } finally {
       setLoading(false);
     }
