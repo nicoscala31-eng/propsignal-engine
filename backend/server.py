@@ -1204,6 +1204,27 @@ async def get_signal_generator_v3_status():
     }
 
 
+@api_router.post("/scanner/v3/reset-daily-risk")
+async def reset_daily_risk():
+    """
+    Reset daily risk counter for Signal Generator v3
+    
+    Use this to start fresh for a new trading day or testing.
+    """
+    if not signal_generator_instance:
+        return {"error": "Signal Generator v3 not initialized"}
+    
+    signal_generator_instance.position_sizer.daily_risk_used = 0.0
+    signal_generator_instance.position_sizer.last_reset_date = datetime.utcnow().date()
+    signal_generator_instance._save_state()
+    
+    return {
+        "success": True,
+        "message": "Daily risk reset to $0",
+        "daily_risk_status": signal_generator_instance.position_sizer.get_daily_status()
+    }
+
+
 @api_router.get("/market/validation/status")
 async def get_market_validation_status():
     """

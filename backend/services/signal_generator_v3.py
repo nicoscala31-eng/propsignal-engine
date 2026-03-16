@@ -1,6 +1,6 @@
 """
-Signal Generator v3 - Confidence-Based Signal Engine
-=====================================================
+Signal Generator v3 - Technical Structure-Based Signal Engine
+==============================================================
 
 *** AUTHORIZED PRODUCTION ENGINE ***
 *** SINGLE PRODUCTION PIPELINE - NO PARALLEL ENGINES ***
@@ -8,37 +8,35 @@ Signal Generator v3 - Confidence-Based Signal Engine
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-UPGRADES IMPLEMENTED:
-1. Position Sizing Engine - calculates lot_size, money_at_risk, risk_percent, pip_risk
-2. Prop Firm Rule Awareness - 100k account, 3000 max daily loss, 1500 warning level
-3. News Risk Detection - CPI, NFP, FOMC awareness with soft penalties
-4. Session Filter (Soft) - penalties instead of hard blocks
-5. Spread Validation (Moderate) - small penalty for elevated, block for extreme
-6. Advanced MTF Bias - alignment scoring between H1/M15/M5
-7. Advanced Pullback Quality - depth, location, retracement evaluation
-8. Invalid Token Cleanup - auto-removal of expired push tokens
-9. State Persistence - survives restarts
+VERSION 3.1 - STRUCTURAL UPGRADE (March 2026):
+1. Entry Validation - late entry detection and rejection
+2. Structural Stop Loss - based on swing points, not just ATR
+3. Technical Take Profit - based on market structure, not fixed R:R
+4. Dynamic R:R - calculated from actual SL/TP, not imposed
+5. Dynamic Risk% - based on confidence score (0.5%-0.75%)
+6. Asset Concentration Penalty - prevents over-clustering
+7. Enhanced News Penalties - updated scoring
+8. Fixed Position Sizing Tracking - lot_size and money_at_risk properly saved
 
 PROP TRADING ASSUMPTIONS:
 - account_size = 100,000
 - max_daily_loss = 3,000
 - operational_warning = 1,500
-- risk_per_trade = 0.5% to 0.75%
-- primary instrument = EURUSD intraday
-
-DESIGN PHILOSOPHY:
-- Generate signals consistently instead of blocking almost everything
-- Use weighted scoring to assign confidence (0-100) to each signal
-- Only reject for truly invalid market conditions
-- Let confidence score reflect setup quality
+- risk_per_trade = 0.5% to 0.75% (DYNAMIC based on confidence)
+- primary instruments = EURUSD, XAUUSD
 
 CONFIDENCE CLASSIFICATION:
-- 80-100: Strong setup (high confidence)
-- 65-79: Tradable setup (medium confidence)
-- 50-64: Aggressive/weaker setup (low confidence)
+- 80-100: Strong setup (high confidence) -> 0.75% risk
+- 70-79: Good setup (medium confidence) -> 0.60-0.65% risk
+- 60-69: Acceptable setup (lower confidence) -> 0.50% risk
 - Below 60: Reject (don't send notification) - MANDATORY THRESHOLD
 
-DUPLICATE SUPPRESSION: Light (25 min window)
+MINIMUM STOP LOSS ENFORCED:
+- EURUSD: 8.5 pips minimum
+- XAUUSD: 85 pips minimum
+
+R:R HARD REJECTION:
+- R:R < 0.95 = REJECT
 """
 
 import asyncio
@@ -75,6 +73,36 @@ class PropFirmConfig:
 
 
 PROP_CONFIG = PropFirmConfig()
+
+
+# ==================== ASSET CONFIGURATION ====================
+
+@dataclass
+class AssetConfig:
+    """Asset-specific configuration"""
+    pip_size: float
+    pip_value: float
+    min_sl_pips: float
+    min_buffer_pips: float
+    tp_buffer_pips: float
+
+
+ASSET_CONFIGS = {
+    Asset.EURUSD: AssetConfig(
+        pip_size=0.0001,
+        pip_value=10.0,
+        min_sl_pips=8.5,      # Minimum SL to avoid noise
+        min_buffer_pips=1.5,  # Buffer beyond swing point
+        tp_buffer_pips=1.0    # TP placed before target
+    ),
+    Asset.XAUUSD: AssetConfig(
+        pip_size=0.01,
+        pip_value=1.0,
+        min_sl_pips=85.0,     # Minimum SL for gold
+        min_buffer_pips=20.0, # Buffer beyond swing point
+        tp_buffer_pips=15.0   # TP placed before target
+    )
+}
 
 
 # ==================== NEWS RISK DETECTION ====================
@@ -122,23 +150,21 @@ class PositionSizeResult:
     adjusted: bool = False
     adjustment_reason: Optional[str] = None
     prop_warnings: List[str] = field(default_factory=list)
+    daily_risk_used: float = 0.0
+    daily_risk_remaining: float = 0.0
 
 
 class PositionSizingEngine:
     """
-    Position Sizing Engine for EURUSD
+    Position Sizing Engine with Dynamic Risk
     
     Uses:
     - Entry price
     - Stop loss price
     - Account size (100k default)
-    - Risk percentage (0.5-0.75%)
-    - Pip value for EURUSD (standard lot = $10/pip)
+    - Risk percentage (0.5-0.75% DYNAMIC based on confidence)
+    - Pip value per asset
     """
-    
-    # EURUSD pip value per standard lot
-    EURUSD_PIP_VALUE = 10.0  # $10 per pip per standard lot
-    XAUUSD_PIP_VALUE = 1.0   # $1 per pip per standard lot (0.01 point)
     
     def __init__(self, config: PropFirmConfig = PROP_CONFIG):
         self.config = config
@@ -151,44 +177,55 @@ class PositionSizingEngine:
         if today != self.last_reset_date:
             self.daily_risk_used = 0.0
             self.last_reset_date = today
+            logger.info("📅 Daily risk counter reset for new trading day")
+    
+    def get_dynamic_risk_percent(self, confidence_score: float) -> float:
+        """
+        Get dynamic risk percentage based on confidence score
+        
+        Mapping:
+        - 80-100: 0.75%
+        - 75-79: 0.65%
+        - 70-74: 0.60%
+        - 60-69: 0.50%
+        """
+        if confidence_score >= 80:
+            return 0.75
+        elif confidence_score >= 75:
+            return 0.65
+        elif confidence_score >= 70:
+            return 0.60
+        else:
+            return 0.50
     
     def calculate(
         self,
         asset: Asset,
         entry_price: float,
         stop_loss: float,
-        risk_percent: Optional[float] = None
+        confidence_score: float = 70.0
     ) -> PositionSizeResult:
         """
-        Calculate position size
+        Calculate position size with dynamic risk
         
         Formula:
         1. Pip Risk = |Entry - SL| / pip_size
-        2. Money at Risk = Account * Risk%
-        3. Lot Size = Money at Risk / (Pip Risk * Pip Value)
+        2. Risk% = dynamic based on confidence
+        3. Money at Risk = Account * Risk%
+        4. Lot Size = Money at Risk / (Pip Risk * Pip Value)
         """
         self._reset_daily_if_needed()
         
-        # Determine pip size and value
-        if asset == Asset.EURUSD:
-            pip_size = 0.0001
-            pip_value = self.EURUSD_PIP_VALUE
-        else:  # XAUUSD
-            pip_size = 0.01
-            pip_value = self.XAUUSD_PIP_VALUE
+        # Get asset config
+        asset_config = ASSET_CONFIGS.get(asset, ASSET_CONFIGS[Asset.EURUSD])
+        pip_size = asset_config.pip_size
+        pip_value = asset_config.pip_value
         
         # Calculate pip risk
         pip_risk = abs(entry_price - stop_loss) / pip_size
         
-        # Use default risk if not provided
-        if risk_percent is None:
-            risk_percent = self.config.default_risk_percent
-        
-        # Ensure risk is within bounds
-        risk_percent = max(
-            self.config.min_risk_percent,
-            min(self.config.max_risk_percent, risk_percent)
-        )
+        # Get dynamic risk percentage
+        risk_percent = self.get_dynamic_risk_percent(confidence_score)
         
         # Calculate money at risk
         money_at_risk = self.config.account_size * (risk_percent / 100)
@@ -213,25 +250,33 @@ class PositionSizingEngine:
         # Check if trade would exceed daily limit
         remaining_daily = self.config.max_daily_loss - self.daily_risk_used
         
-        if money_at_risk > remaining_daily:
+        if remaining_daily <= 0:
+            # No more trades allowed today
+            warnings.append(f"⛔ Daily limit exhausted (${self.daily_risk_used:.0f} used)")
+            lot_size = 0.0
+            money_at_risk = 0.0
+            adjusted = True
+            adjustment_reason = "Daily limit exhausted"
+        elif money_at_risk > remaining_daily:
             # Reduce position to fit remaining allowance
             old_lot = lot_size
+            old_risk = money_at_risk
             money_at_risk = remaining_daily * 0.9  # Use 90% of remaining
             lot_size = money_at_risk / (pip_risk * pip_value) if pip_risk > 0 else 0.01
             lot_size = round(max(0.01, lot_size), 2)
             adjusted = True
-            adjustment_reason = f"Reduced from {old_lot:.2f} to fit daily limit"
-            warnings.append(f"Position reduced: daily limit ${remaining_daily:.0f} remaining")
+            adjustment_reason = f"Reduced from {old_lot:.2f} lots (${old_risk:.0f}) to fit daily limit"
+            warnings.append(f"Position reduced: ${remaining_daily:.0f} daily remaining")
         
         # Check if approaching warning level
         if self.daily_risk_used >= self.config.operational_warning:
-            warnings.append(f"WARNING: Daily loss at ${self.daily_risk_used:.0f} (warning level: ${self.config.operational_warning:.0f})")
+            warnings.append(f"⚠️ WARNING: Daily risk at ${self.daily_risk_used:.0f} (warning: ${self.config.operational_warning:.0f})")
         elif self.daily_risk_used + money_at_risk > self.config.operational_warning:
             warnings.append(f"Trade will reach warning level (${self.config.operational_warning:.0f})")
         
         # Recalculate final money at risk after adjustments
-        final_money_at_risk = lot_size * pip_risk * pip_value
-        final_risk_percent = (final_money_at_risk / self.config.account_size) * 100
+        final_money_at_risk = lot_size * pip_risk * pip_value if lot_size > 0 else 0
+        final_risk_percent = (final_money_at_risk / self.config.account_size) * 100 if final_money_at_risk > 0 else 0
         
         return PositionSizeResult(
             recommended_lot_size=lot_size,
@@ -241,13 +286,16 @@ class PositionSizingEngine:
             pip_value=pip_value,
             adjusted=adjusted,
             adjustment_reason=adjustment_reason,
-            prop_warnings=warnings
+            prop_warnings=warnings,
+            daily_risk_used=round(self.daily_risk_used, 2),
+            daily_risk_remaining=round(remaining_daily, 2)
         )
     
     def record_trade(self, money_at_risk: float):
         """Record a trade's risk for daily tracking"""
         self._reset_daily_if_needed()
         self.daily_risk_used += money_at_risk
+        logger.info(f"💰 Trade recorded: ${money_at_risk:.2f} | Daily total: ${self.daily_risk_used:.2f}")
     
     def get_daily_status(self) -> Dict:
         """Get current daily risk status"""
@@ -314,6 +362,16 @@ class SignalScore:
 
 
 @dataclass
+class StructuralLevels:
+    """Technical structure levels for SL/TP"""
+    swing_sl: Optional[float] = None
+    swing_sl_type: str = "none"  # "swing_low", "swing_high", "atr_fallback"
+    structural_tp1: Optional[float] = None
+    structural_tp2: Optional[float] = None
+    tp_type: str = "none"  # "swing_target", "extension", "atr_fallback"
+
+
+@dataclass
 class GeneratedSignal:
     """A generated trading signal with full metadata including position sizing"""
     signal_id: str
@@ -334,7 +392,7 @@ class GeneratedSignal:
     score_breakdown: SignalScore
     timestamp: datetime
     
-    # Position sizing (NEW)
+    # Position sizing
     recommended_lot_size: float = 0.0
     money_at_risk: float = 0.0
     risk_percent: float = 0.0
@@ -342,29 +400,24 @@ class GeneratedSignal:
     position_adjusted: bool = False
     position_adjustment_reason: Optional[str] = None
     prop_warnings: List[str] = field(default_factory=list)
+    daily_risk_used: float = 0.0
+    daily_risk_remaining: float = 0.0
     
-    # News risk (NEW)
+    # Technical structure info
+    sl_type: str = "structural"  # "structural" or "atr_fallback"
+    tp_type: str = "structural"  # "structural" or "atr_fallback"
+    
+    # News risk
     news_risk: NewsRiskLevel = NewsRiskLevel.NONE
     news_event: Optional[str] = None
     news_warning: Optional[str] = None
     
-    # Spread info (NEW)
+    # Spread info
     spread_pips: float = 0.0
     
     def to_notification_dict(self) -> Dict:
         """
         Format for push notification
-        
-        NOTIFICATION BODY FORMAT:
-        - Symbol (in title)
-        - Direction (in title)
-        - Entry Price
-        - Stop Loss (SL)
-        - Take Profit (TP)
-        - Confidence %
-        - Risk/Reward Ratio
-        - Lot Size
-        - News Warning (if any)
         """
         emoji = "🟢" if self.direction == "BUY" else "🔴"
         
@@ -378,11 +431,11 @@ class GeneratedSignal:
             sl_str = f"{self.stop_loss:.2f}"
             tp_str = f"{self.take_profit_1:.2f}"
         
-        # Build notification body
+        # Build notification body with all required fields
         body_lines = [
             f"Entry: {entry_str}",
             f"SL: {sl_str} | TP: {tp_str}",
-            f"Conf: {self.confidence_score:.0f}% | R:R: {self.risk_reward:.1f}",
+            f"Conf: {self.confidence_score:.0f}% | R:R: {self.risk_reward:.2f}",
             f"Lot: {self.recommended_lot_size:.2f} | Risk: ${self.money_at_risk:.0f}"
         ]
         
@@ -405,19 +458,24 @@ class GeneratedSignal:
                 "stop_loss": self.stop_loss,
                 "take_profit_1": self.take_profit_1,
                 "take_profit_2": self.take_profit_2,
-                "risk_reward": self.risk_reward,
+                "risk_reward": round(self.risk_reward, 2),
                 "confidence": self.confidence_score,
                 "confidence_level": self.confidence_level.value,
                 "setup_type": self.setup_type,
                 "invalidation": self.invalidation,
                 "session": self.session,
                 "timestamp": self.timestamp.isoformat(),
-                # Position sizing data
+                # Position sizing data (FIXED - all fields populated)
                 "lot_size": self.recommended_lot_size,
                 "money_at_risk": self.money_at_risk,
                 "risk_percent": self.risk_percent,
                 "pip_risk": self.pip_risk,
                 "prop_warnings": self.prop_warnings,
+                "daily_risk_used": self.daily_risk_used,
+                "daily_risk_remaining": self.daily_risk_remaining,
+                # Structure info
+                "sl_type": self.sl_type,
+                "tp_type": self.tp_type,
                 # News risk data
                 "news_risk": self.news_risk.value,
                 "news_event": self.news_event,
@@ -442,55 +500,65 @@ class RecentSignal:
 
 class SignalGeneratorV3:
     """
-    Confidence-Based Signal Generator
+    Technical Structure-Based Signal Generator
     
-    PRODUCTION ENGINE - Single Pipeline
+    PRODUCTION ENGINE - Single Pipeline (v3.1)
     
-    Features:
-    1. Position Sizing Engine
-    2. Prop Firm Awareness
-    3. News Risk Detection
-    4. Session Filter (Soft)
-    5. Spread Validation (Moderate)
-    6. Advanced MTF Bias
-    7. Advanced Pullback Quality
-    8. Invalid Token Cleanup
-    9. State Persistence
+    KEY CHANGES FROM v3.0:
+    1. Entry validation with late entry detection
+    2. Structural SL based on swing points
+    3. Technical TP based on market structure
+    4. Dynamic R:R (not fixed 1.33)
+    5. Dynamic risk% based on confidence
+    6. Asset concentration penalty
+    7. All position data properly tracked
     """
     
     # Scoring weights (must sum to 100)
     WEIGHTS = {
-        'h1_bias': 15.0,           # H1 directional bias
-        'm15_context': 12.0,       # M15 alignment/context
-        'mtf_alignment': 10.0,     # NEW: Multi-timeframe alignment bonus
-        'market_structure': 12.0,  # Market structure quality
-        'momentum': 10.0,          # Momentum strength
-        'pullback_quality': 12.0,  # Enhanced pullback evaluation
-        'key_level': 8.0,          # Reaction at key level
-        'session': 6.0,            # Session quality (soft penalty)
-        'rr_ratio': 5.0,           # Risk/Reward ratio
+        'h1_bias': 14.0,           # H1 directional bias
+        'm15_context': 11.0,       # M15 alignment/context
+        'mtf_alignment': 10.0,     # Multi-timeframe alignment
+        'market_structure': 11.0,  # Market structure quality
+        'momentum': 9.0,           # Momentum strength
+        'pullback_quality': 10.0,  # Pullback evaluation
+        'entry_quality': 6.0,      # NEW: Entry timing quality
+        'key_level': 7.0,          # Reaction at key level
+        'session': 5.0,            # Session quality
+        'rr_ratio': 6.0,           # Risk/Reward (DYNAMIC)
         'volatility': 3.0,         # Volatility conditions
-        'regime_quality': 5.0,     # Market regime
-        'spread': 2.0,             # NEW: Spread penalty
+        'regime_quality': 4.0,     # Market regime
+        'spread': 2.0,             # Spread penalty
+        'concentration': 2.0,      # NEW: Asset concentration penalty
     }
     
     # Hard rejection thresholds
-    MAX_SPREAD_PIPS_EURUSD = 3.0   # Max spread for EURUSD (moderate)
-    MAX_SPREAD_PIPS_XAUUSD = 50.0  # Max spread for XAUUSD
-    ELEVATED_SPREAD_EURUSD = 1.5   # Spread penalty threshold
+    MAX_SPREAD_PIPS_EURUSD = 3.0
+    MAX_SPREAD_PIPS_XAUUSD = 50.0
+    ELEVATED_SPREAD_EURUSD = 1.5
     ELEVATED_SPREAD_XAUUSD = 30.0
-    MIN_ATR_MULTIPLIER = 0.3      # Minimum ATR for activity
-    MAX_DATA_AGE_SECONDS = 60     # Max age of market data
+    MIN_ATR_MULTIPLIER = 0.3
+    MAX_DATA_AGE_SECONDS = 60
     
-    # Duplicate suppression
-    DUPLICATE_WINDOW_MINUTES = 25  # Light duplicate window
-    DUPLICATE_PRICE_ZONE_PIPS = 15 # Price zone for EURUSD
-    DUPLICATE_PRICE_ZONE_XAU = 200 # Price zone for XAUUSD
+    # Entry validation
+    ENTRY_REJECT_ATR_MULTIPLIER = 0.35  # Reject if price > 0.35 ATR from ideal
+    
+    # R:R thresholds
+    MIN_RR_HARD_REJECT = 0.95  # Hard reject below this
+    
+    # Duplicate suppression (unchanged)
+    DUPLICATE_WINDOW_MINUTES = 25
+    DUPLICATE_PRICE_ZONE_PIPS = 15
+    DUPLICATE_PRICE_ZONE_XAU = 200
+    
+    # Asset concentration
+    CONCENTRATION_WINDOW = 5  # Check last N signals
+    CONCENTRATION_THRESHOLD = 4  # Penalty if >= N signals same asset
     
     def __init__(self, db):
         self.db = db
         self.is_running = False
-        self.scan_interval = 5  # seconds
+        self.scan_interval = 5
         self.scanner_task: Optional[asyncio.Task] = None
         
         # Recent signals tracking
@@ -504,16 +572,18 @@ class SignalGeneratorV3:
         self.signal_count = 0
         self.notification_count = 0
         self.rejection_count = 0
+        self.rejection_reasons: Dict[str, int] = {}
         self.invalid_tokens_removed = 0
         self.start_time: Optional[datetime] = None
         
         # Load persisted state
         self._load_state()
         
-        logger.info("🚀 Signal Generator v3 initialized (ENHANCED)")
+        logger.info("🚀 Signal Generator v3.1 initialized (STRUCTURAL UPGRADE)")
         logger.info(f"   Prop Config: ${PROP_CONFIG.account_size:,.0f} account, ${PROP_CONFIG.max_daily_loss:,.0f} max daily loss")
-        logger.info(f"   Risk Range: {PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%")
-        logger.info(f"   Duplicate window: {self.DUPLICATE_WINDOW_MINUTES} minutes")
+        logger.info(f"   Dynamic Risk Range: {PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%")
+        logger.info(f"   Min SL: EURUSD={ASSET_CONFIGS[Asset.EURUSD].min_sl_pips}p, XAUUSD={ASSET_CONFIGS[Asset.XAUUSD].min_sl_pips}p")
+        logger.info(f"   R:R Hard Reject: < {self.MIN_RR_HARD_REJECT}")
         logger.info(f"   Min confidence: 60% (MANDATORY)")
     
     # ==================== STATE PERSISTENCE ====================
@@ -529,27 +599,43 @@ class SignalGeneratorV3:
                 self.signal_count = state.get("signal_count", 0)
                 self.notification_count = state.get("notification_count", 0)
                 self.rejection_count = state.get("rejection_count", 0)
+                self.rejection_reasons = state.get("rejection_reasons", {})
                 self.invalid_tokens_removed = state.get("invalid_tokens_removed", 0)
                 
-                # Restore daily risk tracking
+                # Restore daily risk tracking - only if same day
                 daily_risk = state.get("daily_risk_used", 0)
                 last_reset = state.get("last_reset_date")
+                today = datetime.utcnow().date()
+                
+                logger.info(f"📂 State file: daily_risk={daily_risk}, last_reset={last_reset}, today={today}")
+                
                 if last_reset:
                     try:
                         saved_date = datetime.fromisoformat(last_reset).date()
-                        if saved_date == datetime.utcnow().date():
+                        if saved_date == today:
                             self.position_sizer.daily_risk_used = daily_risk
-                    except:
-                        pass
+                            self.position_sizer.last_reset_date = saved_date
+                            logger.info(f"📂 Same day - keeping daily risk: ${daily_risk:.2f}")
+                        else:
+                            # New day - reset risk
+                            self.position_sizer.daily_risk_used = 0.0
+                            self.position_sizer.last_reset_date = today
+                            logger.info(f"📅 New trading day ({saved_date} -> {today}) - daily risk RESET to $0")
+                    except Exception as e:
+                        logger.warning(f"📂 Could not parse reset date: {e}")
+                        self.position_sizer.daily_risk_used = 0.0
+                else:
+                    self.position_sizer.daily_risk_used = 0.0
+                    logger.info("📂 No last_reset_date - setting daily risk to $0")
                 
-                logger.info(f"📂 Loaded state: {self.scan_count} scans, {self.signal_count} signals")
+                logger.info(f"📂 Loaded state: {self.scan_count} scans, {self.signal_count} signals, {self.rejection_count} rejections")
+                logger.info(f"📂 Final daily risk: ${self.position_sizer.daily_risk_used:.2f}")
         except Exception as e:
             logger.warning(f"Could not load state: {e}")
     
     def _save_state(self):
         """Persist state to file"""
         try:
-            # Ensure directory exists
             STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
             
             state = {
@@ -557,6 +643,7 @@ class SignalGeneratorV3:
                 "signal_count": self.signal_count,
                 "notification_count": self.notification_count,
                 "rejection_count": self.rejection_count,
+                "rejection_reasons": self.rejection_reasons,
                 "invalid_tokens_removed": self.invalid_tokens_removed,
                 "daily_risk_used": self.position_sizer.daily_risk_used,
                 "last_reset_date": self.position_sizer.last_reset_date.isoformat(),
@@ -567,6 +654,11 @@ class SignalGeneratorV3:
                 json.dump(state, f, indent=2)
         except Exception as e:
             logger.warning(f"Could not save state: {e}")
+    
+    def _record_rejection(self, reason: str):
+        """Record rejection reason for analytics"""
+        self.rejection_count += 1
+        self.rejection_reasons[reason] = self.rejection_reasons.get(reason, 0) + 1
     
     # ==================== LIFECYCLE ====================
     
@@ -579,12 +671,13 @@ class SignalGeneratorV3:
         self.start_time = datetime.utcnow()
         
         logger.info("=" * 60)
-        logger.info("🚀 SIGNAL GENERATOR V3 STARTED (ENHANCED)")
-        logger.info("   Mode: Confidence-based scoring (NO hidden thresholds)")
+        logger.info("🚀 SIGNAL GENERATOR V3.1 STARTED (STRUCTURAL)")
+        logger.info("   Mode: Technical structure-based SL/TP")
+        logger.info("   R:R: DYNAMIC (not fixed)")
+        logger.info("   Risk%: DYNAMIC based on confidence")
         logger.info("   MANDATORY Min confidence: 60%")
-        logger.info("   80-100: STRONG | 70-79: GOOD | 60-69: ACCEPTABLE | <60: REJECTED")
         logger.info(f"   Scan interval: {self.scan_interval}s")
-        logger.info(f"   Prop: ${PROP_CONFIG.account_size:,.0f} | Max Daily Loss: ${PROP_CONFIG.max_daily_loss:,.0f}")
+        logger.info(f"   Prop: ${PROP_CONFIG.account_size:,.0f} | Max Daily: ${PROP_CONFIG.max_daily_loss:,.0f}")
         logger.info("=" * 60)
         
         self.scanner_task = asyncio.create_task(self._run_loop())
@@ -600,7 +693,7 @@ class SignalGeneratorV3:
                 pass
         
         self._save_state()
-        logger.info("🛑 Signal Generator v3 stopped")
+        logger.info("🛑 Signal Generator v3.1 stopped")
     
     async def _run_loop(self):
         """Main loop"""
@@ -620,34 +713,19 @@ class SignalGeneratorV3:
     # ==================== MAIN SCAN PIPELINE ====================
     
     async def _scan_all_assets(self):
-        """
-        Scan all assets with FULL validation and production controls
-        
-        PRODUCTION PIPELINE SEQUENCE:
-        1. Production control check (scanner enabled?)
-        2. Market validation (forex open, data fresh, not frozen)
-        3. News risk detection
-        4. Candidate generation
-        5. Scoring (including spread, session, MTF)
-        6. Position sizing
-        7. Duplicate check
-        8. Notification send (if notifications enabled)
-        9. Outcome tracking
-        
-        CRITICAL: All checks must pass BEFORE any signal generation.
-        """
+        """Scan all assets"""
         from services.production_control import production_control, EngineType
         
         self.scan_count += 1
         
-        # ========== STEP 1: PRODUCTION CONTROL CHECK ==========
+        # Production control check
         authorized, reason = production_control.authorize_scan(EngineType.SIGNAL_GENERATOR_V3)
         if not authorized:
             if self.scan_count % 60 == 0:
                 logger.info(f"🛡️ [PRODUCTION] Scan blocked: {reason}")
             return
         
-        # ========== STEP 2: MARKET VALIDATION - FOREX HOURS ==========
+        # Market validation
         if not market_validator.is_forex_open():
             if self.scan_count % 60 == 0:
                 status = market_validator.get_market_status_summary()
@@ -655,7 +733,6 @@ class SignalGeneratorV3:
             return
         
         for asset in [Asset.EURUSD, Asset.XAUUSD]:
-            # ========== STEP 2b: FULL MARKET VALIDATION ==========
             price_data = market_data_cache.get_price(asset)
             m5_candles = market_data_cache.get_candles(asset, Timeframe.M5)
             m15_candles = market_data_cache.get_candles(asset, Timeframe.M15)
@@ -672,48 +749,67 @@ class SignalGeneratorV3:
             if not validation_result.is_valid:
                 continue
             
-            # ========== STEP 3: NEWS RISK DETECTION ==========
+            # News risk detection
             news_risk = await self._detect_news_risk(asset)
             
-            # ========== STEP 4-7: ANALYSIS, SCORING, SIZING ==========
+            # Main analysis
             signal = await self._analyze_asset(asset, news_risk)
             
             if signal:
-                # ========== STEP 8-9: NOTIFICATION & TRACKING ==========
                 await self._process_signal(signal)
     
     # ==================== NEWS RISK DETECTION ====================
     
     async def _detect_news_risk(self, asset: Asset) -> NewsRiskInfo:
         """
-        Detect news risk for the asset
+        Detect news risk with UPDATED penalties
         
-        Checks macro_news_service for upcoming high-impact events.
-        Does NOT block signals - only adds warnings and small score penalties.
+        HIGH events:
+        - <= 15 min: -12 points
+        - 15-30 min: -8 points
+        - 30-60 min: -4 points
+        
+        MEDIUM events:
+        - <= 15 min: -6 points
+        - 15-30 min: -3 points
         """
         try:
             from services.macro_news_service import macro_news_service
             
-            # Check news within 60 minute window
             news_info = await macro_news_service.check_news_risk(asset, minutes_window=60)
             
             if news_info.get("has_risk", False):
                 minutes_to_event = news_info.get("minutes_to_event", 999)
                 event_name = news_info.get("event_name", "Economic Event")
+                impact = news_info.get("impact", "MEDIUM")
                 
-                # Determine risk level based on proximity
-                if minutes_to_event <= 15:
-                    level = NewsRiskLevel.HIGH
-                    penalty = 10.0
-                    warning = f"⚠️ {event_name} in {minutes_to_event}m"
-                elif minutes_to_event <= 30:
-                    level = NewsRiskLevel.MEDIUM
-                    penalty = 5.0
-                    warning = f"{event_name} in {minutes_to_event}m"
-                else:
-                    level = NewsRiskLevel.LOW
-                    penalty = 2.0
-                    warning = f"{event_name} in {minutes_to_event}m"
+                # Determine penalty based on impact and proximity
+                if impact == "HIGH":
+                    if minutes_to_event <= 15:
+                        level = NewsRiskLevel.HIGH
+                        penalty = 12.0
+                        warning = f"⚠️ {event_name} in {minutes_to_event}m"
+                    elif minutes_to_event <= 30:
+                        level = NewsRiskLevel.HIGH
+                        penalty = 8.0
+                        warning = f"⚠️ {event_name} in {minutes_to_event}m"
+                    else:
+                        level = NewsRiskLevel.MEDIUM
+                        penalty = 4.0
+                        warning = f"{event_name} in {minutes_to_event}m"
+                else:  # MEDIUM impact
+                    if minutes_to_event <= 15:
+                        level = NewsRiskLevel.MEDIUM
+                        penalty = 6.0
+                        warning = f"{event_name} in {minutes_to_event}m"
+                    elif minutes_to_event <= 30:
+                        level = NewsRiskLevel.LOW
+                        penalty = 3.0
+                        warning = f"{event_name} in {minutes_to_event}m"
+                    else:
+                        level = NewsRiskLevel.LOW
+                        penalty = 0.0
+                        warning = None
                 
                 return NewsRiskInfo(
                     level=level,
@@ -727,66 +823,336 @@ class SignalGeneratorV3:
         
         return NewsRiskInfo(level=NewsRiskLevel.NONE)
     
+    # ==================== STRUCTURAL ANALYSIS ====================
+    
+    def _find_swing_low(self, candles: List, lookback: int = 20) -> Optional[float]:
+        """Find most recent significant swing low"""
+        if len(candles) < lookback:
+            return None
+        
+        recent = candles[-lookback:]
+        lows = [c.get('low', 0) for c in recent]
+        
+        # Find swing lows (local minima)
+        swing_lows = []
+        for i in range(2, len(lows) - 2):
+            if (lows[i] < lows[i-1] and lows[i] < lows[i-2] and 
+                lows[i] < lows[i+1] and lows[i] < lows[i+2]):
+                swing_lows.append(lows[i])
+        
+        if swing_lows:
+            return swing_lows[-1]  # Most recent swing low
+        
+        # Fallback: lowest low in recent period
+        return min(lows[-10:]) if len(lows) >= 10 else min(lows)
+    
+    def _find_swing_high(self, candles: List, lookback: int = 20) -> Optional[float]:
+        """Find most recent significant swing high"""
+        if len(candles) < lookback:
+            return None
+        
+        recent = candles[-lookback:]
+        highs = [c.get('high', 0) for c in recent]
+        
+        # Find swing highs (local maxima)
+        swing_highs = []
+        for i in range(2, len(highs) - 2):
+            if (highs[i] > highs[i-1] and highs[i] > highs[i-2] and 
+                highs[i] > highs[i+1] and highs[i] > highs[i+2]):
+                swing_highs.append(highs[i])
+        
+        if swing_highs:
+            return swing_highs[-1]  # Most recent swing high
+        
+        # Fallback: highest high in recent period
+        return max(highs[-10:]) if len(highs) >= 10 else max(highs)
+    
+    def _find_next_resistance(self, candles: List, current_price: float, lookback: int = 50) -> Optional[float]:
+        """Find next resistance level above current price"""
+        if len(candles) < lookback:
+            return None
+        
+        recent = candles[-lookback:]
+        highs = [c.get('high', 0) for c in recent]
+        
+        # Find swing highs above current price
+        resistances = []
+        for i in range(2, len(highs) - 2):
+            if (highs[i] > highs[i-1] and highs[i] > highs[i-2] and 
+                highs[i] > highs[i+1] and highs[i] > highs[i+2]):
+                if highs[i] > current_price:
+                    resistances.append(highs[i])
+        
+        if resistances:
+            return min(resistances)  # Nearest resistance
+        
+        # Fallback: recent high
+        recent_high = max(highs[-20:])
+        return recent_high if recent_high > current_price else None
+    
+    def _find_next_support(self, candles: List, current_price: float, lookback: int = 50) -> Optional[float]:
+        """Find next support level below current price"""
+        if len(candles) < lookback:
+            return None
+        
+        recent = candles[-lookback:]
+        lows = [c.get('low', 0) for c in recent]
+        
+        # Find swing lows below current price
+        supports = []
+        for i in range(2, len(lows) - 2):
+            if (lows[i] < lows[i-1] and lows[i] < lows[i-2] and 
+                lows[i] < lows[i+1] and lows[i] < lows[i+2]):
+                if lows[i] < current_price:
+                    supports.append(lows[i])
+        
+        if supports:
+            return max(supports)  # Nearest support
+        
+        # Fallback: recent low
+        recent_low = min(lows[-20:])
+        return recent_low if recent_low < current_price else None
+    
+    def _calculate_structural_levels(
+        self, 
+        asset: Asset,
+        direction: str, 
+        entry_price: float,
+        m5_candles: List,
+        m15_candles: List,
+        atr: float
+    ) -> StructuralLevels:
+        """
+        Calculate SL and TP based on market structure
+        
+        SL: Based on swing point + buffer
+        TP: Based on next structural target - buffer
+        """
+        asset_config = ASSET_CONFIGS.get(asset, ASSET_CONFIGS[Asset.EURUSD])
+        levels = StructuralLevels()
+        
+        # ========== STOP LOSS CALCULATION ==========
+        if direction == "BUY":
+            # Find swing low for BUY SL
+            swing_low_m5 = self._find_swing_low(m5_candles, 20)
+            swing_low_m15 = self._find_swing_low(m15_candles, 15) if m15_candles else None
+            
+            # Use M5 swing, confirmed by M15 if available
+            if swing_low_m5:
+                if swing_low_m15 and swing_low_m15 < swing_low_m5:
+                    base_sl = swing_low_m15
+                else:
+                    base_sl = swing_low_m5
+                
+                # Add buffer
+                buffer = max(atr * 0.25, asset_config.min_buffer_pips * asset_config.pip_size)
+                levels.swing_sl = base_sl - buffer
+                levels.swing_sl_type = "swing_low"
+            else:
+                # ATR fallback
+                levels.swing_sl = entry_price - (atr * 1.8)
+                levels.swing_sl_type = "atr_fallback"
+        else:  # SELL
+            # Find swing high for SELL SL
+            swing_high_m5 = self._find_swing_high(m5_candles, 20)
+            swing_high_m15 = self._find_swing_high(m15_candles, 15) if m15_candles else None
+            
+            if swing_high_m5:
+                if swing_high_m15 and swing_high_m15 > swing_high_m5:
+                    base_sl = swing_high_m15
+                else:
+                    base_sl = swing_high_m5
+                
+                buffer = max(atr * 0.25, asset_config.min_buffer_pips * asset_config.pip_size)
+                levels.swing_sl = base_sl + buffer
+                levels.swing_sl_type = "swing_high"
+            else:
+                levels.swing_sl = entry_price + (atr * 1.8)
+                levels.swing_sl_type = "atr_fallback"
+        
+        # Enforce minimum SL distance
+        sl_distance_pips = abs(entry_price - levels.swing_sl) / asset_config.pip_size
+        if sl_distance_pips < asset_config.min_sl_pips:
+            # Expand SL to minimum
+            min_sl_distance = asset_config.min_sl_pips * asset_config.pip_size
+            if direction == "BUY":
+                levels.swing_sl = entry_price - min_sl_distance
+            else:
+                levels.swing_sl = entry_price + min_sl_distance
+            levels.swing_sl_type += "_expanded"
+        
+        # ========== TAKE PROFIT CALCULATION ==========
+        if direction == "BUY":
+            # Find resistance for TP
+            resistance = self._find_next_resistance(m5_candles, entry_price, 50)
+            risk_distance = abs(entry_price - levels.swing_sl)
+            
+            if resistance and resistance > entry_price:
+                # Place TP before resistance with buffer
+                tp_buffer = asset_config.tp_buffer_pips * asset_config.pip_size
+                potential_tp = resistance - tp_buffer
+                potential_reward = potential_tp - entry_price
+                potential_rr = potential_reward / risk_distance if risk_distance > 0 else 0
+                
+                # Only use structural TP if it gives acceptable R:R
+                if potential_rr >= 1.1:
+                    levels.structural_tp1 = potential_tp
+                    levels.tp_type = "swing_target"
+                    tp1_distance = levels.structural_tp1 - entry_price
+                    levels.structural_tp2 = entry_price + (tp1_distance * 1.5)
+                else:
+                    # Extension fallback for better R:R
+                    levels.structural_tp1 = entry_price + (risk_distance * 1.5)
+                    levels.structural_tp2 = entry_price + (risk_distance * 2.2)
+                    levels.tp_type = "extension_rr"
+            else:
+                # No resistance found - use R:R based TP
+                levels.structural_tp1 = entry_price + (risk_distance * 1.5)
+                levels.structural_tp2 = entry_price + (risk_distance * 2.2)
+                levels.tp_type = "extension_rr"
+        else:  # SELL
+            support = self._find_next_support(m5_candles, entry_price, 50)
+            risk_distance = abs(entry_price - levels.swing_sl)
+            
+            if support and support < entry_price:
+                tp_buffer = asset_config.tp_buffer_pips * asset_config.pip_size
+                potential_tp = support + tp_buffer
+                potential_reward = entry_price - potential_tp
+                potential_rr = potential_reward / risk_distance if risk_distance > 0 else 0
+                
+                if potential_rr >= 1.1:
+                    levels.structural_tp1 = potential_tp
+                    levels.tp_type = "swing_target"
+                    tp1_distance = entry_price - levels.structural_tp1
+                    levels.structural_tp2 = entry_price - (tp1_distance * 1.5)
+                else:
+                    levels.structural_tp1 = entry_price - (risk_distance * 1.5)
+                    levels.structural_tp2 = entry_price - (risk_distance * 2.2)
+                    levels.tp_type = "extension_rr"
+            else:
+                levels.structural_tp1 = entry_price - (risk_distance * 1.5)
+                levels.structural_tp2 = entry_price - (risk_distance * 2.2)
+                levels.tp_type = "extension_rr"
+        
+        return levels
+    
+    # ==================== ENTRY VALIDATION ====================
+    
+    def _validate_entry(
+        self, 
+        asset: Asset,
+        direction: str, 
+        current_price: float, 
+        atr: float
+    ) -> Tuple[bool, float, str, float, float]:
+        """
+        Validate entry quality - detect late entries
+        
+        Returns: (is_valid, score, reason, entry_zone_low, entry_zone_high)
+        """
+        # Define ideal entry zone
+        if direction == "BUY":
+            ideal_center = current_price
+            entry_zone_low = ideal_center - (atr * 0.20)
+            entry_zone_high = ideal_center + (atr * 0.10)
+        else:  # SELL
+            ideal_center = current_price
+            entry_zone_low = ideal_center - (atr * 0.10)
+            entry_zone_high = ideal_center + (atr * 0.20)
+        
+        zone_center = (entry_zone_low + entry_zone_high) / 2
+        distance_from_center = abs(current_price - zone_center)
+        distance_in_atr = distance_from_center / atr if atr > 0 else 0
+        
+        # Scoring based on entry position
+        if distance_in_atr <= 0.10:
+            score = 100
+            reason = "Optimal entry zone"
+        elif distance_in_atr <= 0.20:
+            score = 80
+            reason = "Good entry zone"
+        elif distance_in_atr <= 0.30:
+            score = 60
+            reason = "Acceptable entry"
+        elif distance_in_atr <= self.ENTRY_REJECT_ATR_MULTIPLIER:
+            score = 40
+            reason = "Late entry - penalized"
+        else:
+            # Reject - too late
+            return False, 0, f"REJECT: Entry too late ({distance_in_atr:.2f} ATR from zone)", entry_zone_low, entry_zone_high
+        
+        return True, score, reason, entry_zone_low, entry_zone_high
+    
+    # ==================== ASSET CONCENTRATION ====================
+    
+    def _check_asset_concentration(self, asset: Asset) -> Tuple[float, str]:
+        """
+        Check if there's over-concentration on one asset
+        
+        Returns: (score, reason)
+        """
+        if len(self.recent_signals) < self.CONCENTRATION_WINDOW:
+            return 100, "No concentration issue"
+        
+        # Count recent signals by asset
+        recent = self.recent_signals[-self.CONCENTRATION_WINDOW:]
+        same_asset_count = sum(1 for s in recent if s.asset == asset)
+        
+        if same_asset_count >= self.CONCENTRATION_THRESHOLD:
+            penalty_score = 50
+            return penalty_score, f"Concentration penalty: {same_asset_count}/{self.CONCENTRATION_WINDOW} signals on {asset.value}"
+        elif same_asset_count >= self.CONCENTRATION_THRESHOLD - 1:
+            return 75, f"Moderate concentration: {same_asset_count} recent {asset.value}"
+        else:
+            return 100, "No concentration issue"
+    
     # ==================== MAIN ANALYSIS ====================
     
     async def _analyze_asset(self, asset: Asset, news_risk: NewsRiskInfo) -> Optional[GeneratedSignal]:
         """
-        Analyze an asset and potentially generate a signal
-        
-        Returns None only for hard rejection conditions
+        Analyze an asset with structural SL/TP
         """
+        asset_config = ASSET_CONFIGS.get(asset, ASSET_CONFIGS[Asset.EURUSD])
+        
         # ========== HARD REJECTION CHECKS ==========
         
-        # 1. Check data freshness
         if market_data_cache.is_stale(asset):
-            logger.debug(f"⏭️  {asset.value}: Stale data")
             return None
         
-        # 2. Get candle data
         h1_candles = market_data_cache.get_candles(asset, Timeframe.H1)
         m15_candles = market_data_cache.get_candles(asset, Timeframe.M15)
         m5_candles = market_data_cache.get_candles(asset, Timeframe.M5)
         
         if not h1_candles or not m15_candles or not m5_candles:
-            logger.debug(f"⏭️  {asset.value}: Missing candle data")
             return None
         
         if len(m5_candles) < 50:
-            logger.debug(f"⏭️  {asset.value}: Insufficient candles")
             return None
         
-        # 3. Get current quote and check spread
         price_data = market_data_cache.get_price(asset)
         if not price_data:
-            logger.debug(f"⏭️  {asset.value}: No price available")
             return None
         
-        # Check spread (MODERATE - only block extreme)
         max_spread = self.MAX_SPREAD_PIPS_EURUSD if asset == Asset.EURUSD else self.MAX_SPREAD_PIPS_XAUUSD
         current_spread = price_data.spread_pips
         
         if current_spread > max_spread:
-            logger.info(f"⏭️  {asset.value}: Spread extreme ({current_spread:.1f} pips > {max_spread})")
             return None
         
-        # 4. Check minimum volatility (ATR)
         atr = self._calculate_atr(m5_candles, 14)
         if atr == 0:
-            logger.debug(f"⏭️  {asset.value}: Zero volatility")
             return None
         
         avg_atr = self._calculate_average_atr(m5_candles, 50)
         if avg_atr > 0 and atr < avg_atr * self.MIN_ATR_MULTIPLIER:
-            logger.debug(f"⏭️  {asset.value}: Low volatility")
             return None
         
-        # ========== SCORING ANALYSIS ==========
+        # ========== DIRECTION ANALYSIS ==========
         
         current_price = price_data.mid
         session = session_detector.get_current_session()
         session_name = self._get_session_name(session)
         
-        # Analyze direction with advanced MTF bias
         direction, direction_score, direction_reason = self._analyze_direction_advanced(
             h1_candles, m15_candles, m5_candles
         )
@@ -794,94 +1160,119 @@ class SignalGeneratorV3:
         if not direction:
             direction = self._fallback_direction(m5_candles)
             if not direction:
-                logger.debug(f"⏭️  {asset.value}: No direction found")
                 return None
         
-        # Calculate all score components
-        components = []
+        # ========== ENTRY VALIDATION ==========
         
-        # 1. H1 Bias Score
-        h1_score, h1_reason = self._score_h1_bias(h1_candles, direction)
-        components.append(ScoreComponent("H1 Directional Bias", self.WEIGHTS['h1_bias'], h1_score, h1_reason))
+        entry_valid, entry_score, entry_reason, entry_zone_low, entry_zone_high = self._validate_entry(
+            asset, direction, current_price, atr
+        )
         
-        # 2. M15 Context Score
-        m15_score, m15_reason = self._score_m15_context(m15_candles, direction)
-        components.append(ScoreComponent("M15 Context", self.WEIGHTS['m15_context'], m15_score, m15_reason))
+        if not entry_valid:
+            self._record_rejection("late_entry")
+            logger.info(f"⏭️ {asset.value} {direction}: {entry_reason}")
+            return None
         
-        # 3. MTF Alignment Score (NEW - Advanced)
-        mtf_score, mtf_reason = self._score_mtf_alignment(h1_candles, m15_candles, m5_candles, direction)
-        components.append(ScoreComponent("MTF Alignment", self.WEIGHTS['mtf_alignment'], mtf_score, mtf_reason))
-        
-        # 4. Market Structure Score
-        struct_score, struct_reason = self._score_market_structure(m5_candles, direction)
-        components.append(ScoreComponent("Market Structure", self.WEIGHTS['market_structure'], struct_score, struct_reason))
-        
-        # 5. Momentum Score
-        mom_score, mom_reason = self._score_momentum(m5_candles, direction)
-        components.append(ScoreComponent("Momentum", self.WEIGHTS['momentum'], mom_score, mom_reason))
-        
-        # 6. Pullback Quality Score (ENHANCED)
-        pb_score, pb_reason = self._score_pullback_advanced(m5_candles, direction, current_price, atr)
-        components.append(ScoreComponent("Pullback Quality", self.WEIGHTS['pullback_quality'], pb_score, pb_reason))
-        
-        # 7. Key Level Score
-        kl_score, kl_reason = self._score_key_level(m5_candles, current_price, direction)
-        components.append(ScoreComponent("Key Level Reaction", self.WEIGHTS['key_level'], kl_score, kl_reason))
-        
-        # 8. Session Score (SOFT - no blocking)
-        sess_score, sess_reason = self._score_session_soft(session)
-        components.append(ScoreComponent("Session Quality", self.WEIGHTS['session'], sess_score, sess_reason))
-        
-        # 9. Calculate entry, SL, TP
         entry_price = current_price
-        pip_size = 0.0001 if asset == Asset.EURUSD else 0.01
         
-        if direction == "BUY":
-            stop_loss = entry_price - (atr * 1.5)
-            take_profit_1 = entry_price + (atr * 2)
-            take_profit_2 = entry_price + (atr * 3)
-            entry_zone_low = entry_price - (atr * 0.3)
-            entry_zone_high = entry_price + (atr * 0.1)
-        else:
-            stop_loss = entry_price + (atr * 1.5)
-            take_profit_1 = entry_price - (atr * 2)
-            take_profit_2 = entry_price - (atr * 3)
-            entry_zone_low = entry_price - (atr * 0.1)
-            entry_zone_high = entry_price + (atr * 0.3)
+        # ========== STRUCTURAL SL/TP CALCULATION ==========
         
-        # Calculate R:R
+        structural_levels = self._calculate_structural_levels(
+            asset, direction, entry_price, m5_candles, m15_candles, atr
+        )
+        
+        stop_loss = structural_levels.swing_sl
+        take_profit_1 = structural_levels.structural_tp1
+        take_profit_2 = structural_levels.structural_tp2
+        sl_type = structural_levels.swing_sl_type
+        tp_type = structural_levels.tp_type
+        
+        # ========== DYNAMIC R:R CALCULATION ==========
+        
         risk = abs(entry_price - stop_loss)
         reward = abs(take_profit_1 - entry_price)
         rr_ratio = reward / risk if risk > 0 else 0
         
-        # 10. R:R Score
-        rr_score, rr_reason = self._score_rr_ratio(rr_ratio)
+        # Hard reject if R:R too low
+        if rr_ratio < self.MIN_RR_HARD_REJECT:
+            self._record_rejection("low_rr")
+            logger.info(f"⏭️ {asset.value} {direction}: R:R {rr_ratio:.2f} < {self.MIN_RR_HARD_REJECT} (REJECT)")
+            return None
+        
+        # ========== SCORING ==========
+        
+        components = []
+        
+        # 1. H1 Bias
+        h1_score, h1_reason = self._score_h1_bias(h1_candles, direction)
+        components.append(ScoreComponent("H1 Directional Bias", self.WEIGHTS['h1_bias'], h1_score, h1_reason))
+        
+        # 2. M15 Context
+        m15_score, m15_reason = self._score_m15_context(m15_candles, direction)
+        components.append(ScoreComponent("M15 Context", self.WEIGHTS['m15_context'], m15_score, m15_reason))
+        
+        # 3. MTF Alignment
+        mtf_score, mtf_reason = self._score_mtf_alignment(h1_candles, m15_candles, m5_candles, direction)
+        components.append(ScoreComponent("MTF Alignment", self.WEIGHTS['mtf_alignment'], mtf_score, mtf_reason))
+        
+        # 4. Market Structure
+        struct_score, struct_reason = self._score_market_structure(m5_candles, direction)
+        components.append(ScoreComponent("Market Structure", self.WEIGHTS['market_structure'], struct_score, struct_reason))
+        
+        # 5. Momentum
+        mom_score, mom_reason = self._score_momentum(m5_candles, direction)
+        components.append(ScoreComponent("Momentum", self.WEIGHTS['momentum'], mom_score, mom_reason))
+        
+        # 6. Pullback Quality
+        pb_score, pb_reason = self._score_pullback_advanced(m5_candles, direction, current_price, atr)
+        components.append(ScoreComponent("Pullback Quality", self.WEIGHTS['pullback_quality'], pb_score, pb_reason))
+        
+        # 7. Entry Quality (NEW)
+        components.append(ScoreComponent("Entry Quality", self.WEIGHTS['entry_quality'], entry_score, entry_reason))
+        
+        # 8. Key Level
+        kl_score, kl_reason = self._score_key_level(m5_candles, current_price, direction)
+        components.append(ScoreComponent("Key Level Reaction", self.WEIGHTS['key_level'], kl_score, kl_reason))
+        
+        # 9. Session
+        sess_score, sess_reason = self._score_session_soft(session)
+        components.append(ScoreComponent("Session Quality", self.WEIGHTS['session'], sess_score, sess_reason))
+        
+        # 10. R:R Score (DYNAMIC)
+        rr_score, rr_reason = self._score_rr_ratio_dynamic(rr_ratio)
         components.append(ScoreComponent("Risk/Reward", self.WEIGHTS['rr_ratio'], rr_score, rr_reason))
         
-        # 11. Volatility Score
+        # 11. Volatility
         vol_score, vol_reason = self._score_volatility(atr, avg_atr)
         components.append(ScoreComponent("Volatility", self.WEIGHTS['volatility'], vol_score, vol_reason))
         
-        # 12. Market Regime Score
+        # 12. Market Regime
         regime_score, regime_reason = self._score_market_regime(m5_candles, atr, avg_atr)
         components.append(ScoreComponent("Market Regime", self.WEIGHTS['regime_quality'], regime_score, regime_reason))
         
-        # 13. Spread Score (NEW - Moderate)
+        # 13. Spread
         spread_score, spread_reason = self._score_spread(asset, current_spread)
         components.append(ScoreComponent("Spread", self.WEIGHTS['spread'], spread_score, spread_reason))
+        
+        # 14. Concentration (NEW)
+        conc_score, conc_reason = self._check_asset_concentration(asset)
+        components.append(ScoreComponent("Concentration", self.WEIGHTS['concentration'], conc_score, conc_reason))
         
         # Calculate final score
         final_score = sum(c.weighted_score for c in components)
         
-        # Apply news risk penalty (does NOT block)
+        # Apply news penalty
         if news_risk.score_penalty > 0:
             final_score -= news_risk.score_penalty
             logger.info(f"📰 {asset.value}: News penalty applied (-{news_risk.score_penalty:.1f}): {news_risk.event_name}")
         
-        # Ensure score is within bounds
+        # Apply warning level penalty
+        if self.position_sizer.daily_risk_used >= self.position_sizer.config.operational_warning:
+            final_score -= 3
+        
         final_score = max(0, min(100, final_score))
         
-        # Determine confidence level - MANDATORY threshold is 60
+        # Confidence classification
         if final_score >= 80:
             confidence = SignalConfidence.STRONG
         elif final_score >= 70:
@@ -890,27 +1281,37 @@ class SignalGeneratorV3:
             confidence = SignalConfidence.ACCEPTABLE
         else:
             confidence = SignalConfidence.REJECTED
-            self.rejection_count += 1
-            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < 60% (MANDATORY) - Rejected")
+            self._record_rejection("low_confidence")
+            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < 60% - Rejected")
             self._log_score_breakdown(asset, direction, components, final_score)
             return None
         
-        # Check duplicate
+        # Duplicate check
         if self._is_duplicate(asset, direction, current_price):
-            logger.debug(f"⏭️  {asset.value}: Duplicate signal suppressed")
+            self._record_rejection("duplicate")
             return None
         
-        # ========== POSITION SIZING ==========
+        # ========== POSITION SIZING (with confidence-based risk) ==========
+        
         position = self.position_sizer.calculate(
             asset=asset,
             entry_price=entry_price,
-            stop_loss=stop_loss
+            stop_loss=stop_loss,
+            confidence_score=final_score
         )
         
-        # Generate signal
+        # Check if daily limit allows trade
+        if position.recommended_lot_size == 0:
+            self._record_rejection("daily_limit")
+            logger.info(f"⛔ {asset.value} {direction}: Daily risk limit exhausted")
+            return None
+        
+        # ========== GENERATE SIGNAL ==========
+        
         signal_id = f"{asset.value}_{direction}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-        setup_type = self._determine_setup_type(components)
-        invalidation = f"{'Below' if direction == 'BUY' else 'Above'} {stop_loss:.5f}"
+        setup_type = self._determine_setup_type(components, sl_type, tp_type)
+        sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
+        invalidation = f"{'Below' if direction == 'BUY' else 'Above'} {sl_formatted}"
         
         score_obj = SignalScore(
             components=components,
@@ -928,7 +1329,7 @@ class SignalGeneratorV3:
             stop_loss=stop_loss,
             take_profit_1=take_profit_1,
             take_profit_2=take_profit_2,
-            risk_reward=rr_ratio,
+            risk_reward=round(rr_ratio, 2),
             confidence_score=final_score,
             confidence_level=confidence,
             setup_type=setup_type,
@@ -936,7 +1337,7 @@ class SignalGeneratorV3:
             session=session_name,
             score_breakdown=score_obj,
             timestamp=datetime.utcnow(),
-            # Position sizing
+            # Position sizing (ALL FIELDS POPULATED)
             recommended_lot_size=position.recommended_lot_size,
             money_at_risk=position.money_at_risk,
             risk_percent=position.risk_percent,
@@ -944,6 +1345,11 @@ class SignalGeneratorV3:
             position_adjusted=position.adjusted,
             position_adjustment_reason=position.adjustment_reason,
             prop_warnings=position.prop_warnings,
+            daily_risk_used=position.daily_risk_used,
+            daily_risk_remaining=position.daily_risk_remaining,
+            # Structure info
+            sl_type=sl_type,
+            tp_type=tp_type,
             # News risk
             news_risk=news_risk.level,
             news_event=news_risk.event_name,
@@ -960,21 +1366,35 @@ class SignalGeneratorV3:
         """Process a generated signal"""
         self.signal_count += 1
         
-        # Log signal with all details
+        # Detailed logging
         emoji = "🟢" if signal.direction == "BUY" else "🔴"
+        asset_config = ASSET_CONFIGS.get(signal.asset, ASSET_CONFIGS[Asset.EURUSD])
+        sl_pips = signal.pip_risk
+        tp_pips = abs(signal.take_profit_1 - signal.entry_price) / asset_config.pip_size
+        
         logger.info("=" * 60)
         logger.info(f"{emoji} SIGNAL GENERATED: {signal.asset.value} {signal.direction}")
         logger.info(f"   Confidence: {signal.confidence_score:.0f}% ({signal.confidence_level.value})")
-        logger.info(f"   Entry: {signal.entry_price:.5f}")
-        logger.info(f"   Stop Loss: {signal.stop_loss:.5f}")
-        logger.info(f"   Take Profit 1: {signal.take_profit_1:.5f}")
-        logger.info(f"   Risk/Reward: {signal.risk_reward:.2f}")
+        
+        if signal.asset == Asset.EURUSD:
+            entry_fmt = f"{signal.entry_price:.5f}"
+            sl_fmt = f"{signal.stop_loss:.5f}"
+            tp_fmt = f"{signal.take_profit_1:.5f}"
+        else:
+            entry_fmt = f"{signal.entry_price:.2f}"
+            sl_fmt = f"{signal.stop_loss:.2f}"
+            tp_fmt = f"{signal.take_profit_1:.2f}"
+        
+        logger.info(f"   Entry: {entry_fmt}")
+        logger.info(f"   Stop Loss: {sl_fmt} ({sl_pips:.1f} pips) [{signal.sl_type}]")
+        logger.info(f"   Take Profit: {tp_fmt} ({tp_pips:.1f} pips) [{signal.tp_type}]")
+        logger.info(f"   R:R: {signal.risk_reward:.2f} (DYNAMIC)")
         logger.info("-" * 40)
-        logger.info(f"   POSITION SIZING (Prop-Aware):")
+        logger.info(f"   POSITION SIZING:")
         logger.info(f"   • Lot Size: {signal.recommended_lot_size:.2f}")
         logger.info(f"   • Money at Risk: ${signal.money_at_risk:.2f}")
         logger.info(f"   • Risk %: {signal.risk_percent:.2f}%")
-        logger.info(f"   • Pip Risk: {signal.pip_risk:.1f} pips")
+        logger.info(f"   • Daily Used: ${signal.daily_risk_used:.0f} | Remaining: ${signal.daily_risk_remaining:.0f}")
         if signal.prop_warnings:
             for warn in signal.prop_warnings:
                 logger.info(f"   ⚠️ {warn}")
@@ -997,17 +1417,17 @@ class SignalGeneratorV3:
         cutoff = datetime.utcnow() - timedelta(minutes=self.DUPLICATE_WINDOW_MINUTES)
         self.recent_signals = [s for s in self.recent_signals if s.timestamp > cutoff]
         
-        # Record trade risk for prop tracking
+        # Record trade risk
         self.position_sizer.record_trade(signal.money_at_risk)
         
-        # PASSIVE OUTCOME TRACKING
+        # Track outcome
         await self._track_signal_outcome(signal)
         
         # Send notification
         await self._send_notification(signal)
     
     async def _track_signal_outcome(self, signal: GeneratedSignal):
-        """Register signal for passive outcome tracking"""
+        """Register signal for outcome tracking with ALL fields"""
         try:
             from services.signal_outcome_tracker_v2 import signal_outcome_tracker
             
@@ -1026,21 +1446,30 @@ class SignalGeneratorV3:
                 'session': signal.session,
                 'invalidation': signal.invalidation,
                 'risk_reward': signal.risk_reward,
+                # Position sizing (FIXED)
                 'lot_size': signal.recommended_lot_size,
                 'money_at_risk': signal.money_at_risk,
+                'risk_percent': signal.risk_percent,
+                'pip_risk': signal.pip_risk,
+                'daily_risk_used': signal.daily_risk_used,
+                'daily_risk_remaining': signal.daily_risk_remaining,
+                # Structure
+                'sl_type': signal.sl_type,
+                'tp_type': signal.tp_type,
+                # News
                 'news_risk': signal.news_risk.value,
                 'score_breakdown': signal.score_breakdown.to_dict() if signal.score_breakdown else {}
             }
             
             await signal_outcome_tracker.track_signal(tracking_data)
+            logger.debug(f"✅ Signal tracked: {signal.signal_id}")
         except Exception as e:
-            logger.debug(f"Outcome tracking note: {e}")
+            logger.warning(f"Outcome tracking error: {e}")
     
     async def _send_notification(self, signal: GeneratedSignal):
-        """Send push notification with invalid token cleanup"""
+        """Send push notification"""
         from services.production_control import production_control, EngineType
         
-        # Check production control
         authorized, reason = production_control.authorize_notification(
             EngineType.SIGNAL_GENERATOR_V3, 
             signal.signal_id
@@ -1061,7 +1490,7 @@ class SignalGeneratorV3:
             
             notif = signal.to_notification_dict()
             
-            logger.info(f"📤 [signal_generator_v3] Sending notification for signal {signal.signal_id}")
+            logger.info(f"📤 Sending notification for {signal.signal_id}")
             
             results = await push_service.send_to_all_devices(
                 tokens=tokens,
@@ -1075,14 +1504,12 @@ class SignalGeneratorV3:
                 if result.success:
                     successful += 1
                 else:
-                    # Check for invalid token errors
                     error_str = str(result.error) if result.error else ""
                     if any(err in error_str for err in ["DeviceNotRegistered", "InvalidCredentials", "Unregistered"]):
-                        # Remove invalid token
                         await self._remove_invalid_token(tokens[i])
             
             self.notification_count += 1
-            logger.info(f"📤 [signal_generator_v3] Notification sent: {successful}/{len(results)} devices")
+            logger.info(f"📤 Notification sent: {successful}/{len(results)} devices")
             
         except Exception as e:
             logger.error(f"❌ Failed to send notification: {e}")
@@ -1091,23 +1518,42 @@ class SignalGeneratorV3:
         """Remove invalid push token"""
         try:
             from services.device_storage_service import device_storage
-            
-            # Try to find and deactivate device with this token
             await device_storage.deactivate_by_token(token)
             self.invalid_tokens_removed += 1
-            logger.info(f"🧹 Removed invalid push token (total removed: {self.invalid_tokens_removed})")
+            logger.info(f"🧹 Removed invalid push token")
         except Exception as e:
             logger.debug(f"Could not remove invalid token: {e}")
     
     # ==================== SCORING METHODS ====================
     
+    def _score_rr_ratio_dynamic(self, rr: float) -> Tuple[float, str]:
+        """
+        Score R:R with NEW dynamic grading
+        
+        >= 2.0: 100
+        1.6-1.99: 85
+        1.3-1.59: 70
+        1.1-1.29: 50
+        0.95-1.09: 25
+        < 0.95: rejected earlier
+        """
+        if rr >= 2.0:
+            return 100, f"Excellent R:R ({rr:.2f})"
+        elif rr >= 1.6:
+            return 85, f"Good R:R ({rr:.2f})"
+        elif rr >= 1.3:
+            return 70, f"Acceptable R:R ({rr:.2f})"
+        elif rr >= 1.1:
+            return 50, f"Minimum R:R ({rr:.2f})"
+        else:
+            return 25, f"Low R:R ({rr:.2f})"
+    
     def _analyze_direction_advanced(self, h1: List, m15: List, m5: List) -> Tuple[Optional[str], float, str]:
-        """Advanced direction analysis with MTF bias"""
+        """Advanced direction analysis"""
         h1_trend = self._get_trend(h1[-20:]) if len(h1) >= 20 else 0
         m15_trend = self._get_trend(m15[-20:]) if len(m15) >= 20 else 0
         m5_momentum = self._get_momentum(m5[-10:]) if len(m5) >= 10 else 0
         
-        # Weighted combination
         total = h1_trend * 0.5 + m15_trend * 0.3 + m5_momentum * 0.2
         
         if total > 0.2:
@@ -1133,19 +1579,12 @@ class SignalGeneratorV3:
         return None
     
     def _score_mtf_alignment(self, h1: List, m15: List, m5: List, direction: str) -> Tuple[float, str]:
-        """
-        Score multi-timeframe alignment
-        
-        Strong alignment: all timeframes agree
-        Partial alignment: H1 + M15 agree, M5 mixed
-        Conflicting: H1 disagrees with lower timeframes
-        """
+        """Score MTF alignment"""
         h1_trend = self._get_trend(h1[-15:]) if len(h1) >= 15 else 0
         m15_trend = self._get_trend(m15[-15:]) if len(m15) >= 15 else 0
         m5_trend = self._get_trend(m5[-15:]) if len(m5) >= 15 else 0
         
         is_buy = direction == "BUY"
-        
         h1_aligned = (h1_trend > 0) == is_buy
         m15_aligned = (m15_trend > 0) == is_buy
         m5_aligned = (m5_trend > 0) == is_buy
@@ -1156,28 +1595,17 @@ class SignalGeneratorV3:
             return 100, "All timeframes aligned"
         elif aligned_count == 2:
             if h1_aligned and m15_aligned:
-                return 80, "H1 + M15 aligned, M5 mixed"
-            else:
-                return 65, "Partial alignment"
+                return 80, "H1 + M15 aligned"
+            return 65, "Partial alignment"
         elif aligned_count == 1:
             return 40, "Weak alignment"
-        else:
-            return 20, "Conflicting timeframes"
+        return 20, "Conflicting timeframes"
     
     def _score_pullback_advanced(self, m5: List, direction: str, current_price: float, atr: float) -> Tuple[float, str]:
-        """
-        Advanced pullback quality scoring
-        
-        Evaluates:
-        - Pullback depth (38.2%-61.8% Fibonacci ideal)
-        - Pullback location relative to structure
-        - Whether entry is late or efficient
-        - Retracement quality
-        """
+        """Score pullback quality"""
         if len(m5) < 20:
             return 50, "Insufficient data"
         
-        # Get recent swing
         highs = [c.get('high', 0) for c in m5[-20:]]
         lows = [c.get('low', 0) for c in m5[-20:]]
         recent_high = max(highs)
@@ -1187,12 +1615,8 @@ class SignalGeneratorV3:
         if swing_range == 0:
             return 50, "No swing range"
         
-        # Calculate Fibonacci retracement position
         if direction == "BUY":
-            # For buy, we want pullback to lower zone
             from_high = (recent_high - current_price) / swing_range
-            
-            # Ideal: 38.2% to 61.8% retracement
             if 0.382 <= from_high <= 0.618:
                 base_score = 95
                 reason = "Excellent Fib pullback (38-62%)"
@@ -1200,15 +1624,13 @@ class SignalGeneratorV3:
                 base_score = 75
                 reason = "Good pullback zone"
             elif from_high < 0.25:
-                base_score = 40
-                reason = "Shallow pullback (may extend)"
+                base_score = 45
+                reason = "Shallow pullback"
             else:
-                base_score = 30
-                reason = "Deep pullback (risky)"
+                base_score = 35
+                reason = "Deep pullback"
         else:
-            # For sell, we want pullback to higher zone
             from_low = (current_price - recent_low) / swing_range
-            
             if 0.382 <= from_low <= 0.618:
                 base_score = 95
                 reason = "Excellent Fib pullback (38-62%)"
@@ -1216,13 +1638,12 @@ class SignalGeneratorV3:
                 base_score = 75
                 reason = "Good pullback zone"
             elif from_low < 0.25:
-                base_score = 40
-                reason = "Shallow pullback (may extend)"
+                base_score = 45
+                reason = "Shallow pullback"
             else:
-                base_score = 30
-                reason = "Deep pullback (risky)"
+                base_score = 35
+                reason = "Deep pullback"
         
-        # Check for entry timing (is price moving back in direction?)
         last_3 = m5[-3:]
         if direction == "BUY":
             resuming = last_3[-1].get('close', 0) > last_3[0].get('open', 0)
@@ -1230,64 +1651,43 @@ class SignalGeneratorV3:
             resuming = last_3[-1].get('close', 0) < last_3[0].get('open', 0)
         
         if resuming:
-            base_score = min(100, base_score + 10)
-            reason += " + momentum resuming"
+            base_score = min(100, base_score + 8)
+            reason += " + resuming"
         
         return base_score, reason
     
     def _score_session_soft(self, session) -> Tuple[float, str]:
-        """
-        Score session with SOFT penalties (no blocking)
-        
-        Major sessions: London, NY, Overlap
-        Non-major: small penalty, still tradeable
-        """
+        """Score session quality"""
         hour = datetime.utcnow().hour
         
-        # London/NY overlap (optimal)
         if 13 <= hour <= 16:
-            return 100, "London/NY overlap - optimal liquidity"
-        # London session
+            return 100, "London/NY overlap"
         elif 7 <= hour <= 12:
-            return 90, "London session - good liquidity"
-        # NY session
+            return 90, "London session"
         elif 13 <= hour <= 20:
-            return 85, "NY session - good liquidity"
-        # Early Asia / Late NY
+            return 85, "NY session"
         elif 21 <= hour <= 23 or 0 <= hour <= 2:
-            return 55, "Transition hours - moderate"
-        # Deep Asian session
+            return 55, "Transition hours"
         elif 3 <= hour <= 6:
-            return 40, "Asian session - lower EURUSD activity"
-        else:
-            return 45, "Off-peak hours"
+            return 40, "Asian session"
+        return 45, "Off-peak hours"
     
     def _score_spread(self, asset: Asset, spread_pips: float) -> Tuple[float, str]:
-        """
-        Score spread conditions (MODERATE validation)
-        
-        - Normal spread: full score
-        - Elevated spread: small penalty
-        - Extreme: blocked earlier (not reached here)
-        """
+        """Score spread"""
         if asset == Asset.EURUSD:
             if spread_pips <= 0.8:
-                return 100, f"Tight spread ({spread_pips:.1f} pips)"
+                return 100, f"Tight spread ({spread_pips:.1f}p)"
             elif spread_pips <= 1.2:
-                return 85, f"Normal spread ({spread_pips:.1f} pips)"
+                return 85, f"Normal spread ({spread_pips:.1f}p)"
             elif spread_pips <= self.ELEVATED_SPREAD_EURUSD:
-                return 70, f"Acceptable spread ({spread_pips:.1f} pips)"
-            else:
-                return 40, f"Elevated spread ({spread_pips:.1f} pips)"
-        else:  # XAUUSD
+                return 70, f"Acceptable ({spread_pips:.1f}p)"
+            return 40, f"Elevated ({spread_pips:.1f}p)"
+        else:
             if spread_pips <= 20:
-                return 100, f"Tight spread ({spread_pips:.1f} pips)"
+                return 100, f"Tight spread ({spread_pips:.1f}p)"
             elif spread_pips <= self.ELEVATED_SPREAD_XAUUSD:
-                return 75, f"Normal spread ({spread_pips:.1f} pips)"
-            else:
-                return 50, f"Elevated spread ({spread_pips:.1f} pips)"
-    
-    # ========== EXISTING SCORING METHODS (unchanged logic) ==========
+                return 75, f"Normal spread ({spread_pips:.1f}p)"
+            return 50, f"Elevated ({spread_pips:.1f}p)"
     
     def _get_trend(self, candles: List) -> float:
         """Get trend direction (-1 to 1)"""
@@ -1308,39 +1708,36 @@ class SignalGeneratorV3:
         opens = [c.get('open', 0) for c in candles]
         closes = [c.get('close', 0) for c in candles]
         bullish = sum(1 for o, c in zip(opens, closes) if c > o)
-        bearish = len(candles) - bullish
-        return (bullish - bearish) / len(candles)
+        return (bullish - (len(candles) - bullish)) / len(candles)
     
     def _score_h1_bias(self, h1: List, direction: str) -> Tuple[float, str]:
-        """Score H1 bias alignment"""
+        """Score H1 bias"""
         if len(h1) < 10:
             return 50, "Insufficient H1 data"
         trend = self._get_trend(h1[-10:])
         if direction == "BUY":
             if trend > 0.5:
-                return 100, "Strong H1 bullish trend"
+                return 100, "Strong H1 bullish"
             elif trend > 0.2:
-                return 75, "Moderate H1 bullish bias"
+                return 75, "Moderate H1 bullish"
             elif trend > 0:
-                return 60, "Weak H1 bullish bias"
+                return 60, "Weak H1 bullish"
             elif trend > -0.2:
                 return 40, "H1 neutral"
-            else:
-                return 25, "H1 bearish (counter-trend)"
+            return 25, "H1 bearish"
         else:
             if trend < -0.5:
-                return 100, "Strong H1 bearish trend"
+                return 100, "Strong H1 bearish"
             elif trend < -0.2:
-                return 75, "Moderate H1 bearish bias"
+                return 75, "Moderate H1 bearish"
             elif trend < 0:
-                return 60, "Weak H1 bearish bias"
+                return 60, "Weak H1 bearish"
             elif trend < 0.2:
                 return 40, "H1 neutral"
-            else:
-                return 25, "H1 bullish (counter-trend)"
+            return 25, "H1 bullish"
     
     def _score_m15_context(self, m15: List, direction: str) -> Tuple[float, str]:
-        """Score M15 context alignment"""
+        """Score M15 context"""
         if len(m15) < 8:
             return 50, "Insufficient M15 data"
         trend = self._get_trend(m15[-8:])
@@ -1348,39 +1745,37 @@ class SignalGeneratorV3:
         aligned = (direction == "BUY" and trend > 0) or (direction == "SELL" and trend < 0)
         mom_aligned = (direction == "BUY" and momentum > 0) or (direction == "SELL" and momentum < 0)
         if aligned and mom_aligned:
-            return 90, "M15 trend and momentum aligned"
+            return 90, "M15 trend + momentum aligned"
         elif aligned:
             return 70, "M15 trend aligned"
         elif mom_aligned:
-            return 55, "M15 momentum aligned only"
-        else:
-            return 35, "M15 not aligned"
+            return 55, "M15 momentum aligned"
+        return 35, "M15 not aligned"
     
     def _score_market_structure(self, m5: List, direction: str) -> Tuple[float, str]:
-        """Score market structure quality"""
+        """Score market structure"""
         if len(m5) < 20:
-            return 50, "Insufficient data for structure"
+            return 50, "Insufficient data"
         highs = [c.get('high', 0) for c in m5[-20:]]
         lows = [c.get('low', 0) for c in m5[-20:]]
-        swing_highs = self._find_swing_points(highs, 'high')
-        swing_lows = self._find_swing_points(lows, 'low')
+        swing_highs = self._find_swing_points_list(highs, 'high')
+        swing_lows = self._find_swing_points_list(lows, 'low')
+        
         if direction == "BUY":
             if len(swing_lows) >= 2 and swing_lows[-1] > swing_lows[-2]:
-                return 85, "Higher lows forming"
-            elif len(swing_lows) >= 2 and swing_lows[-1] >= swing_lows[-2] * 0.999:
-                return 65, "Equal lows holding"
-            else:
-                return 45, "No clear bullish structure"
+                return 85, "Higher lows"
+            elif len(swing_lows) >= 2:
+                return 65, "Equal lows"
+            return 45, "No clear structure"
         else:
             if len(swing_highs) >= 2 and swing_highs[-1] < swing_highs[-2]:
-                return 85, "Lower highs forming"
-            elif len(swing_highs) >= 2 and swing_highs[-1] <= swing_highs[-2] * 1.001:
-                return 65, "Equal highs holding"
-            else:
-                return 45, "No clear bearish structure"
+                return 85, "Lower highs"
+            elif len(swing_highs) >= 2:
+                return 65, "Equal highs"
+            return 45, "No clear structure"
     
-    def _find_swing_points(self, data: List, point_type: str) -> List:
-        """Find swing points in data"""
+    def _find_swing_points_list(self, data: List, point_type: str) -> List:
+        """Find swing points"""
         if len(data) < 5:
             return []
         swings = []
@@ -1394,7 +1789,7 @@ class SignalGeneratorV3:
         return swings[-3:] if len(swings) > 3 else swings
     
     def _score_momentum(self, m5: List, direction: str) -> Tuple[float, str]:
-        """Score momentum strength"""
+        """Score momentum"""
         if len(m5) < 5:
             return 50, "Insufficient data"
         momentum = self._get_momentum(m5[-5:])
@@ -1402,23 +1797,21 @@ class SignalGeneratorV3:
             if momentum > 0.6:
                 return 95, "Strong bullish momentum"
             elif momentum > 0.3:
-                return 75, "Moderate bullish momentum"
+                return 75, "Moderate bullish"
             elif momentum > 0:
-                return 55, "Weak bullish momentum"
-            else:
-                return 30, "Bearish momentum (divergent)"
+                return 55, "Weak bullish"
+            return 30, "Bearish momentum"
         else:
             if momentum < -0.6:
                 return 95, "Strong bearish momentum"
             elif momentum < -0.3:
-                return 75, "Moderate bearish momentum"
+                return 75, "Moderate bearish"
             elif momentum < 0:
-                return 55, "Weak bearish momentum"
-            else:
-                return 30, "Bullish momentum (divergent)"
+                return 55, "Weak bearish"
+            return 30, "Bullish momentum"
     
     def _score_key_level(self, m5: List, current_price: float, direction: str) -> Tuple[float, str]:
-        """Score reaction at key level"""
+        """Score key level reaction"""
         if len(m5) < 20:
             return 50, "Insufficient data"
         round_level_distance = current_price % (0.001 if current_price < 10 else 1)
@@ -1434,29 +1827,15 @@ class SignalGeneratorV3:
             elif direction == "SELL" and wick_up > body * 1.5:
                 has_rejection = True
         if has_rejection and near_round:
-            return 95, "Strong rejection at round number"
+            return 95, "Rejection at round number"
         elif has_rejection:
-            return 75, "Price rejection observed"
+            return 75, "Price rejection"
         elif near_round:
-            return 60, "Near round number level"
-        else:
-            return 45, "No clear key level"
-    
-    def _score_rr_ratio(self, rr: float) -> Tuple[float, str]:
-        """Score risk/reward ratio"""
-        if rr >= 3:
-            return 100, f"Excellent R:R ({rr:.1f})"
-        elif rr >= 2:
-            return 80, f"Good R:R ({rr:.1f})"
-        elif rr >= 1.5:
-            return 60, f"Acceptable R:R ({rr:.1f})"
-        elif rr >= 1:
-            return 40, f"Low R:R ({rr:.1f})"
-        else:
-            return 20, f"Poor R:R ({rr:.1f})"
+            return 60, "Near round number"
+        return 45, "No key level"
     
     def _score_volatility(self, atr: float, avg_atr: float) -> Tuple[float, str]:
-        """Score volatility conditions"""
+        """Score volatility"""
         if avg_atr == 0:
             return 50, "No ATR reference"
         ratio = atr / avg_atr
@@ -1465,22 +1844,18 @@ class SignalGeneratorV3:
         elif 0.5 <= ratio <= 2:
             return 70, "Acceptable volatility"
         elif ratio > 2:
-            return 40, "High volatility risk"
-        else:
-            return 40, "Low volatility"
+            return 40, "High volatility"
+        return 40, "Low volatility"
     
     def _score_market_regime(self, m5: List, atr: float, avg_atr: float) -> Tuple[float, str]:
-        """Lightweight market regime detection"""
+        """Score market regime"""
         if len(m5) < 20:
-            return 50, "Insufficient data for regime"
+            return 50, "Insufficient data"
         atr_ratio = atr / avg_atr if avg_atr > 0 else 1.0
         recent_candles = m5[-10:]
         ranges = [c.get('high', 0) - c.get('low', 0) for c in recent_candles]
         avg_range = sum(ranges) / len(ranges) if ranges else 0
-        older_candles = m5[-20:-10]
-        older_ranges = [c.get('high', 0) - c.get('low', 0) for c in older_candles]
-        older_avg_range = sum(older_ranges) / len(older_ranges) if older_ranges else avg_range
-        range_ratio = avg_range / older_avg_range if older_avg_range > 0 else 1.0
+        
         closes = [c.get('close', 0) for c in recent_candles]
         if len(closes) >= 5:
             first_half = sum(closes[:5]) / 5
@@ -1488,28 +1863,16 @@ class SignalGeneratorV3:
             directional_move = abs(second_half - first_half) / avg_range if avg_range > 0 else 0
         else:
             directional_move = 0.5
-        overlap_count = 0
-        for i in range(1, len(recent_candles)):
-            curr = recent_candles[i]
-            prev = recent_candles[i-1]
-            curr_low, curr_high = curr.get('low', 0), curr.get('high', 0)
-            prev_low, prev_high = prev.get('low', 0), prev.get('high', 0)
-            overlap = min(curr_high, prev_high) - max(curr_low, prev_low)
-            if overlap > 0:
-                overlap_count += 1
-        overlap_ratio = overlap_count / (len(recent_candles) - 1)
-        if atr_ratio >= 1.2 and directional_move > 1.5 and overlap_ratio < 0.7:
-            return 95, "Strong trending regime"
+        
+        if atr_ratio >= 1.2 and directional_move > 1.5:
+            return 95, "Strong trending"
         elif atr_ratio >= 0.9 and directional_move > 1.0:
-            return 85, "Healthy trend regime"
-        elif atr_ratio >= 0.7 and range_ratio >= 0.7:
-            return 70, "Normal market regime"
-        elif atr_ratio >= 0.5 or range_ratio >= 0.5:
-            return 50, "Mixed/neutral regime"
-        elif atr_ratio < 0.4 and overlap_ratio > 0.8:
-            return 25, "Dead/compressed regime"
-        else:
-            return 40, "Low activity regime"
+            return 85, "Healthy trend"
+        elif atr_ratio >= 0.7:
+            return 70, "Normal regime"
+        elif atr_ratio >= 0.5:
+            return 50, "Mixed regime"
+        return 40, "Low activity"
     
     def _calculate_atr(self, candles: List, period: int) -> float:
         """Calculate ATR"""
@@ -1527,15 +1890,16 @@ class SignalGeneratorV3:
         return sum(trs) / len(trs) if trs else 0
     
     def _calculate_average_atr(self, candles: List, period: int) -> float:
-        """Calculate average ATR over longer period"""
+        """Calculate average ATR"""
         return self._calculate_atr(candles, period)
     
     def _is_duplicate(self, asset: Asset, direction: str, price: float) -> bool:
-        """Check if signal is duplicate"""
+        """Check duplicate"""
         cutoff = datetime.utcnow() - timedelta(minutes=self.DUPLICATE_WINDOW_MINUTES)
         price_zone = self.DUPLICATE_PRICE_ZONE_PIPS if asset == Asset.EURUSD else self.DUPLICATE_PRICE_ZONE_XAU
-        pip_size = 0.0001 if asset == Asset.EURUSD else 0.01
+        pip_size = ASSET_CONFIGS[asset].pip_size
         zone_distance = price_zone * pip_size
+        
         for recent in self.recent_signals:
             if recent.timestamp < cutoff:
                 continue
@@ -1547,25 +1911,30 @@ class SignalGeneratorV3:
                 return True
         return False
     
-    def _determine_setup_type(self, components: List[ScoreComponent]) -> str:
-        """Determine setup type based on score components"""
+    def _determine_setup_type(self, components: List[ScoreComponent], sl_type: str, tp_type: str) -> str:
+        """Determine setup type"""
         struct_score = next((c.score for c in components if c.name == "Market Structure"), 0)
         pb_score = next((c.score for c in components if c.name == "Pullback Quality"), 0)
-        mom_score = next((c.score for c in components if c.name == "Momentum"), 0)
         mtf_score = next((c.score for c in components if c.name == "MTF Alignment"), 0)
+        
+        base_type = ""
         if mtf_score > 80 and struct_score > 70:
-            return "HTF Trend Continuation"
+            base_type = "HTF Continuation"
         elif struct_score > 80 and pb_score > 70:
-            return "Structure Pullback"
-        elif mom_score > 80:
-            return "Momentum Breakout"
+            base_type = "Structure Pullback"
         elif pb_score > 80:
-            return "Fib Retracement"
+            base_type = "Fib Retracement"
         else:
-            return "Technical Setup"
+            base_type = "Technical Setup"
+        
+        # Add structure info
+        if sl_type == "swing_low" or sl_type == "swing_high":
+            base_type += " [Structural SL]"
+        
+        return base_type
     
     def _get_session_name(self, session) -> str:
-        """Get readable session name"""
+        """Get session name"""
         hour = datetime.utcnow().hour
         if 13 <= hour <= 16:
             return "London/NY Overlap"
@@ -1575,11 +1944,10 @@ class SignalGeneratorV3:
             return "New York"
         elif 0 <= hour <= 7:
             return "Asian"
-        else:
-            return "Off-Hours"
+        return "Off-Hours"
     
     def _log_score_breakdown(self, asset: Asset, direction: str, components: List[ScoreComponent], final_score: float):
-        """Log detailed score breakdown for rejected signals"""
+        """Log score breakdown"""
         logger.info(f"   Score breakdown for {asset.value} {direction}:")
         for c in components:
             logger.info(f"   • {c.name}: {c.score:.0f}% × {c.weight}% = {c.weighted_score:.1f}")
@@ -1593,28 +1961,32 @@ class SignalGeneratorV3:
         
         return {
             "is_running": self.is_running,
-            "version": "v3",
-            "mode": "confidence_based_enhanced",
+            "version": "v3.1",
+            "mode": "structural_sl_tp",
             "uptime_seconds": uptime,
             "scan_count": self.scan_count,
             "signal_count": self.signal_count,
             "notification_count": self.notification_count,
             "rejection_count": self.rejection_count,
+            "rejection_reasons": self.rejection_reasons,
             "invalid_tokens_removed": self.invalid_tokens_removed,
             "recent_signals": len(self.recent_signals),
             "duplicate_window_minutes": self.DUPLICATE_WINDOW_MINUTES,
             "min_confidence": 60,
+            "min_rr_hard": self.MIN_RR_HARD_REJECT,
+            "min_sl_eurusd": ASSET_CONFIGS[Asset.EURUSD].min_sl_pips,
+            "min_sl_xauusd": ASSET_CONFIGS[Asset.XAUUSD].min_sl_pips,
             "classification": {
-                "strong": "80-100",
-                "good": "70-79",
-                "acceptable": "60-69",
+                "strong": "80-100 (0.75% risk)",
+                "good": "70-79 (0.60-0.65% risk)",
+                "acceptable": "60-69 (0.50% risk)",
                 "rejected": "<60"
             },
             "prop_config": {
                 "account_size": PROP_CONFIG.account_size,
                 "max_daily_loss": PROP_CONFIG.max_daily_loss,
                 "operational_warning": PROP_CONFIG.operational_warning,
-                "risk_per_trade": f"{PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%"
+                "risk_per_trade": f"{PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}% (dynamic)"
             },
             "daily_risk_status": self.position_sizer.get_daily_status()
         }
