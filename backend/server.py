@@ -1592,46 +1592,73 @@ async def set_scanner_profile(profile_name: str):
 @api_router.get("/analytics/performance")
 async def get_performance_analytics(user_id: Optional[str] = None):
     """Get comprehensive performance analytics"""
-    if not analytics:
-        raise HTTPException(status_code=500, detail="Analytics service not initialized")
-    
-    metrics = await analytics.get_performance_metrics(user_id=user_id)
-    
-    return {
-        "summary": {
-            "total_signals": metrics.total_signals,
-            "buy_signals": metrics.buy_signals,
-            "sell_signals": metrics.sell_signals,
-            "next_signals": metrics.next_signals
-        },
-        "performance": {
-            "win_rate": round(metrics.win_rate, 1),
-            "loss_rate": round(metrics.loss_rate, 1),
-            "winning_trades": metrics.winning_trades,
-            "losing_trades": metrics.losing_trades,
-            "pending_trades": metrics.pending_trades
-        },
-        "risk_metrics": {
-            "average_rr_ratio": round(metrics.average_rr_ratio, 2),
-            "profit_factor": round(metrics.profit_factor, 2),
-            "expectancy": round(metrics.expectancy, 2),
-            "max_drawdown_pct": metrics.max_drawdown_pct,
-            "current_drawdown_pct": metrics.current_drawdown_pct
-        },
-        "streaks": {
-            "longest_winning": metrics.longest_winning_streak,
-            "longest_losing": metrics.longest_losing_streak
-        },
-        "by_asset": metrics.signals_per_asset,
-        "by_regime": metrics.signals_per_regime,
-        "win_rate_by_asset": metrics.win_rate_per_asset,
-        "win_rate_by_regime": metrics.win_rate_per_regime,
-        "activity": {
-            "signals_today": metrics.signals_today,
-            "signals_this_week": metrics.signals_this_week,
-            "signals_this_month": metrics.signals_this_month
+    try:
+        if not analytics:
+            # Return default empty metrics if analytics not initialized
+            return {
+                "summary": {"total_signals": 0, "buy_signals": 0, "sell_signals": 0, "next_signals": 0},
+                "performance": {"win_rate": 0, "loss_rate": 0, "winning_trades": 0, "losing_trades": 0, "pending_trades": 0},
+                "risk_metrics": {"average_rr_ratio": 0, "profit_factor": 0, "expectancy": 0, "max_drawdown_pct": 0, "current_drawdown_pct": 0},
+                "streaks": {"longest_winning": 0, "longest_losing": 0},
+                "by_asset": {},
+                "by_regime": {},
+                "win_rate_by_asset": {},
+                "win_rate_by_regime": {},
+                "activity": {"signals_today": 0, "signals_this_week": 0, "signals_this_month": 0},
+                "note": "Analytics service not initialized"
+            }
+        
+        metrics = await analytics.get_performance_metrics(user_id=user_id)
+        
+        return {
+            "summary": {
+                "total_signals": metrics.total_signals,
+                "buy_signals": metrics.buy_signals,
+                "sell_signals": metrics.sell_signals,
+                "next_signals": metrics.next_signals
+            },
+            "performance": {
+                "win_rate": round(metrics.win_rate, 1),
+                "loss_rate": round(metrics.loss_rate, 1),
+                "winning_trades": metrics.winning_trades,
+                "losing_trades": metrics.losing_trades,
+                "pending_trades": metrics.pending_trades
+            },
+            "risk_metrics": {
+                "average_rr_ratio": round(metrics.average_rr_ratio, 2),
+                "profit_factor": round(metrics.profit_factor, 2),
+                "expectancy": round(metrics.expectancy, 2),
+                "max_drawdown_pct": metrics.max_drawdown_pct,
+                "current_drawdown_pct": metrics.current_drawdown_pct
+            },
+            "streaks": {
+                "longest_winning": metrics.longest_winning_streak,
+                "longest_losing": metrics.longest_losing_streak
+            },
+            "by_asset": metrics.signals_per_asset,
+            "by_regime": metrics.signals_per_regime,
+            "win_rate_by_asset": metrics.win_rate_per_asset,
+            "win_rate_by_regime": metrics.win_rate_per_regime,
+            "activity": {
+                "signals_today": metrics.signals_today,
+                "signals_this_week": metrics.signals_this_week,
+                "signals_this_month": metrics.signals_this_month
+            }
         }
-    }
+    except Exception as e:
+        logger.error(f"Analytics error: {e}")
+        return {
+            "summary": {"total_signals": 0, "buy_signals": 0, "sell_signals": 0, "next_signals": 0},
+            "performance": {"win_rate": 0, "loss_rate": 0, "winning_trades": 0, "losing_trades": 0, "pending_trades": 0},
+            "risk_metrics": {"average_rr_ratio": 0, "profit_factor": 0, "expectancy": 0, "max_drawdown_pct": 0, "current_drawdown_pct": 0},
+            "streaks": {"longest_winning": 0, "longest_losing": 0},
+            "by_asset": {},
+            "by_regime": {},
+            "win_rate_by_asset": {},
+            "win_rate_by_regime": {},
+            "activity": {"signals_today": 0, "signals_this_week": 0, "signals_this_month": 0},
+            "error": str(e)
+        }
 
 @api_router.get("/analytics/distribution")
 async def get_signal_distribution(user_id: Optional[str] = None, days: int = 30):
