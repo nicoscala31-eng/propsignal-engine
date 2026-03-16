@@ -1225,6 +1225,85 @@ async def reset_daily_risk():
     }
 
 
+# ==================== DIRECTION QUALITY AUDIT ====================
+
+@api_router.get("/audit/direction-quality")
+async def get_direction_quality_report():
+    """
+    Get comprehensive Direction Quality Audit Report.
+    
+    This is an AUDIT-ONLY endpoint - no strategy modifications.
+    
+    Returns:
+    - Stats by symbol + direction (EURUSD BUY/SELL, XAUUSD BUY/SELL)
+    - Stats by session, confidence bucket, MTF alignment, FTA quality
+    - Rejection analysis by direction
+    - Top winning and losing patterns
+    
+    Use this data for evidence-based strategy calibration.
+    """
+    from services.direction_quality_audit import direction_quality_audit
+    
+    return direction_quality_audit.get_full_report()
+
+
+@api_router.get("/audit/direction-quality/by-symbol")
+async def get_direction_stats_by_symbol():
+    """
+    Get direction quality stats broken down by symbol + direction.
+    
+    Returns stats for:
+    - EURUSD_BUY
+    - EURUSD_SELL
+    - XAUUSD_BUY
+    - XAUUSD_SELL
+    """
+    from services.direction_quality_audit import direction_quality_audit
+    
+    return {
+        "report_type": "by_symbol_direction",
+        "stats": direction_quality_audit.get_stats_by_symbol_direction(),
+        "note": "AUDIT ONLY - No weights modified"
+    }
+
+
+@api_router.get("/audit/direction-quality/rejections")
+async def get_direction_rejection_analysis():
+    """
+    Get rejection analysis by direction.
+    
+    Shows:
+    - Total BUY vs SELL rejections
+    - Rejection reasons by direction
+    - Rejection counts by symbol
+    """
+    from services.direction_quality_audit import direction_quality_audit
+    
+    return {
+        "report_type": "rejection_analysis",
+        "analysis": direction_quality_audit.get_rejection_analysis(),
+        "note": "AUDIT ONLY - No weights modified"
+    }
+
+
+@api_router.get("/audit/direction-quality/patterns")
+async def get_direction_patterns():
+    """
+    Get top winning and losing directional patterns.
+    
+    Identifies patterns like:
+    - EURUSD_BUY_trending_London
+    - XAUUSD_SELL_mixed_NY
+    """
+    from services.direction_quality_audit import direction_quality_audit
+    
+    return {
+        "report_type": "patterns",
+        "patterns": direction_quality_audit.get_top_patterns(),
+        "note": "AUDIT ONLY - No weights modified"
+    }
+
+
 @api_router.get("/market/validation/status")
 async def get_market_validation_status():
     """

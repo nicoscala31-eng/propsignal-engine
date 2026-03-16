@@ -52,6 +52,13 @@ from models import Asset, SignalType, Timeframe
 from services.market_data_cache import market_data_cache
 from services.market_validator import market_validator, MarketStatus
 from engines.session_detector import session_detector
+from services.direction_quality_audit import (
+    direction_quality_audit, 
+    DirectionContext,
+    FTAQuality,
+    MTFAlignment,
+    NewsRiskBucket
+)
 
 logger = logging.getLogger(__name__)
 
@@ -711,6 +718,29 @@ class SignalGeneratorV3:
         """Record rejection reason for analytics"""
         self.rejection_count += 1
         self.rejection_reasons[reason] = self.rejection_reasons.get(reason, 0) + 1
+    
+    def _record_rejection_with_audit(
+        self, 
+        reason: str, 
+        asset: Asset, 
+        direction: str, 
+        score: float = 0.0,
+        penalties: Dict = None,
+        context: DirectionContext = None
+    ):
+        """Record rejection with full directional audit"""
+        # Standard rejection tracking
+        self._record_rejection(reason)
+        
+        # Direction quality audit
+        direction_quality_audit.record_rejection(
+            symbol=asset.value,
+            intended_direction=direction,
+            rejection_reason=reason,
+            score_before_reject=score,
+            active_penalties=penalties or {},
+            direction_context=context
+        )
     
     # ==================== LIFECYCLE ====================
     
@@ -1460,7 +1490,24 @@ class SignalGeneratorV3:
         
         # Hard reject if FTA blocks trade (clean_space_ratio < 0.50)
         if fta.fta_blocked_trade:
-            self._record_rejection("fta_blocked")
+            # Build minimal direction context for rejection audit
+            reject_context = DirectionContext(
+                fta_quality="blocked",
+                fta_clean_space_ratio=fta.clean_space_ratio,
+                session=session_name,
+                final_direction_reason=direction_reason,
+                final_direction_score=direction_score
+            )
+            
+            self._record_rejection_with_audit(
+                reason="fta_blocked",
+                asset=asset,
+                direction=direction,
+                score=0,  # Score not yet calculated
+                penalties={"fta_blocked": True, "clean_space_ratio": fta.clean_space_ratio},
+                context=reject_context
+            )
+            
             logger.info(f"⛔ {asset.value} {direction}: FTA BLOCKED - clean_space_ratio {fta.clean_space_ratio:.2f} < 0.50")
             fta_price_str = f"{fta.fta_price:.5f}" if asset == Asset.EURUSD else f"{fta.fta_price:.2f}"
             logger.info(f"   FTA: {fta.fta_type} at {fta_price_str}")
@@ -1637,6 +1684,78 @@ class SignalGeneratorV3:
             fta_penalty=fta.fta_penalty,
             fta_blocked_trade=fta.fta_blocked_trade,
             fta_obstacles_count=fta.obstacles_count
+        )
+        
+        # ========== DIRECTION QUALITY AUDIT ==========
+        
+        # Build DirectionContext for audit
+        direction_context = DirectionContext(
+            # H1 bias
+            h1_bias="bullish" if h1_score > 60 else "bearish" if h1_score < 40 else "neutral",
+            h1_bias_score=h1_score,
+            # M15 bias
+            m15_bias="bullish" if m15_score > 60 else "bearish" if m15_score < 40 else "neutral",
+            m15_bias_score=m15_score,
+            # M5 momentum
+            m5_momentum="bullish" if mom_score > 60 else "bearish" if mom_score < 40 else "neutral",
+            m5_momentum_score=mom_score,
+            # Structure
+            market_structure="bullish" if struct_score > 60 else "bearish" if struct_score < 40 else "unclear",
+            market_structure_score=struct_score,
+            # Pullback
+            pullback_quality="excellent" if pb_score > 80 else "good" if pb_score > 60 else "acceptable" if pb_score > 40 else "weak",
+            pullback_quality_score=pb_score,
+            # Entry
+            entry_quality="optimal" if entry_score > 80 else "good" if entry_score > 60 else "acceptable" if entry_score > 40 else "late",
+            entry_quality_score=entry_score,
+            # FTA
+            fta_quality="clean" if fta.clean_space_ratio >= 0.80 else "moderate" if fta.clean_space_ratio >= 0.65 else "weak",
+            fta_clean_space_ratio=fta.clean_space_ratio,
+            # MTF alignment
+            mtf_alignment="full" if mtf_score > 80 else "partial" if mtf_score > 60 else "weak" if mtf_score > 40 else "conflicting",
+            mtf_alignment_score=mtf_score,
+            # Session
+            session=session_name,
+            session_score=sess_score,
+            # External factors
+            news_risk=news_risk.level.value,
+            news_penalty=news_risk.score_penalty,
+            spread_penalty=100 - spread_score,
+            fta_penalty=fta.fta_penalty,
+            concentration_penalty=100 - conc_score,
+            # Direction reason
+            final_direction_reason=direction_reason,
+            final_direction_score=direction_score
+        )
+        
+        # Determine regime for audit
+        regime = "trending" if regime_score > 70 else "ranging" if regime_score < 40 else "mixed"
+        
+        # Determine MTF alignment quality
+        mtf_alignment_quality = "full" if mtf_score > 80 else "partial" if mtf_score > 60 else "weak" if mtf_score > 40 else "conflicting"
+        
+        # Determine FTA quality
+        fta_quality_str = "clean" if fta.clean_space_ratio >= 0.80 else "moderate" if fta.clean_space_ratio >= 0.65 else "weak"
+        
+        # News risk bucket
+        news_bucket = news_risk.level.value.lower()
+        
+        # Record the signal for directional audit
+        direction_quality_audit.record_signal(
+            signal_id=signal.signal_id,
+            symbol=asset.value,
+            direction=direction,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit_1,
+            risk_reward=rr_ratio,
+            confidence_score=final_score,
+            session=session_name,
+            regime=regime,
+            direction_context=direction_context,
+            mtf_alignment=mtf_alignment_quality,
+            news_risk=news_bucket,
+            fta_quality=fta_quality_str
         )
         
         return signal
