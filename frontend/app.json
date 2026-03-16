@@ -2,7 +2,7 @@
   "expo": {
     "name": "PropSignal Engine",
     "slug": "propsignal-engine",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "propsignal",
@@ -12,7 +12,8 @@
       "router": {},
       "eas": {
         "projectId": "639df9f4-f840-4ac8-8ce7-3d99f52b5cb6"
-      }
+      },
+      "backendUrl": "https://propsignal-engine-production-b22b.up.railway.app"
     },
     "ios": {
       "supportsTablet": true,
@@ -22,8 +23,8 @@
       }
     },
     "android": {
-      "package": "app.emergent.eurusdalerts064311e9",
-      "versionCode": 11,
+      "package": "com.propsignal.engine",
+      "versionCode": 12,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
