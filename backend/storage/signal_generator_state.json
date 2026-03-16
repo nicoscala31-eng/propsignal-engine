@@ -1,15 +1,17 @@
 {
-  "scan_count": 5506,
-  "signal_count": 81,
-  "notification_count": 67,
-  "rejection_count": 633,
+  "scan_count": 5644,
+  "signal_count": 89,
+  "notification_count": 75,
+  "rejection_count": 798,
   "rejection_reasons": {
     "low_rr": 16,
-    "daily_limit": 59,
-    "low_confidence": 1
+    "daily_limit": 64,
+    "low_confidence": 25,
+    "duplicate": 110,
+    "fta_blocked": 26
   },
   "invalid_tokens_removed": 0,
   "daily_risk_used": 0.0,
   "last_reset_date": "2026-03-16",
-  "last_save": "2026-03-16T15:25:07.134109"
+  "last_save": "2026-03-16T15:36:26.218813"
 }

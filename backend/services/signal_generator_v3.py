@@ -372,6 +372,36 @@ class StructuralLevels:
 
 
 @dataclass
+class FirstTroubleArea:
+    """
+    First Trouble Area (FTA) - first technical obstacle between entry and target
+    
+    Used to validate if there's enough clean space for the trade to reach target.
+    """
+    fta_price: Optional[float] = None
+    fta_type: str = "none"  # swing_high, swing_low, local_resistance, local_support, 
+                            # range_boundary, wick_rejection, congestion_zone
+    fta_distance: float = 0.0       # Distance from entry to FTA
+    target_distance: float = 0.0    # Distance from entry to target
+    clean_space_ratio: float = 1.0  # fta_distance / target_distance (1.0 = no obstacle)
+    fta_penalty: float = 0.0        # Score penalty applied
+    fta_blocked_trade: bool = False # If True, trade was rejected due to FTA
+    obstacles_count: int = 0        # Number of obstacles within 60% of target
+    
+    def to_dict(self) -> Dict:
+        return {
+            "fta_price": self.fta_price,
+            "fta_type": self.fta_type,
+            "fta_distance": round(self.fta_distance, 5),
+            "target_distance": round(self.target_distance, 5),
+            "clean_space_ratio": round(self.clean_space_ratio, 3),
+            "fta_penalty": self.fta_penalty,
+            "fta_blocked_trade": self.fta_blocked_trade,
+            "obstacles_count": self.obstacles_count
+        }
+
+
+@dataclass
 class GeneratedSignal:
     """A generated trading signal with full metadata including position sizing"""
     signal_id: str
@@ -415,6 +445,16 @@ class GeneratedSignal:
     # Spread info
     spread_pips: float = 0.0
     
+    # First Trouble Area (FTA)
+    fta_price: Optional[float] = None
+    fta_type: str = "none"
+    fta_distance: float = 0.0
+    target_distance: float = 0.0
+    clean_space_ratio: float = 1.0
+    fta_penalty: float = 0.0
+    fta_blocked_trade: bool = False
+    fta_obstacles_count: int = 0
+    
     def to_notification_dict(self) -> Dict:
         """
         Format for push notification
@@ -442,6 +482,10 @@ class GeneratedSignal:
         # Add news warning if present
         if self.news_risk != NewsRiskLevel.NONE and self.news_warning:
             body_lines.append(f"⚠️ {self.news_warning}")
+        
+        # Add FTA info only if there's an obstacle
+        if self.clean_space_ratio < 0.80 and self.fta_type != "none":
+            body_lines.append(f"📊 Ostacolo intermedio ({self.clean_space_ratio:.0%})")
         
         body = "\n".join(body_lines)
         
@@ -481,7 +525,15 @@ class GeneratedSignal:
                 "news_event": self.news_event,
                 "news_warning": self.news_warning,
                 # Spread
-                "spread_pips": self.spread_pips
+                "spread_pips": self.spread_pips,
+                # First Trouble Area (FTA)
+                "fta_price": self.fta_price,
+                "fta_type": self.fta_type,
+                "fta_distance": self.fta_distance,
+                "target_distance": self.target_distance,
+                "clean_space_ratio": self.clean_space_ratio,
+                "fta_penalty": self.fta_penalty,
+                "fta_obstacles_count": self.fta_obstacles_count
             }
         }
 
@@ -1036,6 +1088,207 @@ class SignalGeneratorV3:
         
         return levels
     
+    # ==================== FIRST TROUBLE AREA (FTA) DETECTION ====================
+    
+    def _find_all_obstacles(
+        self,
+        candles_m5: List,
+        candles_m15: List,
+        entry_price: float,
+        target_price: float,
+        direction: str
+    ) -> List[Tuple[float, str]]:
+        """
+        Find all technical obstacles between entry and target.
+        
+        Returns: List of (price, type) tuples
+        """
+        obstacles = []
+        
+        # Determine price range to scan
+        if direction == "BUY":
+            # Looking for resistances between entry and target (above entry)
+            price_min = entry_price
+            price_max = target_price
+        else:
+            # Looking for supports between entry and target (below entry)
+            price_min = target_price
+            price_max = entry_price
+        
+        # 1. Find swing highs/lows from M5
+        if len(candles_m5) >= 20:
+            recent_m5 = candles_m5[-50:] if len(candles_m5) >= 50 else candles_m5
+            
+            for i in range(2, len(recent_m5) - 2):
+                high = recent_m5[i].get('high', 0)
+                low = recent_m5[i].get('low', 0)
+                
+                if direction == "BUY":
+                    # Look for swing highs (resistances)
+                    if (high > recent_m5[i-1].get('high', 0) and 
+                        high > recent_m5[i-2].get('high', 0) and
+                        high > recent_m5[i+1].get('high', 0) and 
+                        high > recent_m5[i+2].get('high', 0)):
+                        if price_min < high < price_max:
+                            obstacles.append((high, "swing_high"))
+                else:
+                    # Look for swing lows (supports)
+                    if (low < recent_m5[i-1].get('low', float('inf')) and 
+                        low < recent_m5[i-2].get('low', float('inf')) and
+                        low < recent_m5[i+1].get('low', float('inf')) and 
+                        low < recent_m5[i+2].get('low', float('inf'))):
+                        if price_min < low < price_max:
+                            obstacles.append((low, "swing_low"))
+        
+        # 2. Find significant wicks (rejections)
+        if len(candles_m5) >= 10:
+            for c in candles_m5[-20:]:
+                body = abs(c.get('close', 0) - c.get('open', 0))
+                high = c.get('high', 0)
+                low = c.get('low', 0)
+                close = c.get('close', 0)
+                open_p = c.get('open', 0)
+                
+                wick_up = high - max(close, open_p)
+                wick_down = min(close, open_p) - low
+                
+                if direction == "BUY":
+                    # Large upper wick = rejection from above = resistance
+                    if wick_up > body * 2.0 and body > 0:
+                        rejection_level = high - (wick_up * 0.3)  # Zone start
+                        if price_min < rejection_level < price_max:
+                            obstacles.append((rejection_level, "wick_rejection"))
+                else:
+                    # Large lower wick = rejection from below = support
+                    if wick_down > body * 2.0 and body > 0:
+                        rejection_level = low + (wick_down * 0.3)
+                        if price_min < rejection_level < price_max:
+                            obstacles.append((rejection_level, "wick_rejection"))
+        
+        # 3. Confirm obstacles with M15
+        if candles_m15 and len(candles_m15) >= 10:
+            for i in range(2, min(len(candles_m15) - 2, 15)):
+                high = candles_m15[-(i+1)].get('high', 0)
+                low = candles_m15[-(i+1)].get('low', 0)
+                
+                if direction == "BUY":
+                    if (high > candles_m15[-(i)].get('high', 0) and 
+                        high > candles_m15[-(i+2)].get('high', 0)):
+                        if price_min < high < price_max:
+                            obstacles.append((high, "local_resistance"))
+                else:
+                    if (low < candles_m15[-(i)].get('low', float('inf')) and 
+                        low < candles_m15[-(i+2)].get('low', float('inf'))):
+                        if price_min < low < price_max:
+                            obstacles.append((low, "local_support"))
+        
+        # 4. Detect congestion zones (multiple candles at similar price)
+        if len(candles_m5) >= 15:
+            recent = candles_m5[-15:]
+            closes = [c.get('close', 0) for c in recent]
+            avg_close = sum(closes) / len(closes) if closes else 0
+            
+            # Check if there's a congestion area in our path
+            if price_min < avg_close < price_max:
+                # Count how many candles closed near this level
+                threshold = abs(target_price - entry_price) * 0.1
+                near_count = sum(1 for c in closes if abs(c - avg_close) < threshold)
+                if near_count >= 5:
+                    obstacles.append((avg_close, "congestion_zone"))
+        
+        return obstacles
+    
+    def _calculate_fta(
+        self,
+        candles_m5: List,
+        candles_m15: List,
+        entry_price: float,
+        target_price: float,
+        direction: str,
+        tp_type: str
+    ) -> FirstTroubleArea:
+        """
+        Calculate First Trouble Area (FTA)
+        
+        Identifies the first technical obstacle between entry and target,
+        calculates clean_space_ratio and determines penalties.
+        
+        Returns: FirstTroubleArea dataclass with all FTA metrics
+        """
+        fta = FirstTroubleArea()
+        
+        # Calculate target distance
+        fta.target_distance = abs(target_price - entry_price)
+        
+        if fta.target_distance == 0:
+            return fta
+        
+        # Find all obstacles
+        obstacles = self._find_all_obstacles(
+            candles_m5, candles_m15, entry_price, target_price, direction
+        )
+        
+        if not obstacles:
+            # No obstacles found - clean path
+            fta.clean_space_ratio = 1.0
+            fta.fta_type = "none"
+            return fta
+        
+        # Sort obstacles by distance from entry
+        if direction == "BUY":
+            # For BUY, closest obstacle is the one with lowest price above entry
+            obstacles_sorted = sorted(obstacles, key=lambda x: x[0])
+        else:
+            # For SELL, closest obstacle is the one with highest price below entry
+            obstacles_sorted = sorted(obstacles, key=lambda x: -x[0])
+        
+        # Get the first (closest) obstacle
+        first_obstacle_price, first_obstacle_type = obstacles_sorted[0]
+        
+        fta.fta_price = first_obstacle_price
+        fta.fta_type = first_obstacle_type
+        fta.fta_distance = abs(first_obstacle_price - entry_price)
+        fta.clean_space_ratio = fta.fta_distance / fta.target_distance if fta.target_distance > 0 else 1.0
+        
+        # Count obstacles within 60% of target
+        sixty_percent_distance = fta.target_distance * 0.60
+        if direction == "BUY":
+            obstacles_in_60 = sum(1 for p, t in obstacles if p - entry_price <= sixty_percent_distance)
+        else:
+            obstacles_in_60 = sum(1 for p, t in obstacles if entry_price - p <= sixty_percent_distance)
+        fta.obstacles_count = obstacles_in_60
+        
+        # Apply penalty rules
+        if fta.clean_space_ratio >= 0.80:
+            # No penalty - clean space
+            fta.fta_penalty = 0
+        elif fta.clean_space_ratio >= 0.65:
+            # Moderate penalty: -5 points
+            fta.fta_penalty = 5
+        elif fta.clean_space_ratio >= 0.50:
+            # Strong penalty: -10 points
+            fta.fta_penalty = 10
+        else:
+            # Hard reject (clean_space_ratio < 0.50)
+            fta.fta_penalty = 15  # Maximum penalty before reject
+            fta.fta_blocked_trade = True
+        
+        # Extra penalty for multiple obstacles within 60%
+        if obstacles_in_60 >= 2 and not fta.fta_blocked_trade:
+            fta.fta_penalty += 3
+        
+        # Special case: if FTA nearly coincides with target (>90%), reduce penalty
+        if fta.clean_space_ratio >= 0.90:
+            fta.fta_penalty = 0
+        
+        # Special case: breakout target already confirmed by M15 - don't auto-reject, just penalize
+        if fta.fta_blocked_trade and tp_type == "swing_target":
+            # M15 confirmed target - downgrade from reject to strong penalty
+            fta.fta_blocked_trade = False
+            fta.fta_penalty = 12
+        
+        return fta
+    
     # ==================== ENTRY VALIDATION ====================
     
     def _validate_entry(
@@ -1199,6 +1452,20 @@ class SignalGeneratorV3:
             logger.info(f"⏭️ {asset.value} {direction}: R:R {rr_ratio:.2f} < {self.MIN_RR_HARD_REJECT} (REJECT)")
             return None
         
+        # ========== FIRST TROUBLE AREA (FTA) ANALYSIS ==========
+        
+        fta = self._calculate_fta(
+            m5_candles, m15_candles, entry_price, take_profit_1, direction, tp_type
+        )
+        
+        # Hard reject if FTA blocks trade (clean_space_ratio < 0.50)
+        if fta.fta_blocked_trade:
+            self._record_rejection("fta_blocked")
+            logger.info(f"⛔ {asset.value} {direction}: FTA BLOCKED - clean_space_ratio {fta.clean_space_ratio:.2f} < 0.50")
+            fta_price_str = f"{fta.fta_price:.5f}" if asset == Asset.EURUSD else f"{fta.fta_price:.2f}"
+            logger.info(f"   FTA: {fta.fta_type} at {fta_price_str}")
+            return None
+        
         # ========== SCORING ==========
         
         components = []
@@ -1260,6 +1527,11 @@ class SignalGeneratorV3:
         
         # Calculate final score
         final_score = sum(c.weighted_score for c in components)
+        
+        # Apply FTA penalty
+        if fta.fta_penalty > 0:
+            final_score -= fta.fta_penalty
+            logger.info(f"📊 {asset.value}: FTA penalty applied (-{fta.fta_penalty:.0f}): {fta.fta_type} @ ratio {fta.clean_space_ratio:.2f}")
         
         # Apply news penalty
         if news_risk.score_penalty > 0:
@@ -1355,7 +1627,16 @@ class SignalGeneratorV3:
             news_event=news_risk.event_name,
             news_warning=news_risk.warning,
             # Spread
-            spread_pips=current_spread
+            spread_pips=current_spread,
+            # First Trouble Area (FTA)
+            fta_price=fta.fta_price,
+            fta_type=fta.fta_type,
+            fta_distance=fta.fta_distance,
+            target_distance=fta.target_distance,
+            clean_space_ratio=fta.clean_space_ratio,
+            fta_penalty=fta.fta_penalty,
+            fta_blocked_trade=fta.fta_blocked_trade,
+            fta_obstacles_count=fta.obstacles_count
         )
         
         return signal
@@ -1401,6 +1682,12 @@ class SignalGeneratorV3:
         logger.info("-" * 40)
         if signal.news_risk != NewsRiskLevel.NONE:
             logger.info(f"   NEWS RISK: {signal.news_risk.value} - {signal.news_event}")
+        # FTA logging
+        if signal.fta_type != "none":
+            fta_status = "clean" if signal.clean_space_ratio >= 0.80 else "moderate" if signal.clean_space_ratio >= 0.65 else "obstacle"
+            logger.info(f"   FTA: {signal.fta_type} | ratio: {signal.clean_space_ratio:.2f} | penalty: -{signal.fta_penalty:.0f} [{fta_status}]")
+        else:
+            logger.info(f"   FTA: clean path (no obstacles)")
         logger.info(f"   Session: {signal.session} | Spread: {signal.spread_pips:.1f} pips")
         logger.info("=" * 60)
         
@@ -1458,6 +1745,15 @@ class SignalGeneratorV3:
                 'tp_type': signal.tp_type,
                 # News
                 'news_risk': signal.news_risk.value,
+                # First Trouble Area (FTA)
+                'fta_price': signal.fta_price,
+                'fta_type': signal.fta_type,
+                'fta_distance': signal.fta_distance,
+                'target_distance': signal.target_distance,
+                'clean_space_ratio': signal.clean_space_ratio,
+                'fta_penalty': signal.fta_penalty,
+                'fta_obstacles_count': signal.fta_obstacles_count,
+                # Score breakdown
                 'score_breakdown': signal.score_breakdown.to_dict() if signal.score_breakdown else {}
             }
             
