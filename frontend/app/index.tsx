@@ -14,8 +14,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BACKEND_URL } from '../config/api';
 import { pushNotificationService, NotificationState } from '../services/PushNotificationService';
+
+// Storage keys for persistent state
+const STORAGE_KEYS = {
+  NOTIFICATIONS_ENABLED: 'propsignal_notifications_enabled',
+  SCANNER_ENABLED: 'propsignal_scanner_enabled',
+};
 
 // Mock user ID for MVP (in production, this would come from auth)
 const MOCK_USER_ID = '1773156899.291813';
@@ -144,9 +151,69 @@ export default function HomeScreen() {
   const prevXauusdType = useRef<string | null>(null);
   const appState = useRef(AppState.currentState);
 
+  // Load saved preferences from AsyncStorage and sync with backend
+  const loadSavedPreferences = useCallback(async () => {
+    try {
+      // Load saved notification state
+      const savedNotifications = await AsyncStorage.getItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED);
+      const savedScanner = await AsyncStorage.getItem(STORAGE_KEYS.SCANNER_ENABLED);
+      
+      console.log('📱 Loaded preferences:', { savedNotifications, savedScanner });
+      
+      // Get current backend state
+      const response = await fetch(`${BACKEND_URL}/api/production/status`);
+      if (response.ok) {
+        const status = await response.json();
+        const backendScannerEnabled = status.scanner?.enabled ?? false;
+        const backendNotificationsEnabled = status.notifications?.enabled ?? false;
+        
+        console.log('🔄 Backend state:', { backendScannerEnabled, backendNotificationsEnabled });
+        
+        // If we have saved preference and it differs from backend, sync to backend
+        if (savedNotifications !== null) {
+          const savedNotifBool = savedNotifications === 'true';
+          if (savedNotifBool !== backendNotificationsEnabled) {
+            // Sync saved preference to backend
+            const endpoint = savedNotifBool ? 'enable' : 'disable';
+            await fetch(`${BACKEND_URL}/api/production/notifications/${endpoint}`, { method: 'POST' });
+            console.log(`🔔 Synced notifications to backend: ${endpoint}`);
+          }
+        }
+        
+        if (savedScanner !== null) {
+          const savedScannerBool = savedScanner === 'true';
+          if (savedScannerBool !== backendScannerEnabled) {
+            // Sync saved preference to backend
+            const endpoint = savedScannerBool ? 'enable' : 'disable';
+            await fetch(`${BACKEND_URL}/api/production/scanner/${endpoint}`, { method: 'POST' });
+            console.log(`📡 Synced scanner to backend: ${endpoint}`);
+          }
+          setBackendScannerRunning(savedScannerBool);
+        } else {
+          setBackendScannerRunning(backendScannerEnabled);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  }, []);
+
+  // Save preference to AsyncStorage
+  const savePreference = async (key: string, value: boolean) => {
+    try {
+      await AsyncStorage.setItem(key, value.toString());
+      console.log(`💾 Saved preference: ${key} = ${value}`);
+    } catch (error) {
+      console.error('Error saving preference:', error);
+    }
+  };
+
   // Initialize push notifications
   useEffect(() => {
     const initNotifications = async () => {
+      // First load saved preferences
+      await loadSavedPreferences();
+      
       // Check current permission status
       const currentState = await pushNotificationService.checkPermissionStatus();
       setNotificationState(currentState);
@@ -176,7 +243,7 @@ export default function HomeScreen() {
       pushNotificationService.cleanup();
       subscription.remove();
     };
-  }, []);
+  }, [loadSavedPreferences]);
 
   // Enable push notifications handler
   const enablePushNotifications = async () => {
@@ -186,6 +253,11 @@ export default function HomeScreen() {
     
     if (result.success) {
       setPushToken(result.token || null);
+      // Save notification preference locally
+      await savePreference(STORAGE_KEYS.NOTIFICATIONS_ENABLED, true);
+      // Also enable notifications on backend
+      await fetch(`${BACKEND_URL}/api/production/notifications/enable`, { method: 'POST' });
+      
       Alert.alert(
         '✅ Notifiche Attivate!',
         'Riceverai notifiche push quando vengono generati segnali BUY/SELL, anche con l\'app chiusa.',
@@ -459,18 +531,21 @@ export default function HomeScreen() {
   const toggleBackendScanner = async () => {
     try {
       // Use production control endpoint instead of legacy scanner
-      const endpoint = backendScannerRunning ? 'disable' : 'enable';
+      const newState = !backendScannerRunning;
+      const endpoint = newState ? 'enable' : 'disable';
       const response = await fetch(`${BACKEND_URL}/api/production/scanner/${endpoint}`, {
         method: 'POST'
       });
       if (response.ok) {
-        const data = await response.json();
-        setBackendScannerRunning(!backendScannerRunning);
+        setBackendScannerRunning(newState);
+        // Save preference locally
+        await savePreference(STORAGE_KEYS.SCANNER_ENABLED, newState);
+        
         Alert.alert(
-          backendScannerRunning ? 'Scanner Disattivato' : 'Scanner Attivato',
-          backendScannerRunning 
-            ? 'La scansione dei segnali è stata disattivata.'
-            : 'Lo scanner cercherà segnali BUY/SELL ogni 5 secondi e invierà notifiche push.',
+          newState ? 'Scanner Attivato' : 'Scanner Disattivato',
+          newState 
+            ? 'Lo scanner cercherà segnali BUY/SELL ogni 5 secondi e invierà notifiche push.'
+            : 'La scansione dei segnali è stata disattivata.',
           [{ text: 'OK' }]
         );
       } else {
