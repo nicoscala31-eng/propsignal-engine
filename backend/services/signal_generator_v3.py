@@ -59,6 +59,7 @@ from services.direction_quality_audit import (
     MTFAlignment,
     NewsRiskBucket
 )
+from services.missed_opportunity_analyzer import missed_opportunity_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -1497,9 +1498,34 @@ class SignalGeneratorV3:
                 context=reject_context
             )
             
+            # ========== MISSED OPPORTUNITY ANALYSIS (ASYNC AUDIT) ==========
+            # Record rejected trade for simulation - NO IMPACT ON LIVE TRADING
+            missed_opportunity_analyzer.record_rejection(
+                symbol=asset.value,
+                direction=direction,
+                rejection_reason="fta_blocked",
+                score_before_reject=0,  # Score not calculated yet at this point
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio,
+                fta_price=fta.fta_price,
+                fta_type=fta.fta_type,
+                fta_distance=fta.fta_distance,
+                clean_space_ratio=fta.clean_space_ratio,
+                context={
+                    "h1_bias": direction_reason if "H1" in direction_reason else "unknown",
+                    "h1_bias_score": direction_score,
+                    "session": session_name,
+                    "regime": "unknown",  # Not yet calculated at this point
+                    "fta_penalty": fta.fta_penalty
+                }
+            )
+            
             logger.info(f"⛔ {asset.value} {direction}: FTA BLOCKED - clean_space_ratio {fta.clean_space_ratio:.2f} < 0.50")
             fta_price_str = f"{fta.fta_price:.5f}" if asset == Asset.EURUSD else f"{fta.fta_price:.2f}"
             logger.info(f"   FTA: {fta.fta_type} at {fta_price_str}")
+            logger.info(f"   📊 Recorded for Missed Opportunity Analysis")
             return None
         
         # ========== SCORING ==========

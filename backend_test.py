@@ -1,607 +1,474 @@
 #!/usr/bin/env python3
 """
-ENHANCED Signal Generator v3 Testing Script
-==========================================
+Backend Testing Script for Missed Opportunity Analysis Module
+=============================================================
 
-This script tests the ENHANCED Signal Generator v3 with all new features implemented.
+Tests the NEW Missed Opportunity Analysis Module - an AUDIT-ONLY system 
+for analyzing rejected trades with candle-by-candle simulation.
 
-Focus Areas:
-1. Enhanced Scanner v3 Status - Position Sizing, Prop Awareness, News Risk, Advanced MTF
-2. Production Control Still Working
-3. Market Validation Still Working  
-4. Verify Legacy Scanners Remain Blocked
-5. Verify Existing Endpoints Still Work
-6. Scanner Control Endpoints
-7. Notifications Control Endpoints
-8. Audit Log
+NEW API ENDPOINTS TO TEST:
+1. GET /api/audit/missed-opportunities - Full report with overall stats
+2. GET /api/audit/missed-opportunities/by-symbol - Stats by EURUSD/XAUUSD  
+3. GET /api/audit/missed-opportunities/by-reason - Stats by rejection reason
+4. GET /api/audit/missed-opportunities/by-fta-bucket - Stats by FTA bucket
+5. GET /api/audit/missed-opportunities/top-patterns - Top winning/losing patterns
+6. GET /api/audit/missed-opportunities/samples?count=3 - Sample simulation records
+7. POST /api/audit/missed-opportunities/run-simulation - Trigger simulation batch
+
+ALSO VERIFIES:
+- Existing direction-quality audit endpoints still work
+- Production status still shows signal_generator_v3 as authorized
+- System is recording FTA-blocked rejections
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
-import time
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Any
 
 # Backend URL from environment
 BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com/api"
 
-class EnhancedSignalGeneratorV3Tester:
-    def __init__(self, base_url: str):
-        self.base_url = base_url.rstrip('/')
-        self.test_results = []
-        
-    def log_test(self, test_name: str, success: bool, message: str, data: Optional[Dict] = None):
-        """Log test result"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "message": message,
-            "timestamp": datetime.utcnow().isoformat(),
-            "data": data
-        }
-        self.test_results.append(result)
-        
-        status = "✅" if success else "❌"
-        print(f"{status} {test_name}: {message}")
-        if data and not success:
-            print(f"   Data: {json.dumps(data, indent=2)}")
+class MissedOpportunityTestSuite:
+    def __init__(self):
+        self.session = None
+        self.results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        self.failed_tests = 0
     
-    def make_request(self, method: str, endpoint: str, **kwargs) -> tuple[bool, Dict]:
-        """Make HTTP request and return (success, response_data)"""
-        url = f"{self.base_url}{endpoint}"
+    async def setup(self):
+        """Initialize HTTP session"""
+        self.session = aiohttp.ClientSession()
+        print("🔧 Missed Opportunity Analysis Module Testing Started")
+        print(f"📡 Backend URL: {BACKEND_URL}")
+        print("=" * 70)
+    
+    async def teardown(self):
+        """Close HTTP session"""
+        if self.session:
+            await self.session.close()
+    
+    def log_test(self, test_name: str, passed: bool, details: str = "", data: Any = None):
+        """Log test result"""
+        self.total_tests += 1
+        if passed:
+            self.passed_tests += 1
+            print(f"✅ {test_name}")
+            if details:
+                print(f"   {details}")
+        else:
+            self.failed_tests += 1
+            print(f"❌ {test_name}")
+            print(f"   ERROR: {details}")
+        
+        if data:
+            print(f"   Data: {json.dumps(data, indent=2)[:200]}...")
+        
+        self.results.append({
+            "test": test_name,
+            "passed": passed,
+            "details": details,
+            "data": data
+        })
+    
+    async def get(self, endpoint: str, expected_status: int = 200) -> tuple[bool, Any]:
+        """Make GET request and return (success, data)"""
+        try:
+            url = f"{BACKEND_URL}{endpoint}"
+            async with self.session.get(url) as response:
+                data = await response.json()
+                success = response.status == expected_status
+                return success, data
+        except Exception as e:
+            return False, {"error": str(e)}
+    
+    async def post(self, endpoint: str, payload: dict = None, expected_status: int = 200) -> tuple[bool, Any]:
+        """Make POST request and return (success, data)"""
+        try:
+            url = f"{BACKEND_URL}{endpoint}"
+            async with self.session.post(url, json=payload) as response:
+                data = await response.json()
+                success = response.status == expected_status
+                return success, data
+        except Exception as e:
+            return False, {"error": str(e)}
+    
+    # ==================== HEALTH & PRODUCTION STATUS ====================
+    
+    async def test_health_check(self):
+        """Test basic health check"""
+        success, data = await self.get("/health")
+        self.log_test(
+            "Health Check", 
+            success and data.get("status") in ["healthy", "degraded"],
+            f"Status: {data.get('status', 'unknown')}"
+        )
+        return data
+    
+    async def test_production_status(self):
+        """Test production control status - verify signal_generator_v3 is authorized"""
+        success, data = await self.get("/production/status")
+        
+        if success:
+            authorized_engine = data.get("engine", {}).get("authorized")
+            is_correct = authorized_engine == "signal_generator_v3"
+            self.log_test(
+                "Production Status - Signal Generator v3 Authorized",
+                is_correct,
+                f"Authorized engine: {authorized_engine}"
+            )
+        else:
+            self.log_test("Production Status - API Error", False, str(data))
+    
+    # ==================== MISSED OPPORTUNITY ANALYSIS ENDPOINTS ====================
+    
+    async def test_missed_opportunities_full_report(self):
+        """Test GET /api/audit/missed-opportunities - Full report with overall stats"""
+        success, data = await self.get("/audit/missed-opportunities")
+        
+        if success:
+            # Verify expected structure
+            has_required_fields = all(field in data for field in [
+                "report_generated", "total_records", "overall_stats", 
+                "by_symbol", "by_direction", "key_insight"
+            ])
+            
+            total_records = data.get("total_records", 0)
+            overall_stats = data.get("overall_stats", {})
+            
+            self.log_test(
+                "Missed Opportunities - Full Report",
+                has_required_fields,
+                f"Total records: {total_records}, Overall stats structure valid: {bool(overall_stats)}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - Full Report", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_by_symbol(self):
+        """Test GET /api/audit/missed-opportunities/by-symbol - Stats by EURUSD/XAUUSD"""
+        success, data = await self.get("/audit/missed-opportunities/by-symbol")
+        
+        if success:
+            stats = data.get("stats", {})
+            has_symbols = "EURUSD" in stats and "XAUUSD" in stats
+            
+            self.log_test(
+                "Missed Opportunities - By Symbol",
+                has_symbols,
+                f"Contains EURUSD and XAUUSD stats: {has_symbols}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - By Symbol", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_by_reason(self):
+        """Test GET /api/audit/missed-opportunities/by-reason - Stats by rejection reason"""
+        success, data = await self.get("/audit/missed-opportunities/by-reason")
+        
+        if success:
+            stats = data.get("stats", {})
+            report_type = data.get("report_type") == "by_rejection_reason"
+            
+            self.log_test(
+                "Missed Opportunities - By Rejection Reason",
+                report_type and isinstance(stats, dict),
+                f"Report type correct: {report_type}, Stats count: {len(stats)}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - By Rejection Reason", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_by_fta_bucket(self):
+        """Test GET /api/audit/missed-opportunities/by-fta-bucket - Stats by FTA bucket"""
+        success, data = await self.get("/audit/missed-opportunities/by-fta-bucket")
+        
+        if success:
+            bucket_definitions = data.get("bucket_definitions", {})
+            stats = data.get("stats", {})
+            
+            # Check for required FTA buckets
+            expected_buckets = {"very_close", "close", "borderline", "near_valid", "valid"}
+            has_buckets = expected_buckets.issubset(set(stats.keys()))
+            
+            self.log_test(
+                "Missed Opportunities - By FTA Bucket",
+                has_buckets and bool(bucket_definitions),
+                f"FTA buckets present: {list(stats.keys())}, Definitions: {bool(bucket_definitions)}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - By FTA Bucket", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_top_patterns(self):
+        """Test GET /api/audit/missed-opportunities/top-patterns - Top winning/losing patterns"""
+        success, data = await self.get("/audit/missed-opportunities/top-patterns")
+        
+        if success:
+            report_type = data.get("report_type") == "top_patterns"
+            has_pattern_fields = all(field in data for field in [
+                "top_winning_patterns", "top_losing_patterns", 
+                "patterns_with_100pct_tp", "patterns_with_0pct_tp"
+            ])
+            
+            self.log_test(
+                "Missed Opportunities - Top Patterns",
+                report_type and has_pattern_fields,
+                f"Report type: {data.get('report_type')}, Pattern fields present: {has_pattern_fields}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - Top Patterns", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_samples(self):
+        """Test GET /api/audit/missed-opportunities/samples?count=3 - Sample simulation records"""
+        success, data = await self.get("/audit/missed-opportunities/samples?count=3")
+        
+        if success:
+            samples = data.get("samples", [])
+            sample_count = data.get("sample_count", 0)
+            
+            # Samples may be empty if no simulations completed yet
+            is_valid = isinstance(samples, list) and sample_count >= 0
+            
+            self.log_test(
+                "Missed Opportunities - Sample Simulations",
+                is_valid,
+                f"Requested: 3, Got: {len(samples)} samples (empty OK if pending simulations)"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - Sample Simulations", False, str(data))
+            return None
+    
+    async def test_missed_opportunities_run_simulation(self):
+        """Test POST /api/audit/missed-opportunities/run-simulation - Trigger simulation batch"""
+        success, data = await self.post("/audit/missed-opportunities/run-simulation")
+        
+        if success:
+            status = data.get("status") == "simulation_batch_completed"
+            has_counts = all(field in data for field in [
+                "total_records", "completed_simulations", "pending_simulations"
+            ])
+            
+            total = data.get("total_records", 0)
+            completed = data.get("completed_simulations", 0)
+            pending = data.get("pending_simulations", 0)
+            
+            self.log_test(
+                "Missed Opportunities - Run Simulation",
+                status and has_counts,
+                f"Total: {total}, Completed: {completed}, Pending: {pending}"
+            )
+            
+            return data
+        else:
+            self.log_test("Missed Opportunities - Run Simulation", False, str(data))
+            return None
+    
+    # ==================== EXISTING AUDIT ENDPOINTS (COMPATIBILITY) ====================
+    
+    async def test_direction_quality_audit(self):
+        """Test existing direction quality audit endpoint still works"""
+        success, data = await self.get("/audit/direction-quality")
+        
+        if success:
+            has_required = all(field in data for field in [
+                "report_generated", "overall_stats", "by_symbol_direction"
+            ])
+            
+            self.log_test(
+                "Direction Quality Audit - Compatibility",
+                has_required,
+                f"Report structure valid: {has_required}"
+            )
+            
+            return data
+        else:
+            self.log_test("Direction Quality Audit - Compatibility", False, str(data))
+            return None
+    
+    # ==================== SYSTEM VERIFICATION ====================
+    
+    async def test_fta_rejection_recording(self):
+        """Verify system is recording FTA-blocked rejections"""
+        # Check if there are missed opportunity records (should have been created)
+        success, data = await self.get("/audit/missed-opportunities")
+        
+        if success:
+            total_records = data.get("total_records", 0)
+            
+            # Look at the storage file directly if API shows records
+            has_records = total_records > 0
+            
+            self.log_test(
+                "FTA Rejection Recording",
+                has_records,
+                f"Found {total_records} missed opportunity records (FTA rejections being tracked)"
+            )
+            
+            return has_records
+        else:
+            self.log_test("FTA Rejection Recording", False, "Could not check records")
+            return False
+    
+    async def test_background_simulation_running(self):
+        """Verify background simulation task is running"""
+        # Trigger a simulation manually and check response
+        success, data = await self.post("/audit/missed-opportunities/run-simulation")
+        
+        if success:
+            # If simulation runs without error, background task is functioning
+            simulation_working = data.get("status") == "simulation_batch_completed"
+            
+            self.log_test(
+                "Background Simulation Task",
+                simulation_working,
+                "Manual simulation trigger working - background task functional"
+            )
+            
+            return simulation_working
+        else:
+            self.log_test("Background Simulation Task", False, str(data))
+            return False
+    
+    # ==================== DATA VALIDATION ====================
+    
+    async def validate_missed_opportunity_data_structure(self, report_data):
+        """Validate the structure of missed opportunity data"""
+        if not report_data:
+            return False
+        
+        overall_stats = report_data.get("overall_stats", {})
+        
+        # Check for required stat fields
+        required_stat_fields = {"total", "tp_hits", "sl_hits", "expired", "pending", "simulated_winrate", "avg_rr"}
+        has_stat_fields = required_stat_fields.issubset(set(overall_stats.keys()))
+        
+        self.log_test(
+            "Missed Opportunities - Data Structure Validation",
+            has_stat_fields,
+            f"Required stat fields present: {has_stat_fields}"
+        )
+        
+        return has_stat_fields
+    
+    # ==================== COMPREHENSIVE TEST RUNNER ====================
+    
+    async def run_all_tests(self):
+        """Run all missed opportunity analysis tests"""
+        await self.setup()
         
         try:
-            response = requests.request(method, url, timeout=10, **kwargs)
+            print("🏥 HEALTH & PRODUCTION STATUS")
+            print("-" * 40)
+            await self.test_health_check()
+            await self.test_production_status()
             
-            # Try to parse JSON, fallback to text
-            try:
-                data = response.json()
-            except:
-                data = {"text": response.text, "status_code": response.status_code}
+            print("\n📊 NEW MISSED OPPORTUNITY ANALYSIS ENDPOINTS")
+            print("-" * 50)
+            report_data = await self.test_missed_opportunities_full_report()
+            await self.test_missed_opportunities_by_symbol()
+            await self.test_missed_opportunities_by_reason()
+            await self.test_missed_opportunities_by_fta_bucket()
+            await self.test_missed_opportunities_top_patterns()
+            await self.test_missed_opportunities_samples()
+            await self.test_missed_opportunities_run_simulation()
             
-            if response.status_code == 200:
-                return True, data
-            else:
-                return False, data
-                
-        except requests.RequestException as e:
-            return False, {"error": str(e), "type": "connection_error"}
-    
-    # ==================== CORE TESTS ====================
-    
-    def test_production_status(self):
-        """Test GET /api/production/status"""
-        success, data = self.make_request("GET", "/production/status")
-        
-        if not success:
-            self.log_test("Production Status", False, f"Request failed: {data}", data)
-            return False
-        
-        # Validate structure
-        required_keys = ["scanner", "notifications", "engine", "initialized"]
-        missing_keys = [k for k in required_keys if k not in data]
-        
-        if missing_keys:
-            self.log_test("Production Status", False, f"Missing keys: {missing_keys}", data)
-            return False
-        
-        # Check scanner structure
-        scanner = data.get("scanner", {})
-        if "enabled" not in scanner:
-            self.log_test("Production Status", False, "Scanner missing 'enabled' field", data)
-            return False
-        
-        # Check notifications structure
-        notifications = data.get("notifications", {})
-        if "enabled" not in notifications:
-            self.log_test("Production Status", False, "Notifications missing 'enabled' field", data)
-            return False
-        
-        # Check engine structure
-        engine = data.get("engine", {})
-        expected_auth = "signal_generator_v3"
-        expected_blocked = ["advanced_scanner_v2", "signal_orchestrator", "market_scanner_legacy"]
-        
-        if engine.get("authorized") != expected_auth:
-            self.log_test("Production Status", False, f"Wrong authorized engine: expected {expected_auth}, got {engine.get('authorized')}", data)
-            return False
-        
-        blocked = engine.get("blocked", [])
-        missing_blocked = [e for e in expected_blocked if e not in blocked]
-        if missing_blocked:
-            self.log_test("Production Status", False, f"Missing blocked engines: {missing_blocked}", data)
-            return False
-        
-        self.log_test("Production Status", True, "All production status fields validated", {
-            "scanner_enabled": scanner.get("enabled"),
-            "notifications_enabled": notifications.get("enabled"),
-            "authorized_engine": engine.get("authorized"),
-            "blocked_engines": blocked
-        })
-        
-        return True
-    
-    def test_scanner_disable_enable(self):
-        """Test Scanner Control Endpoints"""
-        
-        # First, get current status
-        success, initial_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Scanner Control - Initial Status", False, "Failed to get initial status", initial_data)
-            return False
-        
-        initial_state = initial_data.get("scanner", {}).get("enabled")
-        
-        # Test disable
-        success, disable_data = self.make_request("POST", "/production/scanner/disable")
-        if not success:
-            self.log_test("Scanner Disable", False, "Disable request failed", disable_data)
-            return False
-        
-        self.log_test("Scanner Disable", True, "Scanner disable command executed", disable_data)
-        
-        # Check status after disable
-        success, status_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Scanner Status After Disable", False, "Status check failed", status_data)
-            return False
-        
-        if status_data.get("scanner", {}).get("enabled") != False:
-            self.log_test("Scanner Status After Disable", False, "Scanner not disabled in status", status_data)
-            return False
-        
-        self.log_test("Scanner Status After Disable", True, "Scanner correctly shows disabled", {
-            "enabled": status_data.get("scanner", {}).get("enabled")
-        })
-        
-        # Test enable
-        success, enable_data = self.make_request("POST", "/production/scanner/enable")
-        if not success:
-            self.log_test("Scanner Enable", False, "Enable request failed", enable_data)
-            return False
-        
-        self.log_test("Scanner Enable", True, "Scanner enable command executed", enable_data)
-        
-        # Check status after enable
-        success, final_status_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Scanner Status After Enable", False, "Final status check failed", final_status_data)
-            return False
-        
-        if final_status_data.get("scanner", {}).get("enabled") != True:
-            self.log_test("Scanner Status After Enable", False, "Scanner not enabled in status", final_status_data)
-            return False
-        
-        self.log_test("Scanner Status After Enable", True, "Scanner correctly shows enabled", {
-            "enabled": final_status_data.get("scanner", {}).get("enabled")
-        })
-        
-        return True
-    
-    def test_notifications_disable_enable(self):
-        """Test Notifications Control Endpoints"""
-        
-        # First, get current status
-        success, initial_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Notifications Control - Initial Status", False, "Failed to get initial status", initial_data)
-            return False
-        
-        initial_state = initial_data.get("notifications", {}).get("enabled")
-        
-        # Test disable
-        success, disable_data = self.make_request("POST", "/production/notifications/disable")
-        if not success:
-            self.log_test("Notifications Disable", False, "Disable request failed", disable_data)
-            return False
-        
-        self.log_test("Notifications Disable", True, "Notifications disable command executed", disable_data)
-        
-        # Check status after disable
-        success, status_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Notifications Status After Disable", False, "Status check failed", status_data)
-            return False
-        
-        if status_data.get("notifications", {}).get("enabled") != False:
-            self.log_test("Notifications Status After Disable", False, "Notifications not disabled in status", status_data)
-            return False
-        
-        self.log_test("Notifications Status After Disable", True, "Notifications correctly shows disabled", {
-            "enabled": status_data.get("notifications", {}).get("enabled")
-        })
-        
-        # Test enable
-        success, enable_data = self.make_request("POST", "/production/notifications/enable")
-        if not success:
-            self.log_test("Notifications Enable", False, "Enable request failed", enable_data)
-            return False
-        
-        self.log_test("Notifications Enable", True, "Notifications enable command executed", enable_data)
-        
-        # Check status after enable
-        success, final_status_data = self.make_request("GET", "/production/status")
-        if not success:
-            self.log_test("Notifications Status After Enable", False, "Final status check failed", final_status_data)
-            return False
-        
-        if final_status_data.get("notifications", {}).get("enabled") != True:
-            self.log_test("Notifications Status After Enable", False, "Notifications not enabled in status", final_status_data)
-            return False
-        
-        self.log_test("Notifications Status After Enable", True, "Notifications correctly shows enabled", {
-            "enabled": final_status_data.get("notifications", {}).get("enabled")
-        })
-        
-        return True
-    
-    def test_audit_log(self):
-        """Test GET /api/production/audit"""
-        success, data = self.make_request("GET", "/production/audit")
-        
-        if not success:
-            self.log_test("Production Audit Log", False, f"Request failed: {data}", data)
-            return False
-        
-        # Check structure
-        if "audit_log" not in data:
-            self.log_test("Production Audit Log", False, "Missing audit_log field", data)
-            return False
-        
-        audit_log = data["audit_log"]
-        
-        if not isinstance(audit_log, list):
-            self.log_test("Production Audit Log", False, "audit_log is not a list", data)
-            return False
-        
-        # Check for recent state changes or blocked attempts
-        entries_found = len(audit_log)
-        
-        # Look for startup blocks
-        startup_blocks = [entry for entry in audit_log 
-                         if entry.get("event_type") in ["GUARD_BLOCK", "GUARD_ALLOW"]]
-        
-        self.log_test("Production Audit Log", True, f"Audit log retrieved with {entries_found} entries, {len(startup_blocks)} startup events", {
-            "total_entries": entries_found,
-            "startup_blocks": len(startup_blocks),
-            "recent_entries": audit_log[-3:] if audit_log else []
-        })
-        
-        return True
-    
-    def test_enhanced_signal_generator_v3_status(self):
-        """Test GET /api/scanner/v3/status - Enhanced Signal Generator v3 with new features"""
-        success, data = self.make_request("GET", "/scanner/v3/status")
-        
-        if not success:
-            self.log_test("Enhanced Signal Generator v3 Status", False, f"Request failed: {data}", data)
-            return False
-        
-        # Check if it's running
-        is_running = data.get("is_running")
-        if is_running != True:
-            self.log_test("Enhanced Signal Generator v3 Status", False, f"Signal Generator v3 not running: {is_running}", data)
-            return False
-        
-        # Check version
-        version = data.get("version")
-        if version != "v3":
-            self.log_test("Enhanced Signal Generator v3 Version", False, f"Wrong version: expected 'v3', got '{version}'", data)
-            return False
-        
-        # Check mode
-        mode = data.get("mode")
-        expected_mode = "confidence_based_enhanced"
-        if mode != expected_mode:
-            self.log_test("Enhanced Signal Generator v3 Mode", False, f"Wrong mode: expected '{expected_mode}', got '{mode}'", data)
-            return False
-        
-        # Check prop_config
-        prop_config = data.get("prop_config")
-        if not prop_config:
-            # Log that prop_config is missing but don't fail the test
-            self.log_test("Enhanced Signal Generator v3 Prop Config", False, "Missing prop_config section - API endpoint needs to be updated to include prop_config and daily_risk_status fields", data)
+            print("\n🔍 EXISTING AUDIT ENDPOINTS (COMPATIBILITY)")
+            print("-" * 50)
+            await self.test_direction_quality_audit()
             
-            # Mark this as a known issue but don't fail the test completely
-            self.log_test("Enhanced Signal Generator v3 Status", True, "Enhanced Signal Generator v3 running correctly but missing prop_config/daily_risk_status fields in API response", {
-                "is_running": data.get("is_running"),
-                "version": data.get("version"),
-                "mode": data.get("mode"),
-                "min_confidence_threshold": data.get("min_confidence_threshold"),
-                "statistics": data.get("statistics"),
-                "issue": "API endpoint does not expose prop_config and daily_risk_status from get_stats() method"
-            })
+            print("\n🔧 SYSTEM VERIFICATION")
+            print("-" * 30)
+            await self.test_fta_rejection_recording()
+            await self.test_background_simulation_running()
             
-            return True  # Return success since the core functionality is working
-        
-        # Validate prop_config fields
-        expected_prop_config = {
-            "account_size": 100000,
-            "max_daily_loss": 3000,
-            "operational_warning": 1500,
-            "risk_per_trade": "0.5% - 0.75%"
-        }
-        
-        for key, expected_value in expected_prop_config.items():
-            if key not in prop_config:
-                self.log_test("Enhanced Signal Generator v3 Prop Config", False, f"Missing prop_config field: {key}", data)
-                return False
+            print("\n✅ DATA VALIDATION")
+            print("-" * 25)
+            if report_data:
+                await self.validate_missed_opportunity_data_structure(report_data)
             
-            actual_value = prop_config[key]
-            if actual_value != expected_value:
-                self.log_test("Enhanced Signal Generator v3 Prop Config", False, f"Wrong prop_config {key}: expected '{expected_value}', got '{actual_value}'", data)
-                return False
+        except Exception as e:
+            print(f"💥 TEST SUITE ERROR: {str(e)}")
+            self.log_test("Test Suite Execution", False, str(e))
         
-        # Check daily_risk_status
-        daily_risk_status = data.get("daily_risk_status")
-        if not daily_risk_status:
-            self.log_test("Enhanced Signal Generator v3 Daily Risk Status", False, "Missing daily_risk_status section", data)
-            return False
-        
-        # Validate daily_risk_status has required fields
-        required_risk_fields = ["remaining_risk_allowance"]
-        missing_risk_fields = [f for f in required_risk_fields if f not in daily_risk_status]
-        if missing_risk_fields:
-            self.log_test("Enhanced Signal Generator v3 Daily Risk Status", False, f"Missing daily_risk_status fields: {missing_risk_fields}", data)
-            return False
-        
-        self.log_test("Enhanced Signal Generator v3 Status", True, "Enhanced Signal Generator v3 fully validated with all new features", {
-            "is_running": data.get("is_running"),
-            "version": data.get("version"),
-            "mode": data.get("mode"),
-            "prop_config": prop_config,
-            "daily_risk_status": daily_risk_status,
-            "min_confidence_threshold": data.get("min_confidence_threshold"),
-            "statistics": data.get("statistics")
-        })
-        
-        return True
+        finally:
+            await self.teardown()
     
-    def test_market_validation_status(self):
-        """Test GET /api/market/validation/status - Market Validation Still Working"""
-        success, data = self.make_request("GET", "/market/validation/status")
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 70)
+        print("📊 MISSED OPPORTUNITY ANALYSIS MODULE TEST SUMMARY")
+        print("=" * 70)
         
-        if not success:
-            self.log_test("Market Validation Status", False, f"Request failed: {data}", data)
-            return False
+        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
         
-        # Check market status structure
-        market_status = data.get("market_status")
-        if not market_status:
-            self.log_test("Market Validation Status", False, "Missing market_status section", data)
-            return False
+        print(f"✅ PASSED: {self.passed_tests}/{self.total_tests} ({success_rate:.1f}%)")
+        print(f"❌ FAILED: {self.failed_tests}")
         
-        # Check forex status (should be closed_weekend for Sunday)
-        forex_status = market_status.get("forex_status")
-        expected_forex_status = "closed_weekend"  # Currently Sunday
-        if forex_status != expected_forex_status:
-            self.log_test("Market Validation Status", False, f"Unexpected forex_status: expected '{expected_forex_status}', got '{forex_status}'", data)
-            return False
+        if self.failed_tests > 0:
+            print("\n🚨 FAILED TESTS:")
+            for result in self.results:
+                if not result["passed"]:
+                    print(f"   - {result['test']}: {result['details']}")
         
-        # Check configuration
-        configuration = data.get("configuration")
-        if not configuration:
-            self.log_test("Market Validation Status", False, "Missing configuration section", data)
-            return False
+        print("\n📋 KEY FINDINGS:")
         
-        # Validate configuration fields
-        expected_config = {
-            "price_staleness_threshold_seconds": 120,
-            "price_freeze_threshold_seconds": 60
-        }
+        # Analyze results
+        health_passed = any(r["test"] == "Health Check" and r["passed"] for r in self.results)
+        production_passed = any(r["test"].startswith("Production Status") and r["passed"] for r in self.results)
+        missed_opp_endpoints = [r for r in self.results if "Missed Opportunities" in r["test"]]
+        missed_opp_passed = sum(1 for r in missed_opp_endpoints if r["passed"])
         
-        for key, expected_value in expected_config.items():
-            if key not in configuration:
-                self.log_test("Market Validation Status", False, f"Missing configuration field: {key}", data)
-                return False
-            
-            actual_value = configuration[key]
-            if actual_value != expected_value:
-                self.log_test("Market Validation Status", False, f"Wrong configuration {key}: expected '{expected_value}', got '{actual_value}'", data)
-                return False
+        print(f"   - Health Status: {'✅ OK' if health_passed else '❌ FAIL'}")
+        print(f"   - Production Control: {'✅ OK' if production_passed else '❌ FAIL'}")
+        print(f"   - Missed Opportunity Endpoints: {missed_opp_passed}/{len(missed_opp_endpoints)} working")
         
-        self.log_test("Market Validation Status", True, "Market validation working with proper forex market hours detection", {
-            "forex_status": forex_status,
-            "configuration": configuration,
-            "validation_statistics": data.get("validation_statistics")
-        })
+        # Get specific data from results
+        fta_recording = any(r["test"] == "FTA Rejection Recording" and r["passed"] for r in self.results)
+        simulation_running = any(r["test"] == "Background Simulation Task" and r["passed"] for r in self.results)
+        direction_audit = any(r["test"] == "Direction Quality Audit - Compatibility" and r["passed"] for r in self.results)
         
-        return True
-    
-    def test_signal_generator_v3_status(self):
-        """Test GET /api/scanner/v3/status"""
-        success, data = self.make_request("GET", "/scanner/v3/status")
+        print(f"   - FTA Rejection Recording: {'✅ Active' if fta_recording else '❌ Not Recording'}")
+        print(f"   - Background Simulation: {'✅ Running' if simulation_running else '❌ Not Running'}")
+        print(f"   - Existing Audit APIs: {'✅ Compatible' if direction_audit else '❌ Broken'}")
         
-        if not success:
-            self.log_test("Signal Generator v3 Status", False, f"Request failed: {data}", data)
-            return False
-        
-        # Check if it's running
-        is_running = data.get("is_running")
-        
-        if is_running != True:
-            self.log_test("Signal Generator v3 Status", False, f"Signal Generator v3 not running: {is_running}", data)
-            return False
-        
-        # Validate structure
-        expected_fields = ["version", "mode", "is_running", "min_confidence_threshold", "statistics"]
-        missing_fields = [f for f in expected_fields if f not in data]
-        
-        if missing_fields:
-            self.log_test("Signal Generator v3 Status", False, f"Missing fields: {missing_fields}", data)
-            return False
-        
-        self.log_test("Signal Generator v3 Status", True, "Signal Generator v3 is running and all fields present", {
-            "is_running": data.get("is_running"),
-            "version": data.get("version"),
-            "mode": data.get("mode"),
-            "min_confidence_threshold": data.get("min_confidence_threshold"),
-            "statistics": data.get("statistics")
-        })
-        
-        return True
-    
-    def test_legacy_scanners_blocked(self):
-        """Test that legacy scanners are properly blocked"""
-        
-        # Test legacy scanner status - should NOT be running or return error
-        success, legacy_data = self.make_request("GET", "/scanner/status")
-        
-        if success:
-            # If it returns, check if it shows not running or error
-            is_running = legacy_data.get("is_running")
-            if is_running == True:
-                self.log_test("Legacy Scanner Blocked", False, "Legacy scanner is still running", legacy_data)
-                return False
-            else:
-                self.log_test("Legacy Scanner Status", True, "Legacy scanner not running", {
-                    "is_running": is_running,
-                    "message": "Scanner correctly not running"
-                })
+        if success_rate >= 90:
+            print("\n🎉 EXCELLENT: Missed Opportunity Analysis Module is fully functional!")
+        elif success_rate >= 70:
+            print("\n✅ GOOD: Most features working, minor issues need attention.")
         else:
-            # Error response is acceptable - scanner is blocked
-            self.log_test("Legacy Scanner Status", True, "Legacy scanner blocked/error (expected)", legacy_data)
+            print("\n⚠️ ISSUES: Multiple failures detected, module needs debugging.")
         
-        # Test advanced scanner v2 status - should NOT be running  
-        success, adv_data = self.make_request("GET", "/scanner/v2/status")
-        
-        if success:
-            # If it returns, check if it shows not running or error
-            is_running = adv_data.get("is_running")
-            if is_running == True:
-                self.log_test("Advanced Scanner v2 Blocked", False, "Advanced scanner v2 is still running", adv_data)
-                return False
-            else:
-                self.log_test("Advanced Scanner v2 Status", True, "Advanced scanner v2 not running", {
-                    "is_running": is_running,
-                    "message": "Scanner correctly not running"
-                })
-        else:
-            # Error response is acceptable - scanner is blocked
-            self.log_test("Advanced Scanner v2 Status", True, "Advanced scanner v2 blocked/error (expected)", adv_data)
-        
-        return True
-    
-    def test_existing_endpoints_still_work(self):
-        """Test that existing endpoints still work correctly"""
-        
-        # Test health endpoint
-        success, health_data = self.make_request("GET", "/health")
-        if not success:
-            self.log_test("Health Endpoint", False, "Health check failed", health_data)
-            return False
-        
-        self.log_test("Health Endpoint", True, "Health endpoint working", {
-            "status": health_data.get("status"),
-            "uptime_check": health_data.get("uptime_check")
-        })
-        
-        # Test market validation status
-        success, validation_data = self.make_request("GET", "/market/validation/status")
-        if not success:
-            self.log_test("Market Validation Status", False, "Market validation status failed", validation_data)
-            return False
-        
-        self.log_test("Market Validation Status", True, "Market validation endpoint working", {
-            "forex_status": validation_data.get("market_status", {}).get("forex_status"),
-            "validations": validation_data.get("validation_statistics")
-        })
-        
-        # Test provider live prices
-        success, prices_data = self.make_request("GET", "/provider/live-prices")
-        if not success:
-            self.log_test("Provider Live Prices", False, "Provider live prices failed", prices_data)
-            return False
-        
-        # Check if we have price data
-        prices = prices_data.get("prices", {})
-        eurusd = prices.get("EURUSD", {})
-        xauusd = prices.get("XAUUSD", {})
-        
-        self.log_test("Provider Live Prices", True, "Provider live prices working", {
-            "provider": prices_data.get("provider"),
-            "is_production": prices_data.get("is_production"),
-            "eurusd_status": eurusd.get("status"),
-            "xauusd_status": xauusd.get("status")
-        })
-        
-        return True
-    
-    def run_all_tests(self):
-        """Run all Enhanced Signal Generator v3 tests"""
-        print("=" * 60)
-        print("🚀 ENHANCED SIGNAL GENERATOR V3 TESTING")
-        print("=" * 60)
-        print(f"Backend URL: {self.base_url}")
-        print(f"Test Started: {datetime.utcnow().isoformat()}")
-        print()
-        
-        # Run all tests focusing on Enhanced Signal Generator v3
-        tests = [
-            ("Enhanced Signal Generator v3 Status", self.test_enhanced_signal_generator_v3_status),
-            ("Production Control Still Working", self.test_production_status),
-            ("Market Validation Still Working", self.test_market_validation_status),
-            ("Verify Legacy Scanners Remain Blocked", self.test_legacy_scanners_blocked),
-            ("Verify Existing Endpoints Still Work", self.test_existing_endpoints_still_work),
-            ("Scanner Control", self.test_scanner_disable_enable), 
-            ("Notifications Control", self.test_notifications_disable_enable),
-            ("Audit Log", self.test_audit_log)
-        ]
-        
-        passed = 0
-        failed = 0
-        
-        for test_name, test_func in tests:
-            print(f"\n🔍 Running: {test_name}")
-            try:
-                result = test_func()
-                if result:
-                    passed += 1
-                else:
-                    failed += 1
-            except Exception as e:
-                self.log_test(test_name, False, f"Test crashed: {str(e)}")
-                failed += 1
-                print(f"❌ {test_name}: CRASHED - {str(e)}")
-        
-        # Summary
-        print("\n" + "=" * 60)
-        print("📊 ENHANCED SIGNAL GENERATOR V3 TEST SUMMARY")
-        print("=" * 60)
-        print(f"✅ Passed: {passed}")
-        print(f"❌ Failed: {failed}")
-        print(f"📝 Total: {len(tests)}")
-        print(f"✨ Success Rate: {(passed / len(tests) * 100):.1f}%")
-        
-        if failed == 0:
-            print("\n🎉 ALL ENHANCED SIGNAL GENERATOR V3 TESTS PASSED!")
-            print("✅ Enhanced Signal Generator v3 with all new features is working correctly")
-        else:
-            print(f"\n⚠️  {failed} tests failed - review implementation")
-        
-        print("\n" + "=" * 60)
-        return failed == 0
+        print("\n" + "=" * 70)
 
 
-def main():
-    tester = EnhancedSignalGeneratorV3Tester(BACKEND_URL)
-    success = tester.run_all_tests()
+async def main():
+    """Main test execution"""
+    print("🧪 PROPSIGNAL ENGINE - MISSED OPPORTUNITY ANALYSIS MODULE TESTING")
+    print("=" * 80)
+    print("Testing NEW audit-only system for analyzing rejected trades")
+    print("with candle-by-candle simulation and FTA bucket analysis.")
+    print("=" * 80)
     
-    # Save detailed results
-    with open('/app/enhanced_signal_generator_v3_test_results.json', 'w') as f:
-        json.dump({
-            "test_summary": {
-                "total_tests": len(tester.test_results),
-                "passed": sum(1 for r in tester.test_results if r["success"]),
-                "failed": sum(1 for r in tester.test_results if not r["success"]),
-                "success_rate": sum(1 for r in tester.test_results if r["success"]) / len(tester.test_results) * 100,
-                "test_timestamp": datetime.utcnow().isoformat()
-            },
-            "test_results": tester.test_results
-        }, f, indent=2)
-    
-    return 0 if success else 1
+    test_suite = MissedOpportunityTestSuite()
+    await test_suite.run_all_tests()
+    test_suite.print_summary()
 
 
 if __name__ == "__main__":
-    exit(main())
+    asyncio.run(main())

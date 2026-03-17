@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import sys
 import logging
+import asyncio
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
@@ -233,11 +234,18 @@ async def startup_event():
             await signal_generator_instance.start()  # ONLY PRODUCTION ENGINE
             await tracker.start()
             
+            # ========== START MISSED OPPORTUNITY SIMULATION (AUDIT) ==========
+            # Background task for simulating rejected trades - AUDIT ONLY
+            from services.missed_opportunity_analyzer import run_periodic_simulation
+            asyncio.create_task(run_periodic_simulation())
+            logger.info("📊 Missed Opportunity Analyzer background simulation started")
+            
             logger.info("=" * 60)
             logger.info("🛡️ PRODUCTION SAFETY ACTIVE")
             logger.info("   ✅ Signal Generator v3: RUNNING (authorized)")
             logger.info("   🚫 Legacy Scanner: BLOCKED")
             logger.info("   🚫 Advanced Scanner v2: BLOCKED")
+            logger.info("   📊 Missed Opportunity Analyzer: RUNNING (audit only)")
             logger.info("=" * 60)
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
@@ -1301,6 +1309,146 @@ async def get_direction_patterns():
         "report_type": "patterns",
         "patterns": direction_quality_audit.get_top_patterns(),
         "note": "AUDIT ONLY - No weights modified"
+    }
+
+
+# ==================== MISSED OPPORTUNITY ANALYSIS ENDPOINTS ====================
+
+@api_router.get("/audit/missed-opportunities")
+async def get_missed_opportunities_report():
+    """
+    Get comprehensive Missed Opportunity Analysis report.
+    
+    This is an AUDIT-ONLY endpoint - no impact on live trading.
+    
+    Returns:
+    - Overall statistics for all rejected trades
+    - Simulated outcomes (TP hits, SL hits, expired)
+    - Breakdown by symbol, direction, symbol+direction
+    - Key insight about filter effectiveness
+    
+    Use this data to evaluate if rejections were correct.
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    return missed_opportunity_analyzer.get_full_report()
+
+
+@api_router.get("/audit/missed-opportunities/by-symbol")
+async def get_missed_opportunities_by_symbol():
+    """
+    Get missed opportunity statistics broken down by symbol.
+    
+    Returns stats for:
+    - EURUSD: total, tp_hits, sl_hits, expired, simulated_winrate
+    - XAUUSD: total, tp_hits, sl_hits, expired, simulated_winrate
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    report = missed_opportunity_analyzer.get_full_report()
+    return {
+        "report_type": "by_symbol",
+        "stats": report["by_symbol"],
+        "note": "AUDIT ONLY - Simulated outcomes for rejected trades"
+    }
+
+
+@api_router.get("/audit/missed-opportunities/by-reason")
+async def get_missed_opportunities_by_reason():
+    """
+    Get missed opportunity statistics broken down by rejection reason.
+    
+    Shows simulated performance for:
+    - fta_blocked: FTA filter rejections
+    - low_confidence: Score below 60% threshold
+    - low_rr: R:R below minimum
+    - late_entry: Entry too late
+    - duplicate: Duplicate signal
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    return missed_opportunity_analyzer.get_stats_by_reason()
+
+
+@api_router.get("/audit/missed-opportunities/by-fta-bucket")
+async def get_missed_opportunities_by_fta_bucket():
+    """
+    Get missed opportunity statistics broken down by FTA clean_space_ratio bucket.
+    
+    FTA Buckets (calibrated for trading):
+    - very_close: ratio < 0.20 (FTA extremely close to entry)
+    - close: 0.20 - 0.35
+    - borderline: 0.35 - 0.50
+    - near_valid: 0.50 - 0.65
+    - valid: >= 0.65 (mostly clean path)
+    
+    Use this to evaluate if FTA filter thresholds are optimal.
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    return missed_opportunity_analyzer.get_stats_by_fta_bucket()
+
+
+@api_router.get("/audit/missed-opportunities/top-patterns")
+async def get_missed_opportunities_top_patterns():
+    """
+    Get top winning and losing patterns among rejected trades.
+    
+    Identifies patterns like:
+    - EURUSD_BUY_London_trending_borderline
+    - XAUUSD_SELL_NY_ranging_very_close
+    
+    Use this to find systematic missed opportunities.
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    return missed_opportunity_analyzer.get_top_patterns()
+
+
+@api_router.get("/audit/missed-opportunities/samples")
+async def get_missed_opportunities_samples(count: int = 5):
+    """
+    Get sample simulation records for verification.
+    
+    Returns detailed records showing:
+    - Theoretical trade setup (entry, SL, TP, R:R)
+    - FTA data (bucket, clean_space_ratio)
+    - Simulation results (outcome, MFE, MAE, time to outcome)
+    - Context at rejection (session, regime, biases)
+    
+    Use this to verify simulation accuracy.
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    return {
+        "sample_count": count,
+        "samples": missed_opportunity_analyzer.get_sample_simulations(count),
+        "note": "AUDIT ONLY - Sample simulations for verification"
+    }
+
+
+@api_router.post("/audit/missed-opportunities/run-simulation")
+async def trigger_missed_opportunities_simulation():
+    """
+    Manually trigger a simulation batch.
+    
+    Normally simulations run automatically in the background every 60 seconds.
+    This endpoint allows manual triggering for testing.
+    
+    Returns number of records processed.
+    """
+    from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+    
+    await missed_opportunity_analyzer.run_simulation_batch()
+    
+    pending = sum(1 for r in missed_opportunity_analyzer.records if not r.simulation_completed)
+    completed = len(missed_opportunity_analyzer.records) - pending
+    
+    return {
+        "status": "simulation_batch_completed",
+        "total_records": len(missed_opportunity_analyzer.records),
+        "completed_simulations": completed,
+        "pending_simulations": pending
     }
 
 
