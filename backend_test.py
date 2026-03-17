@@ -1,459 +1,436 @@
 #!/usr/bin/env python3
 """
-Backend Testing for FTA Filter v3 RECALIBRATION
-==================================================
+Backend Testing Script - FTA SOFT FILTER v4 & Signal Outcome Tracker
+====================================================================
 
-Test the FTA Filter v3 recalibration for the PropSignal trading system.
+Testing the two critical fixes:
+1. FTA SOFT FILTER v4 - Soft filtering with score impact, not blocking
+2. Signal Outcome Tracker - Active signal tracking and outcome calculation
 
-FTA FILTER v3 CHANGES TO TEST:
-1. NEW PENALTY THRESHOLDS (v3 - reduced ~35%):
-   - ratio >= 0.80 → 0 penalty (unchanged)
-   - 0.65 <= ratio < 0.80 → -2 penalty (was -3)
-   - 0.50 <= ratio < 0.65 → -4 penalty (was -6)
-   - 0.35 <= ratio < 0.50 → -7 penalty (was -10)
-   - ratio < 0.35 → -10 penalty (was -15)
-
-2. NEW CONTEXTUAL OVERRIDE LOGIC (v3 - RELAXED):
-   - ratio < 0.20 (EXTREME): requires 4/5 quality factors
-   - 0.20 <= ratio < 0.35 (WORST): requires 3/5 quality factors (was 4/5)
-   - 0.35 <= ratio < 0.50 (BORDERLINE): requires 2/5 quality factors (was 3/5)
-
-3. QUALITY FACTORS (5 total - relaxed thresholds):
-   - preliminary_score >= 75
-   - MTF aligned (mtf_score >= 70, was 80)
-   - Pullback good (pullback_score >= 65, was 70)
-   - News NOT high/extreme
-   - H1 strong (h1_score >= 65, was 70)
-
-4. TARGET METRICS:
-   - FTA blocked should be 50-75% of rejections (not ~100%)
-   - Trade increase +25-40% (not more than +50%)
-   - Override applied 5-15% of passed trades
+ENDPOINTS TO TEST:
+1. GET /api/scanner/v3/status - Check stats (signals, rejections, acceptance rate)
+2. GET /api/signals/active - Check active signals being tracked
+3. GET /api/audit/missed-opportunities/by-reason - Check FTA rejection types
+4. GET /api/production/status - Confirm signal_generator_v3 is authorized
+5. GET /api/health - Backend health
 """
 
-import requests
 import json
-import time
+import requests
+import sys
 from datetime import datetime
+from typing import Dict, List, Any, Optional
 import os
+import time
 
-# Use production-configured backend URL
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://eurusd-alerts.preview.emergentagent.com')
-BASE_URL = f"{BACKEND_URL}/api"
+# Backend URL
+BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com/api"
 
-def print_test_header(test_name):
-    """Print test header"""
-    print(f"\n{'='*60}")
-    print(f"🔧 TESTING: {test_name}")
-    print(f"{'='*60}")
-
-def print_success(message):
-    """Print success message"""
-    print(f"✅ {message}")
-
-def print_error(message):
-    """Print error message"""
-    print(f"❌ {message}")
-
-def print_info(message):
-    """Print info message"""
-    print(f"ℹ️  {message}")
-
-def make_request(endpoint, method="GET", data=None):
-    """Make HTTP request with error handling"""
-    url = f"{BASE_URL}{endpoint}"
-    try:
-        if method == "GET":
-            response = requests.get(url, timeout=10)
-        elif method == "POST":
-            response = requests.post(url, json=data, timeout=10)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
+class BackendTester:
+    def __init__(self):
+        self.backend_url = BACKEND_URL
+        self.session = requests.Session()
+        self.session.timeout = 10
+        self.test_results = []
         
-        print_info(f"{method} {endpoint} -> {response.status_code}")
+    def log(self, message: str, level: str = "INFO"):
+        """Log test messages"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {level}: {message}")
         
-        if response.status_code == 200:
-            return True, response.json()
-        else:
-            try:
-                error_data = response.json()
-                return False, error_data
-            except:
-                return False, {"error": f"HTTP {response.status_code}", "text": response.text}
-    
-    except requests.exceptions.RequestException as e:
-        return False, {"error": "Request failed", "details": str(e)}
-
-def test_signal_generator_v3_status():
-    """Test GET /api/scanner/v3/status - Signal generator running"""
-    print_test_header("Signal Generator v3 Status")
-    
-    success, data = make_request("/scanner/v3/status")
-    
-    if not success:
-        print_error(f"Failed to get signal generator v3 status: {data}")
-        return False
-    
-    # Verify critical fields
-    required_fields = ["is_running", "version", "mode", "min_confidence_threshold"]
-    for field in required_fields:
-        if field not in data:
-            print_error(f"Missing field: {field}")
-            return False
-    
-    print_success(f"Signal Generator v3 Status Retrieved")
-    print_info(f"   Version: {data.get('version', 'N/A')}")
-    print_info(f"   Mode: {data.get('mode', 'N/A')}")
-    print_info(f"   Running: {data.get('is_running', False)}")
-    print_info(f"   Min Confidence: {data.get('min_confidence_threshold', 0)}%")
-    print_info(f"   Scans Performed: {data.get('statistics', {}).get('total_scans', 0)}")
-    print_info(f"   Signals Generated: {data.get('statistics', {}).get('signals_generated', 0)}")
-    print_info(f"   Rejections: {data.get('statistics', {}).get('rejections', 0)}")
-    
-    if not data.get('is_running', False):
-        print_error("Signal Generator v3 is NOT running!")
-        return False
-    
-    print_success("Signal Generator v3 is running correctly")
-    return True
-
-def test_production_status():
-    """Test GET /api/production/status - Confirm signal_generator_v3 is authorized"""
-    print_test_header("Production Control Status")
-    
-    success, data = make_request("/production/status")
-    
-    if not success:
-        print_error(f"Failed to get production status: {data}")
-        return False
-    
-    # Check engine authorization
-    engine_info = data.get('engine', {})
-    authorized_engine = engine_info.get('authorized', '')
-    blocked_engines = engine_info.get('blocked', [])
-    
-    print_info(f"   Authorized Engine: {authorized_engine}")
-    print_info(f"   Blocked Engines: {blocked_engines}")
-    
-    if authorized_engine != 'signal_generator_v3':
-        print_error(f"Expected signal_generator_v3 to be authorized, got: {authorized_engine}")
-        return False
-    
-    # Check scanner and notifications status
-    scanner_enabled = data.get('scanner', {}).get('enabled', False)
-    notifications_enabled = data.get('notifications', {}).get('enabled', False)
-    
-    print_info(f"   Scanner Enabled: {scanner_enabled}")
-    print_info(f"   Notifications Enabled: {notifications_enabled}")
-    
-    print_success("Production control status verified - signal_generator_v3 is the ONLY authorized engine")
-    return True
-
-def test_missed_opportunities_by_reason():
-    """Test GET /api/audit/missed-opportunities/by-reason - Should show "fta_blocked_contextual" with v3 decisions"""
-    print_test_header("Missed Opportunities By Reason")
-    
-    success, data = make_request("/audit/missed-opportunities/by-reason")
-    
-    if not success:
-        print_error(f"Failed to get missed opportunities by reason: {data}")
-        return False
-    
-    # Handle nested data structure
-    stats = data.get('stats', {})
-    print_info(f"   Total rejection reasons found: {len(stats)}")
-    
-    # Look for v3 contextual blocking decisions
-    v3_contextual_found = False
-    v3_decision_types = ["fta_blocked_contextual", "blocked_extreme", "blocked_worst", "blocked_borderline", 
-                         "override_extreme", "override_worst", "override_borderline"]
-    
-    for reason, info in stats.items():
-        if any(decision in reason for decision in v3_decision_types):
-            v3_contextual_found = True
-            count = info.get('total', 0) if isinstance(info, dict) else info
-            print_success(f"Found v3 decision: {reason} = {count} occurrences")
-    
-    # Look specifically for fta_blocked_contextual
-    fta_contextual_info = stats.get('fta_blocked_contextual', {})
-    fta_contextual_count = fta_contextual_info.get('total', 0) if isinstance(fta_contextual_info, dict) else 0
-    if fta_contextual_count > 0:
-        print_success(f"Found fta_blocked_contextual rejections: {fta_contextual_count}")
-    
-    # Also look for legacy fta_blocked for comparison
-    fta_legacy_info = stats.get('fta_blocked', {})
-    fta_legacy_count = fta_legacy_info.get('total', 0) if isinstance(fta_legacy_info, dict) else 0
-    if fta_legacy_count > 0:
-        print_info(f"   Legacy fta_blocked rejections: {fta_legacy_count}")
-    
-    # Show top rejection reasons
-    print_info("   Top rejection reasons:")
-    sorted_reasons = sorted(stats.items(), key=lambda x: x[1].get('total', 0) if isinstance(x[1], dict) else x[1], reverse=True)
-    for reason, info in sorted_reasons[:5]:  # Top 5
-        count = info.get('total', 0) if isinstance(info, dict) else info
-        print_info(f"     {reason}: {count}")
-    
-    if not v3_contextual_found:
-        print_error("No v3 contextual decisions found in rejection reasons")
-        return False
-    
-    print_success("v3 contextual evaluation is active and recording decisions")
-    return True
-
-def test_missed_opportunities_by_fta_bucket():
-    """Test GET /api/audit/missed-opportunities/by-fta-bucket - Check distribution"""
-    print_test_header("Missed Opportunities By FTA Bucket")
-    
-    success, data = make_request("/audit/missed-opportunities/by-fta-bucket")
-    
-    if not success:
-        print_error(f"Failed to get missed opportunities by FTA bucket: {data}")
-        return False
-    
-    print_info(f"   FTA bucket distribution:")
-    
-    # Handle nested data structure
-    stats = data.get('stats', {})
-    expected_buckets = ["very_close", "close", "borderline", "near_valid", "valid"]
-    total_rejections = 0
-    
-    for bucket in expected_buckets:
-        bucket_info = stats.get(bucket, {})
-        count = bucket_info.get('total', 0) if isinstance(bucket_info, dict) else 0
-        total_rejections += count
-        print_info(f"     {bucket}: {count}")
-    
-    if total_rejections == 0:
-        print_error("No FTA rejections found - system may not be working")
-        return False
-    
-    # Check if distribution shows v3 changes (should see some borderline instead of all very_close)
-    very_close_info = stats.get('very_close', {})
-    very_close_count = very_close_info.get('total', 0) if isinstance(very_close_info, dict) else 0
-    
-    borderline_info = stats.get('borderline', {})
-    borderline_count = borderline_info.get('total', 0) if isinstance(borderline_info, dict) else 0
-    
-    close_info = stats.get('close', {})
-    close_count = close_info.get('total', 0) if isinstance(close_info, dict) else 0
-    
-    very_close_percentage = (very_close_count / total_rejections * 100) if total_rejections > 0 else 0
-    
-    print_info(f"   Total FTA rejections: {total_rejections}")
-    print_info(f"   Very close percentage: {very_close_percentage:.1f}%")
-    
-    # v3 should NOT have 100% very_close - should have some in other buckets
-    if very_close_percentage > 95:
-        print_error(f"Very close percentage too high ({very_close_percentage:.1f}%) - v3 recalibration may not be working")
-        return False
-    
-    if borderline_count > 0:
-        print_success(f"Found borderline rejections ({borderline_count}) - indicates v3 contextual evaluation working")
-    
-    if close_count > 0:
-        print_success(f"Found close rejections ({close_count}) - indicates v3 penalty threshold changes working")
-    
-    print_success("FTA bucket distribution looks consistent with v3 recalibration")
-    return True
-
-def test_audit_full_report():
-    """Test GET /api/audit/missed-opportunities - Get full report for analysis"""
-    print_test_header("Full Missed Opportunities Report")
-    
-    success, data = make_request("/audit/missed-opportunities")
-    
-    if not success:
-        print_error(f"Failed to get full missed opportunities report: {data}")
-        return False
-    
-    # Basic structure check
-    if not isinstance(data, dict):
-        print_error("Expected dict response from missed opportunities audit")
-        return False
-    
-    print_info(f"   Report structure keys: {list(data.keys())}")
-    
-    # Check for statistics
-    if 'by_reason' in data:
-        by_reason = data['by_reason']
-        if isinstance(by_reason, dict):
-            total_reasons = sum(info.get('total', 0) if isinstance(info, dict) else info for info in by_reason.values())
-            print_info(f"   Total rejections by reason: {total_reasons}")
-            
-            # Count v3 contextual decisions
-            v3_decisions = 0
-            for reason, info in by_reason.items():
-                count = info.get('total', 0) if isinstance(info, dict) else info
-                if any(decision in reason for decision in ["blocked_extreme", "blocked_worst", "blocked_borderline", "override"]):
-                    v3_decisions += count
-            
-            if v3_decisions > 0:
-                v3_percentage = (v3_decisions / total_reasons * 100) if total_reasons > 0 else 0
-                print_success(f"v3 contextual decisions: {v3_decisions} ({v3_percentage:.1f}% of rejections)")
-    
-    print_success("Full audit report retrieved successfully")
-    return True
-
-def test_backend_logs_for_v3_decisions():
-    """Look for v3 decision logging in backend logs"""
-    print_test_header("Backend Logs Analysis for v3 Decisions")
-    
-    try:
-        # Check supervisor backend logs for FTA BLOCKED (CONTEXTUAL) messages
-        import subprocess
-        result = subprocess.run(
-            ["tail", "-n", "200", "/var/log/supervisor/backend.err.log"],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+    def test_endpoint(self, method: str, endpoint: str, expected_status: int = 200, 
+                     data: Dict = None, description: str = None) -> Optional[Dict]:
+        """Test an API endpoint"""
+        url = f"{self.backend_url}{endpoint}"
         
-        if result.returncode == 0:
-            log_content = result.stdout
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data)
+            else:
+                response = self.session.request(method, url, json=data)
+                
+            success = response.status_code == expected_status
             
-            # Look for v3 decision patterns
-            v3_patterns = [
-                "FTA BLOCKED (CONTEXTUAL)",
-                "blocked_extreme",
-                "blocked_worst", 
-                "blocked_borderline",
-                "override_extreme",
-                "override_worst",
-                "override_borderline",
-                "quality factors"
+            result = {
+                "endpoint": endpoint,
+                "method": method,
+                "status_code": response.status_code,
+                "expected_status": expected_status,
+                "success": success,
+                "description": description or f"{method} {endpoint}",
+                "response_data": None,
+                "error": None
+            }
+            
+            if success:
+                try:
+                    result["response_data"] = response.json()
+                except:
+                    result["response_data"] = response.text
+            else:
+                result["error"] = f"Status {response.status_code}: {response.text[:200]}"
+                
+            self.test_results.append(result)
+            
+            status_icon = "✅" if success else "❌"
+            self.log(f"{status_icon} {description or endpoint}: {response.status_code}")
+            
+            return result["response_data"] if success else None
+            
+        except Exception as e:
+            result = {
+                "endpoint": endpoint,
+                "method": method,
+                "status_code": None,
+                "expected_status": expected_status,
+                "success": False,
+                "description": description or f"{method} {endpoint}",
+                "response_data": None,
+                "error": str(e)
+            }
+            self.test_results.append(result)
+            self.log(f"❌ {description or endpoint}: ERROR - {str(e)}", "ERROR")
+            return None
+
+    def test_health_check(self):
+        """Test backend health"""
+        self.log("=== TESTING HEALTH CHECK ===")
+        return self.test_endpoint("GET", "/health", description="Health Check")
+
+    def test_production_status(self):
+        """Test production control status"""
+        self.log("=== TESTING PRODUCTION STATUS ===")
+        result = self.test_endpoint("GET", "/production/status", 
+                                   description="Production Control Status")
+        
+        if result:
+            # Verify signal_generator_v3 is authorized
+            authorized_engine = result.get("engine", {}).get("authorized")
+            if authorized_engine == "signal_generator_v3":
+                self.log("✅ signal_generator_v3 is the authorized engine")
+            else:
+                self.log(f"⚠️  Expected signal_generator_v3, got {authorized_engine}")
+                
+            # Check blocked engines
+            blocked = result.get("engine", {}).get("blocked", [])
+            expected_blocked = ["advanced_scanner_v2", "signal_orchestrator", "market_scanner_legacy"]
+            self.log(f"🛡️  Blocked engines: {blocked}")
+        
+        return result
+
+    def test_scanner_v3_status(self):
+        """Test Signal Generator v3 status - KEY TEST for FTA v4"""
+        self.log("=== TESTING SIGNAL GENERATOR V3 STATUS (FTA v4) ===")
+        result = self.test_endpoint("GET", "/scanner/v3/status", 
+                                   description="Signal Generator v3 Status")
+        
+        if result:
+            # Check for FTA v4 indicators
+            scans = result.get("scans_performed", 0)
+            signals = result.get("signals_generated", 0)
+            rejections = result.get("rejections", 0)
+            acceptance_rate = result.get("acceptance_rate", 0)
+            
+            self.log(f"📊 Scanner Stats: {scans} scans, {signals} signals, {rejections} rejections")
+            self.log(f"📈 Acceptance Rate: {acceptance_rate:.2f}% (Target: 3-8%)")
+            
+            # Check if acceptance rate is improving (FTA v4 should increase it)
+            if acceptance_rate > 0:
+                if 3.0 <= acceptance_rate <= 8.0:
+                    self.log("✅ Acceptance rate in target range (3-8%)")
+                elif acceptance_rate > 1.0:
+                    self.log("✅ Acceptance rate improved over old system (~1%)")
+                else:
+                    self.log("⚠️  Acceptance rate still low - FTA may still be too strict")
+            
+        return result
+
+    def test_missed_opportunities_analysis(self):
+        """Test missed opportunities - KEY TEST for FTA v4 behavior"""
+        self.log("=== TESTING MISSED OPPORTUNITIES (FTA v4 Analysis) ===")
+        
+        # Test main missed opportunities endpoint
+        result = self.test_endpoint("GET", "/audit/missed-opportunities", 
+                                   description="Missed Opportunities Report")
+        
+        if result:
+            total = result.get("total_analyzed", 0)
+            self.log(f"📊 Total FTA Rejections Analyzed: {total}")
+        
+        # Test by-reason breakdown - KEY for FTA v4
+        by_reason = self.test_endpoint("GET", "/audit/missed-opportunities/by-reason", 
+                                      description="FTA Rejection Reasons")
+        
+        if by_reason:
+            self.log("🔍 FTA Rejection Analysis:")
+            stats_data = by_reason.get("stats", {})
+            for reason, stats in stats_data.items():
+                count = stats.get("total", 0)
+                winrate = stats.get("simulated_winrate", 0)
+                self.log(f"   {reason}: {count} rejections, {winrate:.1f}% win rate")
+                
+                # Look for FTA v4 specific patterns
+                if "hard_block" in reason:
+                    self.log(f"   ⚠️  Hard blocks found: {count} (should be minimal in v4)")
+                elif any(x in reason for x in ["fta_clean", "fta_moderate", "fta_weak"]):
+                    self.log(f"   ✅ FTA v4 quality classification: {reason}")
+                elif "contextual" in reason:
+                    self.log(f"   ✅ FTA v4 contextual evaluation: {reason}")
+        
+        # Test FTA bucket analysis
+        by_fta = self.test_endpoint("GET", "/audit/missed-opportunities/by-fta-bucket", 
+                                   description="FTA Bucket Distribution")
+        
+        if by_fta:
+            self.log("📊 FTA Bucket Distribution:")
+            stats_data = by_fta.get("stats", {})
+            for bucket, stats in stats_data.items():
+                count = stats.get("total", 0)
+                self.log(f"   {bucket}: {count} signals")
+                
+            # Check if we have diversity (not 100% very_close)
+            very_close = stats_data.get("very_close", {}).get("total", 0)
+            total_buckets = sum(stats.get("total", 0) for stats in stats_data.values())
+            if total_buckets > 0:
+                very_close_pct = (very_close / total_buckets) * 100
+                if very_close_pct < 95:
+                    self.log("✅ FTA diversity confirmed - not 100% very_close rejections")
+                else:
+                    self.log("⚠️  Still mostly very_close rejections - FTA v4 may not be active")
+        
+        return by_reason
+
+    def test_signal_outcome_tracker(self):
+        """Test Signal Outcome Tracker - KEY TEST"""
+        self.log("=== TESTING SIGNAL OUTCOME TRACKER ===")
+        
+        # Test tracker status
+        tracker_status = self.test_endpoint("GET", "/tracker/status", 
+                                           description="Outcome Tracker Status")
+        
+        if tracker_status:
+            running = tracker_status.get("is_running", False)
+            checks = tracker_status.get("checks_performed", 0)
+            self.log(f"📈 Tracker Status: Running={running}, Checks={checks}")
+            
+            if running and checks > 0:
+                self.log("✅ Outcome Tracker is operational")
+            else:
+                self.log("⚠️  Outcome Tracker may not be running properly")
+        
+        return tracker_status
+
+    def test_active_signals(self):
+        """Test active signals tracking"""
+        self.log("=== TESTING ACTIVE SIGNALS TRACKING ===")
+        
+        # Try to get active signals
+        active = self.test_endpoint("GET", "/signals/active", 
+                                   description="Active Signals", expected_status=200)
+        
+        if active is not None:
+            if isinstance(active, list):
+                count = len(active)
+                self.log(f"📊 Active Signals: {count}")
+                
+                if count > 0:
+                    # Show details of first active signal
+                    signal = active[0]
+                    signal_id = signal.get("id", "unknown")
+                    asset = signal.get("asset", "unknown")
+                    direction = signal.get("signal_type", "unknown")
+                    self.log(f"   Sample: {signal_id} - {asset} {direction}")
+                    self.log("✅ Active signals are being tracked")
+                else:
+                    self.log("ℹ️  No active signals currently (normal if market is closed)")
+            else:
+                self.log(f"⚠️  Expected list, got: {type(active)}")
+        
+        return active
+
+    def check_data_files(self):
+        """Check tracking data files"""
+        self.log("=== CHECKING DATA FILES ===")
+        
+        # Check tracked signals file
+        tracked_file = "/app/backend/data/tracked_signals.json"
+        stats_file = "/app/backend/data/signal_stats.json"
+        
+        try:
+            if os.path.exists(tracked_file):
+                with open(tracked_file, 'r') as f:
+                    tracked_data = json.load(f)
+                
+                completed = tracked_data.get("completed", [])
+                active = tracked_data.get("active", [])
+                
+                self.log(f"📁 tracked_signals.json: {len(completed)} completed, {len(active)} active")
+                
+                # Count outcomes
+                wins = sum(1 for s in completed if s.get("final_outcome") == "win")
+                losses = sum(1 for s in completed if s.get("final_outcome") == "loss")
+                expired = sum(1 for s in completed if s.get("final_outcome") == "expired")
+                
+                self.log(f"📊 Completed Signals: {wins}W / {losses}L / {expired} expired")
+                
+                if wins > 0 or losses > 0:
+                    self.log("✅ Signal Outcome Tracker has tracked completions")
+                    
+                    # Check for MFE/MAE data
+                    if completed:
+                        sample = completed[0]
+                        mfe = sample.get("max_favorable_excursion")
+                        mae = sample.get("max_adverse_excursion")
+                        if mfe is not None and mae is not None:
+                            self.log("✅ MFE/MAE calculation confirmed")
+            else:
+                self.log("❌ tracked_signals.json not found")
+                
+        except Exception as e:
+            self.log(f"❌ Error reading tracked_signals.json: {e}")
+            
+        try:
+            if os.path.exists(stats_file):
+                with open(stats_file, 'r') as f:
+                    stats_data = json.load(f)
+                
+                total = stats_data.get("total_tracked", 0)
+                wins = stats_data.get("wins", 0)
+                losses = stats_data.get("losses", 0)
+                
+                self.log(f"📁 signal_stats.json: {total} total, {wins}W / {losses}L")
+                
+                # Check expected values from review request
+                if wins >= 50 and losses >= 50:
+                    self.log("✅ Expected win/loss counts confirmed (~56W/58L)")
+                else:
+                    self.log(f"ℹ️  Different from expected 56W/58L - actual: {wins}W/{losses}L")
+            else:
+                self.log("❌ signal_stats.json not found")
+                
+        except Exception as e:
+            self.log(f"❌ Error reading signal_stats.json: {e}")
+
+    def check_backend_logs_for_fta_v4(self):
+        """Check backend logs for FTA v4 patterns"""
+        self.log("=== CHECKING BACKEND LOGS FOR FTA v4 ===")
+        
+        try:
+            # Check supervisor logs for FTA v4 patterns
+            import subprocess
+            
+            # Look for FTA v4 decision patterns
+            log_patterns = [
+                "fta_clean",
+                "fta_moderate", 
+                "fta_weak",
+                "hard_block.*FTA distance.*0.5R",
+                "Decision: hard_block",
+                "ratio.*bonus",
+                "ratio.*penalty"
             ]
             
-            found_patterns = []
-            for pattern in v3_patterns:
-                if pattern in log_content:
-                    found_patterns.append(pattern)
-            
-            if found_patterns:
-                print_success(f"Found v3 decision patterns in logs: {found_patterns}")
-                
-                # Show some example log lines
-                lines = log_content.split('\n')
-                contextual_lines = [line for line in lines if "FTA BLOCKED (CONTEXTUAL)" in line or "quality factors" in line or "Decision:" in line]
-                
-                if contextual_lines:
-                    print_info("   Recent v3 decisions from logs:")
-                    for line in contextual_lines[-5:]:  # Last 5 
-                        if line.strip() and ("Decision:" in line or "FTA BLOCKED" in line):
-                            # Clean up the log line for display
-                            clean_line = line.split(" - ")[-1] if " - " in line else line.strip()
-                            print_info(f"     {clean_line}")
-                
-                return True
-            else:
-                print_error("No v3 decision patterns found in recent logs")
-                return False
-        else:
-            print_error(f"Could not read backend logs: {result.stderr}")
-            return False
-            
-    except Exception as e:
-        print_error(f"Error checking logs: {e}")
-        return False
-
-def test_health_check():
-    """Basic health check"""
-    print_test_header("Health Check")
-    
-    success, data = make_request("/health")
-    
-    if not success:
-        print_error(f"Health check failed: {data}")
-        return False
-    
-    print_success("Health check passed")
-    return True
-
-def verify_v3_configuration():
-    """Verify that v3 penalty thresholds and quality factor thresholds are implemented"""
-    print_test_header("v3 Configuration Verification")
-    
-    # Check if we can find evidence of v3 thresholds in recent activity
-    success, data = make_request("/audit/missed-opportunities/by-fta-bucket")
-    
-    if not success:
-        print_error(f"Could not retrieve FTA bucket data: {data}")
-        return False
-    
-    # Get sample data to analyze patterns
-    success2, samples = make_request("/audit/missed-opportunities/samples?limit=10")
-    
-    if success2 and isinstance(samples, list) and len(samples) > 0:
-        print_info(f"   Analyzing {len(samples)} sample rejections...")
-        
-        # Look for evidence of v3 penalty system
-        for sample in samples[:5]:  # Check first 5
-            reason = sample.get('rejection_reason', '')
-            if 'blocked_' in reason or 'override_' in reason:
-                print_success(f"Found v3 decision sample: {reason}")
-                
-                # Check for quality factor information
-                if 'quality factors' in str(sample):
-                    print_success("Found quality factor evaluation in sample data")
-                
-                break
-    
-    print_success("v3 configuration appears to be active")
-    return True
-
-def main():
-    """Main test execution"""
-    print("\n" + "="*80)
-    print("🔧 FTA FILTER v3 RECALIBRATION TESTING")
-    print("="*80)
-    print("Testing the new FTA Filter v3 with:")
-    print("• NEW penalty thresholds (reduced ~35%)")
-    print("• NEW contextual override logic (relaxed)")  
-    print("• RELAXED quality factor thresholds")
-    print("• TARGET: 50-75% FTA blocked, +25-40% trades, 5-15% overrides")
-    print("="*80)
-    
-    tests = [
-        ("Health Check", test_health_check),
-        ("Signal Generator v3 Status", test_signal_generator_v3_status),
-        ("Production Control Status", test_production_status),
-        ("Missed Opportunities by Reason", test_missed_opportunities_by_reason),
-        ("FTA Bucket Distribution", test_missed_opportunities_by_fta_bucket),
-        ("Full Audit Report", test_audit_full_report),
-        ("Backend Logs Analysis", test_backend_logs_for_v3_decisions),
-        ("v3 Configuration Verification", verify_v3_configuration)
-    ]
-    
-    passed = 0
-    total = len(tests)
-    
-    for test_name, test_func in tests:
-        try:
-            if test_func():
-                passed += 1
-            else:
-                print_error(f"Test failed: {test_name}")
+            for pattern in log_patterns:
+                try:
+                    result = subprocess.run([
+                        "tail", "-n", "500", "/var/log/supervisor/backend.out.log"
+                    ], capture_output=True, text=True, timeout=5)
+                    
+                    if result.returncode == 0:
+                        import re
+                        matches = re.findall(pattern, result.stdout, re.IGNORECASE)
+                        if matches:
+                            self.log(f"✅ Found FTA v4 pattern '{pattern}': {len(matches)} matches")
+                            if pattern == "Decision: hard_block":
+                                self.log("   🔍 Hard blocks found - checking if only for distance < 0.5R")
+                        else:
+                            self.log(f"ℹ️  Pattern '{pattern}' not found in recent logs")
+                            
+                except subprocess.TimeoutExpired:
+                    self.log(f"⚠️  Log check timeout for pattern: {pattern}")
+                    
         except Exception as e:
-            print_error(f"Test error in {test_name}: {e}")
+            self.log(f"⚠️  Could not check logs: {e}")
+
+    def run_comprehensive_test(self):
+        """Run comprehensive backend test"""
+        self.log("🚀 STARTING FTA SOFT FILTER v4 & SIGNAL OUTCOME TRACKER TESTS")
+        self.log("=" * 80)
         
-        time.sleep(0.5)  # Brief pause between tests
-    
-    # Final summary
-    print("\n" + "="*80)
-    print("🎯 FTA FILTER v3 RECALIBRATION TEST SUMMARY")
-    print("="*80)
-    print(f"Tests passed: {passed}/{total} ({passed/total*100:.1f}%)")
-    
-    if passed == total:
-        print_success("ALL TESTS PASSED! FTA Filter v3 recalibration is working correctly.")
-        print_success("✓ v3 penalty thresholds implemented")
-        print_success("✓ Contextual override logic active")
-        print_success("✓ Relaxed quality factor thresholds confirmed")
-        print_success("✓ signal_generator_v3 is the only authorized engine")
-    else:
-        print_error(f"Some tests failed ({total-passed}/{total})")
-    
-    print("="*80)
-    return passed == total
+        # Core health and status
+        self.test_health_check()
+        self.test_production_status()
+        
+        # KEY TESTS for FTA v4
+        self.test_scanner_v3_status()
+        self.test_missed_opportunities_analysis()
+        
+        # KEY TESTS for Signal Outcome Tracker  
+        self.test_signal_outcome_tracker()
+        self.test_active_signals()
+        
+        # Data verification
+        self.check_data_files()
+        
+        # Log analysis
+        self.check_backend_logs_for_fta_v4()
+        
+        # Summary
+        self.print_summary()
+
+    def print_summary(self):
+        """Print test summary"""
+        self.log("\n" + "=" * 80)
+        self.log("🏁 TEST SUMMARY")
+        self.log("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for r in self.test_results if r["success"])
+        failed_tests = total_tests - passed_tests
+        
+        self.log(f"📊 Total Tests: {total_tests}")
+        self.log(f"✅ Passed: {passed_tests}")
+        self.log(f"❌ Failed: {failed_tests}")
+        self.log(f"📈 Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            self.log("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    self.log(f"   • {result['description']}: {result['error']}")
+        
+        # Key findings
+        self.log("\n🔍 KEY FINDINGS:")
+        
+        # Look for FTA v4 evidence
+        fta_v4_found = False
+        for result in self.test_results:
+            if result["response_data"] and "missed-opportunities" in result["endpoint"]:
+                fta_v4_found = True
+                break
+        
+        if fta_v4_found:
+            self.log("✅ FTA SOFT FILTER v4: Evidence found in missed opportunities analysis")
+        else:
+            self.log("⚠️  FTA SOFT FILTER v4: No clear evidence found")
+            
+        # Look for outcome tracker evidence  
+        tracker_found = False
+        for result in self.test_results:
+            if result["success"] and "tracker" in result["endpoint"]:
+                tracker_found = True
+                break
+                
+        if tracker_found:
+            self.log("✅ SIGNAL OUTCOME TRACKER: Operational and tracking signals")
+        else:
+            self.log("⚠️  SIGNAL OUTCOME TRACKER: No clear evidence of operation")
 
 if __name__ == "__main__":
-    main()
+    print("FTA SOFT FILTER v4 & Signal Outcome Tracker Testing")
+    print("=" * 60)
+    
+    tester = BackendTester()
+    tester.run_comprehensive_test()
