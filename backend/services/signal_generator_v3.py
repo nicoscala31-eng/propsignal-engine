@@ -1278,36 +1278,123 @@ class SignalGeneratorV3:
             obstacles_in_60 = sum(1 for p, t in obstacles if entry_price - p <= sixty_percent_distance)
         fta.obstacles_count = obstacles_in_60
         
-        # Apply penalty rules
+        # ========== RECALIBRATED FTA PENALTY RULES (v2) ==========
+        # NEW: FTA is now contextual - blocks only worst cases + low quality setups
+        # Penalties are applied progressively, auto-reject is RARE
+        
         if fta.clean_space_ratio >= 0.80:
             # No penalty - clean space
             fta.fta_penalty = 0
         elif fta.clean_space_ratio >= 0.65:
-            # Moderate penalty: -5 points
-            fta.fta_penalty = 5
+            # Light penalty: -3 points (was -5)
+            fta.fta_penalty = 3
         elif fta.clean_space_ratio >= 0.50:
-            # Strong penalty: -10 points
+            # Strong penalty: -6 points (was -10)
+            fta.fta_penalty = 6
+        elif fta.clean_space_ratio >= 0.35:
+            # Very strong penalty: -10 points (was auto-reject!)
+            # NOW: No auto-reject, just penalty - contextual override will decide
             fta.fta_penalty = 10
+            # Mark as "candidate for reject" but NOT auto-blocked
+            fta.fta_blocked_trade = False  # Will be evaluated contextually later
         else:
-            # Hard reject (clean_space_ratio < 0.50)
-            fta.fta_penalty = 15  # Maximum penalty before reject
-            fta.fta_blocked_trade = True
+            # ratio < 0.35: Candidate for reject (worst case)
+            # Still NOT auto-blocked - contextual override can save high-quality setups
+            fta.fta_penalty = 15
+            fta.fta_blocked_trade = False  # Context will decide
         
-        # Extra penalty for multiple obstacles within 60%
-        if obstacles_in_60 >= 2 and not fta.fta_blocked_trade:
-            fta.fta_penalty += 3
+        # Extra penalty for multiple obstacles within 60% (reduced from +3)
+        if obstacles_in_60 >= 2:
+            fta.fta_penalty += 2
         
-        # Special case: if FTA nearly coincides with target (>90%), reduce penalty
+        # Special case: if FTA nearly coincides with target (>90%), no penalty
         if fta.clean_space_ratio >= 0.90:
             fta.fta_penalty = 0
         
-        # Special case: breakout target already confirmed by M15 - don't auto-reject, just penalize
-        if fta.fta_blocked_trade and tp_type == "swing_target":
-            # M15 confirmed target - downgrade from reject to strong penalty
-            fta.fta_blocked_trade = False
-            fta.fta_penalty = 12
+        # Special case: M15 confirmed swing target - reduce penalty further
+        if tp_type == "swing_target" and fta.clean_space_ratio >= 0.30:
+            fta.fta_penalty = max(0, fta.fta_penalty - 3)
         
         return fta
+    
+    def _evaluate_fta_contextual(
+        self,
+        fta: FirstTroubleArea,
+        mtf_score: float,
+        mtf_reason: str,
+        pullback_score: float,
+        pullback_reason: str,
+        h1_score: float,
+        news_risk_level: str,
+        preliminary_score: float
+    ) -> Tuple[bool, bool, str]:
+        """
+        CONTEXTUAL FTA EVALUATION (v2)
+        
+        Evaluates FTA in context of overall setup quality.
+        High-quality setups can override low FTA ratios.
+        
+        Returns:
+            Tuple[should_block, override_applied, reason]
+        """
+        ratio = fta.clean_space_ratio
+        
+        # ========== NO BLOCK NEEDED ==========
+        if ratio >= 0.50:
+            # Ratio is acceptable - never block, just penalty
+            return False, False, "ratio_acceptable"
+        
+        # ========== EVALUATE SETUP QUALITY ==========
+        # For ratio < 0.50, we check if setup is HIGH QUALITY
+        
+        # Define HIGH QUALITY criteria:
+        # 1. Preliminary score >= 75% (before FTA penalty)
+        # 2. MTF alignment is strong (full or mostly aligned)
+        # 3. Pullback quality is good
+        # 4. No high news risk
+        
+        is_high_quality_score = preliminary_score >= 75
+        is_mtf_aligned = "full" in mtf_reason.lower() or "aligned" in mtf_reason.lower() or mtf_score >= 80
+        is_pullback_good = "good" in pullback_reason.lower() or "excellent" in pullback_reason.lower() or pullback_score >= 70
+        is_news_safe = news_risk_level in ["none", "low", "NONE", "LOW"]
+        is_h1_strong = h1_score >= 70
+        
+        # Count quality factors
+        quality_factors = sum([
+            is_high_quality_score,
+            is_mtf_aligned,
+            is_pullback_good,
+            is_news_safe,
+            is_h1_strong
+        ])
+        
+        # ========== CONTEXTUAL OVERRIDE LOGIC ==========
+        
+        if ratio < 0.35:
+            # WORST CASE: ratio < 0.35
+            # Block UNLESS setup has at least 4/5 quality factors
+            if quality_factors >= 4:
+                # HIGH QUALITY OVERRIDE - allow trade with penalty
+                override_reason = f"override_high_quality: {quality_factors}/5 factors (score={preliminary_score:.0f}, mtf={mtf_score:.0f}, pb={pullback_score:.0f})"
+                logger.info(f"   🔓 FTA OVERRIDE: ratio={ratio:.2f} but {quality_factors}/5 quality factors passed")
+                return False, True, override_reason
+            else:
+                # Low quality + low ratio = REJECT
+                block_reason = f"blocked: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
+                return True, False, block_reason
+        
+        else:
+            # BORDERLINE CASE: 0.35 <= ratio < 0.50
+            # Block only if setup is LOW quality (< 3 factors)
+            if quality_factors >= 3:
+                # MEDIUM-HIGH QUALITY - allow with penalty
+                override_reason = f"override_borderline: {quality_factors}/5 factors"
+                logger.info(f"   🔓 FTA OVERRIDE: ratio={ratio:.2f} borderline but {quality_factors}/5 quality factors passed")
+                return False, True, override_reason
+            else:
+                # Low quality borderline = REJECT
+                block_reason = f"blocked_borderline: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
+                return True, False, block_reason
     
     # ==================== ENTRY VALIDATION ====================
     
@@ -1478,55 +1565,9 @@ class SignalGeneratorV3:
             m5_candles, m15_candles, entry_price, take_profit_1, direction, tp_type
         )
         
-        # Hard reject if FTA blocks trade (clean_space_ratio < 0.50)
-        if fta.fta_blocked_trade:
-            # Build minimal direction context for rejection audit
-            reject_context = DirectionContext(
-                fta_quality="blocked",
-                fta_clean_space_ratio=fta.clean_space_ratio,
-                session=session_name,
-                final_direction_reason=direction_reason,
-                final_direction_score=direction_score
-            )
-            
-            self._record_rejection_with_audit(
-                reason="fta_blocked",
-                asset=asset,
-                direction=direction,
-                score=0,  # Score not yet calculated
-                penalties={"fta_blocked": True, "clean_space_ratio": fta.clean_space_ratio},
-                context=reject_context
-            )
-            
-            # ========== MISSED OPPORTUNITY ANALYSIS (ASYNC AUDIT) ==========
-            # Record rejected trade for simulation - NO IMPACT ON LIVE TRADING
-            missed_opportunity_analyzer.record_rejection(
-                symbol=asset.value,
-                direction=direction,
-                rejection_reason="fta_blocked",
-                score_before_reject=0,  # Score not calculated yet at this point
-                entry_price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit_1,
-                risk_reward=rr_ratio,
-                fta_price=fta.fta_price,
-                fta_type=fta.fta_type,
-                fta_distance=fta.fta_distance,
-                clean_space_ratio=fta.clean_space_ratio,
-                context={
-                    "h1_bias": direction_reason if "H1" in direction_reason else "unknown",
-                    "h1_bias_score": direction_score,
-                    "session": session_name,
-                    "regime": "unknown",  # Not yet calculated at this point
-                    "fta_penalty": fta.fta_penalty
-                }
-            )
-            
-            logger.info(f"⛔ {asset.value} {direction}: FTA BLOCKED - clean_space_ratio {fta.clean_space_ratio:.2f} < 0.50")
-            fta_price_str = f"{fta.fta_price:.5f}" if asset == Asset.EURUSD else f"{fta.fta_price:.2f}"
-            logger.info(f"   FTA: {fta.fta_type} at {fta_price_str}")
-            logger.info(f"   📊 Recorded for Missed Opportunity Analysis")
-            return None
+        # NOTE: FTA auto-block has been REMOVED (v2 recalibration)
+        # FTA blocking is now CONTEXTUAL - decided after scoring
+        # This allows high-quality setups to override low FTA ratios
         
         # ========== SCORING ==========
         
@@ -1590,7 +1631,97 @@ class SignalGeneratorV3:
         # Calculate final score
         final_score = sum(c.weighted_score for c in components)
         
-        # Apply FTA penalty
+        # Store preliminary score BEFORE penalties for FTA contextual evaluation
+        preliminary_score = final_score
+        
+        # ========== CONTEXTUAL FTA EVALUATION (v2 RECALIBRATION) ==========
+        # Now we have all quality metrics - evaluate FTA in context
+        
+        # Get quality scores for context evaluation
+        mtf_component = next((c for c in components if "MTF" in c.name), None)
+        pullback_component = next((c for c in components if "Pullback" in c.name), None)
+        h1_component = next((c for c in components if "H1" in c.name), None)
+        
+        mtf_score_val = mtf_component.score if mtf_component else 50
+        mtf_reason_val = mtf_component.reason if mtf_component else "unknown"
+        pullback_score_val = pullback_component.score if pullback_component else 50
+        pullback_reason_val = pullback_component.reason if pullback_component else "unknown"
+        h1_score_val = h1_component.score if h1_component else 50
+        
+        # Evaluate FTA contextually
+        should_block_fta, fta_override_applied, fta_decision_reason = self._evaluate_fta_contextual(
+            fta=fta,
+            mtf_score=mtf_score_val,
+            mtf_reason=mtf_reason_val,
+            pullback_score=pullback_score_val,
+            pullback_reason=pullback_reason_val,
+            h1_score=h1_score_val,
+            news_risk_level=news_risk.level.value,
+            preliminary_score=preliminary_score
+        )
+        
+        # Log FTA decision
+        if fta.clean_space_ratio < 0.50:
+            fta_price_str = f"{fta.fta_price:.5f}" if asset == Asset.EURUSD else f"{fta.fta_price:.2f}"
+            if should_block_fta:
+                # ========== FTA CONTEXTUAL BLOCK ==========
+                logger.info(f"⛔ {asset.value} {direction}: FTA BLOCKED (CONTEXTUAL)")
+                logger.info(f"   ratio={fta.clean_space_ratio:.2f}, FTA={fta.fta_type} @ {fta_price_str}")
+                logger.info(f"   Decision: {fta_decision_reason}")
+                logger.info(f"   prelim_score={preliminary_score:.0f}, mtf={mtf_score_val:.0f}, pb={pullback_score_val:.0f}")
+                
+                # Record rejection with full context
+                reject_context = DirectionContext(
+                    fta_quality="blocked_contextual",
+                    fta_clean_space_ratio=fta.clean_space_ratio,
+                    session=session_name,
+                    final_direction_reason=direction_reason,
+                    final_direction_score=direction_score
+                )
+                
+                self._record_rejection_with_audit(
+                    reason="fta_blocked",
+                    asset=asset,
+                    direction=direction,
+                    score=preliminary_score,
+                    penalties={"fta_blocked": True, "clean_space_ratio": fta.clean_space_ratio, "decision": fta_decision_reason},
+                    context=reject_context
+                )
+                
+                # Record for Missed Opportunity Analysis
+                missed_opportunity_analyzer.record_rejection(
+                    symbol=asset.value,
+                    direction=direction,
+                    rejection_reason="fta_blocked_contextual",
+                    score_before_reject=preliminary_score,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    risk_reward=rr_ratio,
+                    fta_price=fta.fta_price,
+                    fta_type=fta.fta_type,
+                    fta_distance=fta.fta_distance,
+                    clean_space_ratio=fta.clean_space_ratio,
+                    context={
+                        "h1_bias": direction_reason,
+                        "h1_bias_score": direction_score,
+                        "session": session_name,
+                        "preliminary_score": preliminary_score,
+                        "mtf_score": mtf_score_val,
+                        "pullback_score": pullback_score_val,
+                        "fta_penalty": fta.fta_penalty,
+                        "fta_decision": fta_decision_reason
+                    }
+                )
+                logger.info(f"   📊 Recorded for Missed Opportunity Analysis")
+                return None
+            else:
+                # FTA OVERRIDE - high quality setup passes with penalty
+                logger.info(f"🔓 {asset.value} {direction}: FTA OVERRIDE APPLIED")
+                logger.info(f"   ratio={fta.clean_space_ratio:.2f}, FTA={fta.fta_type} @ {fta_price_str}")
+                logger.info(f"   Override: {fta_decision_reason}")
+        
+        # Apply FTA penalty (reduced weight in v2)
         if fta.fta_penalty > 0:
             final_score -= fta.fta_penalty
             logger.info(f"📊 {asset.value}: FTA penalty applied (-{fta.fta_penalty:.0f}): {fta.fta_type} @ ratio {fta.clean_space_ratio:.2f}")
