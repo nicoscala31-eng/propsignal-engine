@@ -1278,42 +1278,41 @@ class SignalGeneratorV3:
             obstacles_in_60 = sum(1 for p, t in obstacles if entry_price - p <= sixty_percent_distance)
         fta.obstacles_count = obstacles_in_60
         
-        # ========== RECALIBRATED FTA PENALTY RULES (v2) ==========
-        # NEW: FTA is now contextual - blocks only worst cases + low quality setups
-        # Penalties are applied progressively, auto-reject is RARE
+        # ========== RECALIBRATED FTA PENALTY RULES (v3) ==========
+        # TARGET: Reduce FTA severity by ~35%, increase trades by 25-40%
+        # FTA should be 50-75% of rejections, NOT ~100%
         
         if fta.clean_space_ratio >= 0.80:
             # No penalty - clean space
             fta.fta_penalty = 0
         elif fta.clean_space_ratio >= 0.65:
-            # Light penalty: -3 points (was -5)
-            fta.fta_penalty = 3
+            # Light penalty: -2 points (was -3 in v2, -5 in v1)
+            fta.fta_penalty = 2
         elif fta.clean_space_ratio >= 0.50:
-            # Strong penalty: -6 points (was -10)
-            fta.fta_penalty = 6
+            # Moderate penalty: -4 points (was -6 in v2, -10 in v1)
+            fta.fta_penalty = 4
         elif fta.clean_space_ratio >= 0.35:
-            # Very strong penalty: -10 points (was auto-reject!)
-            # NOW: No auto-reject, just penalty - contextual override will decide
-            fta.fta_penalty = 10
-            # Mark as "candidate for reject" but NOT auto-blocked
-            fta.fta_blocked_trade = False  # Will be evaluated contextually later
+            # Strong penalty: -7 points (was -10 in v2)
+            # NO auto-reject - contextual override will decide
+            fta.fta_penalty = 7
+            fta.fta_blocked_trade = False
         else:
-            # ratio < 0.35: Candidate for reject (worst case)
+            # ratio < 0.35: Very strong penalty: -10 points (was -15 in v2)
             # Still NOT auto-blocked - contextual override can save high-quality setups
-            fta.fta_penalty = 15
-            fta.fta_blocked_trade = False  # Context will decide
+            fta.fta_penalty = 10
+            fta.fta_blocked_trade = False
         
-        # Extra penalty for multiple obstacles within 60% (reduced from +3)
-        if obstacles_in_60 >= 2:
-            fta.fta_penalty += 2
+        # Extra penalty for multiple obstacles within 60% - REDUCED
+        if obstacles_in_60 >= 3:  # Was >= 2
+            fta.fta_penalty += 1  # Was +2
         
         # Special case: if FTA nearly coincides with target (>90%), no penalty
         if fta.clean_space_ratio >= 0.90:
             fta.fta_penalty = 0
         
         # Special case: M15 confirmed swing target - reduce penalty further
-        if tp_type == "swing_target" and fta.clean_space_ratio >= 0.30:
-            fta.fta_penalty = max(0, fta.fta_penalty - 3)
+        if tp_type == "swing_target" and fta.clean_space_ratio >= 0.25:  # Was 0.30
+            fta.fta_penalty = max(0, fta.fta_penalty - 2)  # Was -3
         
         return fta
     
@@ -1329,10 +1328,14 @@ class SignalGeneratorV3:
         preliminary_score: float
     ) -> Tuple[bool, bool, str]:
         """
-        CONTEXTUAL FTA EVALUATION (v2)
+        CONTEXTUAL FTA EVALUATION (v3)
         
         Evaluates FTA in context of overall setup quality.
         High-quality setups can override low FTA ratios.
+        
+        TARGET CALIBRATION:
+        - Override should happen 5-15% of the time
+        - FTA blocks should be 50-75% of total rejections
         
         Returns:
             Tuple[should_block, override_applied, reason]
@@ -1345,19 +1348,19 @@ class SignalGeneratorV3:
             return False, False, "ratio_acceptable"
         
         # ========== EVALUATE SETUP QUALITY ==========
-        # For ratio < 0.50, we check if setup is HIGH QUALITY
+        # For ratio < 0.50, check if setup is HIGH QUALITY
         
-        # Define HIGH QUALITY criteria:
+        # Define HIGH QUALITY criteria (relaxed thresholds for v3):
         # 1. Preliminary score >= 75% (before FTA penalty)
-        # 2. MTF alignment is strong (full or mostly aligned)
-        # 3. Pullback quality is good
+        # 2. MTF alignment is good (full alignment OR score >= 70)
+        # 3. Pullback quality is decent (score >= 65, was 70)
         # 4. No high news risk
         
         is_high_quality_score = preliminary_score >= 75
-        is_mtf_aligned = "full" in mtf_reason.lower() or "aligned" in mtf_reason.lower() or mtf_score >= 80
-        is_pullback_good = "good" in pullback_reason.lower() or "excellent" in pullback_reason.lower() or pullback_score >= 70
-        is_news_safe = news_risk_level in ["none", "low", "NONE", "LOW"]
-        is_h1_strong = h1_score >= 70
+        is_mtf_aligned = "full" in mtf_reason.lower() or "aligned" in mtf_reason.lower() or mtf_score >= 70  # Was 80
+        is_pullback_good = "good" in pullback_reason.lower() or "excellent" in pullback_reason.lower() or pullback_score >= 65  # Was 70
+        is_news_safe = news_risk_level not in ["high", "HIGH", "extreme", "EXTREME"]  # More permissive
+        is_h1_strong = h1_score >= 65  # Was 70
         
         # Count quality factors
         quality_factors = sum([
@@ -1368,31 +1371,38 @@ class SignalGeneratorV3:
             is_h1_strong
         ])
         
-        # ========== CONTEXTUAL OVERRIDE LOGIC ==========
+        # ========== CONTEXTUAL OVERRIDE LOGIC (v3 - RELAXED) ==========
         
-        if ratio < 0.35:
-            # WORST CASE: ratio < 0.35
-            # Block UNLESS setup has at least 4/5 quality factors
+        if ratio < 0.20:
+            # EXTREME CASE: ratio < 0.20
+            # Block UNLESS setup has 4/5 quality factors (was 4/5 for <0.35)
             if quality_factors >= 4:
-                # HIGH QUALITY OVERRIDE - allow trade with penalty
-                override_reason = f"override_high_quality: {quality_factors}/5 factors (score={preliminary_score:.0f}, mtf={mtf_score:.0f}, pb={pullback_score:.0f})"
-                logger.info(f"   🔓 FTA OVERRIDE: ratio={ratio:.2f} but {quality_factors}/5 quality factors passed")
+                override_reason = f"override_extreme: {quality_factors}/5 factors (score={preliminary_score:.0f}, mtf={mtf_score:.0f}, pb={pullback_score:.0f})"
+                logger.info(f"   🔓 FTA OVERRIDE (EXTREME): ratio={ratio:.2f} but {quality_factors}/5 quality factors passed")
                 return False, True, override_reason
             else:
-                # Low quality + low ratio = REJECT
-                block_reason = f"blocked: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
+                block_reason = f"blocked_extreme: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
+                return True, False, block_reason
+        
+        elif ratio < 0.35:
+            # WORST CASE: 0.20 <= ratio < 0.35
+            # Block UNLESS setup has at least 3/5 quality factors (was 4/5)
+            if quality_factors >= 3:
+                override_reason = f"override_worst: {quality_factors}/5 factors (score={preliminary_score:.0f}, mtf={mtf_score:.0f}, pb={pullback_score:.0f})"
+                logger.info(f"   🔓 FTA OVERRIDE (WORST): ratio={ratio:.2f} but {quality_factors}/5 quality factors passed")
+                return False, True, override_reason
+            else:
+                block_reason = f"blocked_worst: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
                 return True, False, block_reason
         
         else:
             # BORDERLINE CASE: 0.35 <= ratio < 0.50
-            # Block only if setup is LOW quality (< 3 factors)
-            if quality_factors >= 3:
-                # MEDIUM-HIGH QUALITY - allow with penalty
+            # Block only if setup is LOW quality (< 2 factors) - was < 3
+            if quality_factors >= 2:
                 override_reason = f"override_borderline: {quality_factors}/5 factors"
-                logger.info(f"   🔓 FTA OVERRIDE: ratio={ratio:.2f} borderline but {quality_factors}/5 quality factors passed")
+                logger.info(f"   🔓 FTA OVERRIDE (BORDERLINE): ratio={ratio:.2f} but {quality_factors}/5 quality factors passed")
                 return False, True, override_reason
             else:
-                # Low quality borderline = REJECT
                 block_reason = f"blocked_borderline: ratio={ratio:.2f} + only {quality_factors}/5 quality factors"
                 return True, False, block_reason
     
