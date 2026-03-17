@@ -220,6 +220,8 @@ class PositionSizingEngine:
         2. Risk% = dynamic based on confidence
         3. Money at Risk = Account * Risk%
         4. Lot Size = Money at Risk / (Pip Risk * Pip Value)
+        
+        NOTE: Daily risk tracking is MANUAL ONLY - no auto-accumulation
         """
         self._reset_daily_if_needed()
         
@@ -249,35 +251,17 @@ class PositionSizingEngine:
         # Ensure minimum lot size
         lot_size = max(0.01, lot_size)
         
-        # Check prop firm constraints
+        # No automatic daily limit blocking - manual management only
         warnings = []
         adjusted = False
         adjustment_reason = None
         
-        # Check if trade would exceed daily limit
+        # Just track remaining for display purposes (no blocking)
         remaining_daily = self.config.max_daily_loss - self.daily_risk_used
         
-        if remaining_daily <= 0:
-            # No more trades allowed today
-            warnings.append(f"⛔ Daily limit exhausted (${self.daily_risk_used:.0f} used)")
-            lot_size = 0.0
-            money_at_risk = 0.0
-            adjusted = True
-            adjustment_reason = "Daily limit exhausted"
-        elif money_at_risk > remaining_daily:
-            # Reduce position to fit remaining allowance
-            old_lot = lot_size
-            old_risk = money_at_risk
-            money_at_risk = remaining_daily * 0.9  # Use 90% of remaining
-            lot_size = money_at_risk / (pip_risk * pip_value) if pip_risk > 0 else 0.01
-            lot_size = round(max(0.01, lot_size), 2)
-            adjusted = True
-            adjustment_reason = f"Reduced from {old_lot:.2f} lots (${old_risk:.0f}) to fit daily limit"
-            warnings.append(f"Position reduced: ${remaining_daily:.0f} daily remaining")
-        
-        # Check if approaching warning level
+        # Show warning if at warning level (informational only)
         if self.daily_risk_used >= self.config.operational_warning:
-            warnings.append(f"⚠️ WARNING: Daily risk at ${self.daily_risk_used:.0f} (warning: ${self.config.operational_warning:.0f})")
+            warnings.append(f"⚠️ INFO: Daily risk at ${self.daily_risk_used:.0f} (warning: ${self.config.operational_warning:.0f})")
         elif self.daily_risk_used + money_at_risk > self.config.operational_warning:
             warnings.append(f"Trade will reach warning level (${self.config.operational_warning:.0f})")
         
@@ -299,10 +283,15 @@ class PositionSizingEngine:
         )
     
     def record_trade(self, money_at_risk: float):
-        """Record a trade's risk for daily tracking"""
+        """
+        Record a trade's risk for daily tracking - MANUAL TRACKING ONLY
+        
+        NOTE: This now only logs the trade, does NOT auto-accumulate.
+        Daily risk is managed manually via reset endpoint.
+        """
         self._reset_daily_if_needed()
-        self.daily_risk_used += money_at_risk
-        logger.info(f"💰 Trade recorded: ${money_at_risk:.2f} | Daily total: ${self.daily_risk_used:.2f}")
+        # Just log, don't accumulate automatically
+        logger.info(f"💰 Trade logged: ${money_at_risk:.2f} (manual tracking mode)")
     
     def get_daily_status(self) -> Dict:
         """Get current daily risk status"""
