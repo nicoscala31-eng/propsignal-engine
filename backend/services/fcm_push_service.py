@@ -14,7 +14,7 @@ import base64
 import zlib
 import aiohttp
 import asyncio
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -191,20 +191,99 @@ class FCMv1PushService:
             return await self._refresh_access_token()
         return True
     
-    def _expo_token_to_fcm(self, expo_token: str) -> Optional[str]:
+    def _expo_token_to_fcm(self, expo_token: str) -> Tuple[Optional[str], bool]:
         """
-        Extract FCM token from Expo push token.
-        Expo tokens are in format: ExponentPushToken[FCM_TOKEN]
+        Check if token is Expo or FCM format.
+        
+        Returns:
+            Tuple of (token, is_expo_token)
         """
         if not expo_token:
-            return None
+            return None, False
         
-        # Handle Expo token format
+        # Expo tokens start with ExponentPushToken[
         if expo_token.startswith("ExponentPushToken[") and expo_token.endswith("]"):
-            return expo_token[18:-1]  # Extract the FCM token inside
+            # This is an Expo token - needs to go through Expo's push service
+            return expo_token, True
         
-        # Already a raw FCM token
-        return expo_token
+        # Raw FCM token
+        return expo_token, False
+    
+    async def _send_via_expo(
+        self,
+        token: str,
+        title: str,
+        body: str,
+        data: Optional[Dict[str, Any]] = None,
+        sound: str = "default",
+        channel_id: str = "trading-signals"
+    ) -> FCMPushResult:
+        """Send notification via Expo Push API for Expo tokens"""
+        try:
+            payload = {
+                "to": token,
+                "title": title,
+                "body": body,
+                "sound": sound,
+                "channelId": channel_id,
+                "data": data or {},
+                "priority": "high",
+                "_displayInForeground": True
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://exp.host/--/api/v2/push/send",
+                    json=payload,
+                    headers={
+                        "Accept": "application/json",
+                        "Accept-Encoding": "gzip, deflate",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
+                    resp_data = await response.json()
+                    
+                    if response.status == 200:
+                        # Check Expo response
+                        data_resp = resp_data.get("data", {})
+                        status = data_resp.get("status", "error")
+                        
+                        if status == "ok":
+                            self.sent_count += 1
+                            logger.info(f"✅ Expo Push: Sent to {token[:30]}...")
+                            return FCMPushResult(
+                                token=token,
+                                success=True,
+                                message_id=data_resp.get("id", "expo-sent")
+                            )
+                        else:
+                            error_msg = data_resp.get("message", "Unknown error")
+                            self.failed_count += 1
+                            logger.error(f"❌ Expo Push: Failed for {token[:30]}...: {error_msg}")
+                            return FCMPushResult(
+                                token=token,
+                                success=False,
+                                error=error_msg,
+                                error_code=status
+                            )
+                    else:
+                        self.failed_count += 1
+                        return FCMPushResult(
+                            token=token,
+                            success=False,
+                            error=str(resp_data),
+                            error_code=str(response.status)
+                        )
+                        
+        except Exception as e:
+            self.failed_count += 1
+            logger.error(f"❌ Expo Push: Exception for {token[:30]}...: {str(e)}")
+            return FCMPushResult(
+                token=token,
+                success=False,
+                error=str(e)
+            )
     
     async def send_notification(
         self,
@@ -217,20 +296,34 @@ class FCMv1PushService:
         priority: str = "high"
     ) -> FCMPushResult:
         """
-        Send a push notification via FCM v1 API
+        Send a push notification.
         
-        Args:
-            token: Expo push token or FCM token
-            title: Notification title
-            body: Notification body
-            data: Custom data payload
-            sound: Notification sound
-            channel_id: Android notification channel
-            priority: Message priority (high/normal)
-        
-        Returns:
-            FCMPushResult with success status
+        Automatically detects token type:
+        - Expo tokens (ExponentPushToken[...]) -> Expo Push API
+        - FCM tokens -> FCM v1 API
         """
+        # Detect token type
+        processed_token, is_expo = self._expo_token_to_fcm(token)
+        
+        if not processed_token:
+            return FCMPushResult(
+                token=token,
+                success=False,
+                error="Invalid token format"
+            )
+        
+        # Use Expo API for Expo tokens
+        if is_expo:
+            return await self._send_via_expo(
+                token=processed_token,
+                title=title,
+                body=body,
+                data=data,
+                sound=sound,
+                channel_id=channel_id
+            )
+        
+        # Use FCM v1 API for raw FCM tokens
         if not await self._ensure_valid_token():
             return FCMPushResult(
                 token=token,
@@ -238,19 +331,10 @@ class FCMv1PushService:
                 error="Failed to get access token"
             )
         
-        # Convert Expo token to FCM token
-        fcm_token = self._expo_token_to_fcm(token)
-        if not fcm_token:
-            return FCMPushResult(
-                token=token,
-                success=False,
-                error="Invalid token format"
-            )
-        
         # Build FCM v1 message
         message = {
             "message": {
-                "token": fcm_token,
+                "token": processed_token,
                 "notification": {
                     "title": title,
                     "body": body
@@ -274,9 +358,8 @@ class FCMv1PushService:
             }
         }
         
-        # Add custom data for Expo compatibility
+        # Add custom data
         if data:
-            # Convert all values to strings (FCM requirement)
             message["message"]["data"].update({
                 k: str(v) if not isinstance(v, str) else v 
                 for k, v in data.items()
