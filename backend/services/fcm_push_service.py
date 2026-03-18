@@ -61,24 +61,36 @@ class FCMv1PushService:
     async def initialize(self) -> bool:
         """Load credentials and initialize the service"""
         try:
-            # Try environment variable first (base64 encoded or raw JSON)
-            creds_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
-            creds_base64 = os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64")
+            # Try multiple environment variable names
+            creds_base64 = (
+                os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64") or
+                os.environ.get("FIREBASE_CREDENTIALS_BASE64") or
+                os.environ.get("FCM_CREDENTIALS") or
+                os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_BASE64")
+            )
+            
+            creds_json_str = (
+                os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON") or
+                os.environ.get("FIREBASE_CREDENTIALS") or
+                os.environ.get("FCM_SERVICE_ACCOUNT") or
+                os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+            )
             
             if creds_base64:
                 import base64
                 creds_json = base64.b64decode(creds_base64).decode('utf-8')
                 self.credentials = json.loads(creds_json)
-                logger.info("✅ FCM v1: Loaded credentials from FIREBASE_SERVICE_ACCOUNT_BASE64")
-            elif creds_env:
-                self.credentials = json.loads(creds_env)
-                logger.info("✅ FCM v1: Loaded credentials from FIREBASE_SERVICE_ACCOUNT_JSON")
+                logger.info("✅ FCM v1: Loaded credentials from base64 env var")
+            elif creds_json_str:
+                self.credentials = json.loads(creds_json_str)
+                logger.info("✅ FCM v1: Loaded credentials from JSON env var")
             elif CREDENTIALS_PATH.exists():
                 with open(CREDENTIALS_PATH) as f:
                     self.credentials = json.load(f)
                 logger.info(f"✅ FCM v1: Loaded credentials from {CREDENTIALS_PATH}")
             else:
-                logger.error("❌ FCM v1: No credentials found")
+                logger.error("❌ FCM v1: No credentials found. Set one of: FIREBASE_SERVICE_ACCOUNT_BASE64, FIREBASE_CREDENTIALS, FCM_CREDENTIALS")
+                logger.error(f"   Available env vars: {[k for k in os.environ.keys() if 'FIRE' in k.upper() or 'FCM' in k.upper() or 'GOOGLE' in k.upper()]}")
                 return False
             
             self.project_id = self.credentials.get("project_id")
@@ -87,7 +99,10 @@ class FCMv1PushService:
                 return False
             
             # Get initial access token
-            await self._refresh_access_token()
+            token_result = await self._refresh_access_token()
+            if not token_result:
+                logger.error("❌ FCM v1: Failed to get access token")
+                return False
             
             self._initialized = True
             logger.info(f"✅ FCM v1 Push Service initialized for project: {self.project_id}")
@@ -95,6 +110,8 @@ class FCMv1PushService:
             
         except Exception as e:
             logger.error(f"❌ FCM v1 initialization error: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
             return False
     
     async def _refresh_access_token(self) -> bool:
