@@ -192,27 +192,46 @@ class PushNotificationService {
       };
     }
 
-    // Step 3: Get push token (may fail without FCM on Android)
+    // Step 3: Get push token - Try NATIVE FCM token first (works directly with FCM v1 API)
     this.setState(NotificationState.REGISTERING);
     console.log('📱 Getting push token...');
 
     try {
-      // Get project ID from config
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      console.log('📱 Project ID:', projectId || 'not set');
-
-      let tokenData;
-      
-      if (projectId) {
-        tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId,
-        });
-      } else {
-        tokenData = await Notifications.getExpoPushTokenAsync();
+      // PRIORITY: Get native FCM token for direct FCM v1 API communication
+      // This bypasses Expo's push service and works reliably
+      if (Platform.OS === 'android') {
+        try {
+          console.log('📱 Attempting to get native FCM token...');
+          const nativeTokenData = await Notifications.getDevicePushTokenAsync();
+          if (nativeTokenData?.data) {
+            this.pushToken = nativeTokenData.data;
+            console.log('✅ Native FCM token obtained:', this.pushToken.substring(0, 30) + '...');
+          }
+        } catch (nativeError: any) {
+          console.log('⚠️ Native token failed (expected in Expo Go):', nativeError.message);
+          // Continue to try Expo token as fallback
+        }
       }
-      
-      this.pushToken = tokenData.data;
-      console.log('✅ Push token obtained:', this.pushToken);
+
+      // Fallback: Get Expo push token if native token not available
+      if (!this.pushToken) {
+        console.log('📱 Falling back to Expo push token...');
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        console.log('📱 Project ID:', projectId || 'not set');
+
+        let tokenData;
+        
+        if (projectId) {
+          tokenData = await Notifications.getExpoPushTokenAsync({
+            projectId: projectId,
+          });
+        } else {
+          tokenData = await Notifications.getExpoPushTokenAsync();
+        }
+        
+        this.pushToken = tokenData.data;
+        console.log('✅ Expo push token obtained:', this.pushToken);
+      }
 
       if (!this.pushToken) {
         throw new Error('Token non valido ricevuto');
