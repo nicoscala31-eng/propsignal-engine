@@ -1,0 +1,80 @@
+#!/usr/bin/expect -f
+# Automated FCM credential upload for Expo
+
+set timeout 120
+set env(EXPO_TOKEN) "vash_2racpOqOn-R6y6jzvALIHxPbPH6LtjuT72L"
+
+cd /app/frontend
+
+spawn npx eas credentials -p android
+
+# Wait for build profile prompt
+expect {
+    "Which build profile" {
+        send "production\r"
+    }
+    timeout {
+        puts "Timeout waiting for build profile"
+        exit 1
+    }
+}
+
+# Wait for main menu
+expect {
+    -re "What do you want to do|credentials do you want to set up" {
+        send "\r"
+    }
+    "Google Service Account" {
+        send "\r"
+    }
+    timeout {
+        puts "Timeout waiting for menu"
+        exit 1
+    }
+}
+
+# Keep interacting until we find FCM option
+expect {
+    "Google Service Account" {
+        send "\r"
+    }
+    "FCM" {
+        send "\r"
+    }
+    "Upload" {
+        send "\r"
+    }
+    timeout {
+        puts "Timeout"
+        exit 1
+    }
+}
+
+# Confirm upload
+expect {
+    -re "y/n|Y/n|confirm|proceed" {
+        send "y\r"
+    }
+    "Upload" {
+        send "\r"
+    }
+    timeout {
+        puts "Waiting for confirmation"
+    }
+}
+
+# Wait for completion
+expect {
+    "successfully" {
+        puts "Success!"
+    }
+    "uploaded" {
+        puts "Credentials uploaded!"
+    }
+    eof {
+        puts "Process completed"
+    }
+    timeout {
+        puts "Process completed (timeout)"
+    }
+}
