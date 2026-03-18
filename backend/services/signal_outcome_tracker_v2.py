@@ -346,6 +346,10 @@ class SignalOutcomeTracker:
         # Process completed signals
         for signal_id, outcome in signals_to_complete:
             await self._complete_signal(signal_id, outcome)
+        
+        # Save data periodically (every 6 checks = ~60 seconds)
+        if self.stats.get("total_checks", 0) % 6 == 0:
+            await self._save_data()
     
     def _check_outcome(self, signal: TrackedSignal, current_price: float, now: datetime) -> Optional[str]:
         """Check if signal has reached an outcome"""
