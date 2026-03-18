@@ -1090,6 +1090,30 @@ async def list_devices():
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
+@api_router.get("/push/fcm-status")
+async def get_fcm_status():
+    """Check FCM v1 service status and credentials"""
+    import os
+    from services.fcm_push_service import fcm_push_service
+    
+    env_base64 = os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64")
+    env_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    
+    # Try to initialize
+    init_result = await fcm_push_service.initialize()
+    
+    return {
+        "fcm_status": fcm_push_service.get_stats(),
+        "initialized": fcm_push_service._initialized,
+        "project_id": fcm_push_service.project_id,
+        "has_env_base64": bool(env_base64),
+        "env_base64_length": len(env_base64) if env_base64 else 0,
+        "has_env_json": bool(env_json),
+        "has_credentials_file": fcm_push_service.credentials is not None,
+        "init_result": init_result
+    }
+
+
 @api_router.post("/push/test-debug")
 async def send_test_notification_debug():
     """Send test push with FCM v1 API (full debug info)"""
