@@ -1092,8 +1092,14 @@ async def list_devices():
 
 @api_router.post("/push/test-debug")
 async def send_test_notification_debug():
-    """Send test push with full debug info"""
+    """Send test push with FCM v1 API (full debug info)"""
+    from services.fcm_push_service import fcm_push_service
+    
     try:
+        # Initialize FCM service
+        if not fcm_push_service._initialized:
+            await fcm_push_service.initialize()
+        
         devices = await device_storage.get_active_devices()
         if not devices:
             return {"status": "error", "message": "No devices registered"}
@@ -1101,41 +1107,40 @@ async def send_test_notification_debug():
         results = []
         for device in devices:
             token = device.push_token
-            logger.info(f"📬 Testing push to token: {token}")
+            logger.info(f"📬 FCM v1: Testing push to {token[:30]}...")
             
-            # Test directly with Expo API
-            import aiohttp
-            async with aiohttp.ClientSession() as session:
-                payload = {
-                    "to": token,
-                    "title": "🔔 PropSignal Test",
-                    "body": "Test notification - se vedi questo, le notifiche funzionano!",
-                    "sound": "default",
-                    "data": {"type": "test"}
-                }
-                
-                async with session.post(
-                    "https://exp.host/--/api/v2/push/send",
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
-                ) as response:
-                    resp_data = await response.json()
-                    results.append({
-                        "device_id": device.device_id,
-                        "token_length": len(token),
-                        "token_valid_format": token.startswith("ExponentPushToken["),
-                        "http_status": response.status,
-                        "expo_response": resp_data
-                    })
-                    logger.info(f"📬 Expo response: {resp_data}")
+            result = await fcm_push_service.send_notification(
+                token=token,
+                title="🔔 PropSignal Test",
+                body="Test notification - FCM v1 funziona!",
+                data={"type": "test", "timestamp": datetime.utcnow().isoformat()},
+                channel_id="trading-signals"
+            )
+            
+            results.append({
+                "device_id": device.device_id,
+                "token_length": len(token),
+                "success": result.success,
+                "message_id": result.message_id,
+                "error": result.error,
+                "error_code": result.error_code
+            })
+        
+        successful = sum(1 for r in results if r["success"])
+        failed = len(results) - successful
         
         return {
-            "status": "debug_complete",
+            "status": "completed",
+            "service": "FCM v1",
+            "total": len(results),
+            "successful": successful,
+            "failed": failed,
             "results": results
         }
     except Exception as e:
-        logger.error(f"❌ Debug push error: {str(e)}")
-        return {"status": "error", "message": str(e)}
+        logger.error(f"❌ FCM v1 test error: {str(e)}")
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
 
 
 # ==================== MARKET SCANNER CONTROL ====================

@@ -2018,7 +2018,11 @@ class SignalGeneratorV3:
         
         try:
             from services.device_storage_service import device_storage
-            from services.push_notification_service import push_service
+            from services.fcm_push_service import fcm_push_service
+            
+            # Initialize FCM service if needed
+            if not fcm_push_service._initialized:
+                await fcm_push_service.initialize()
             
             tokens = await device_storage.get_active_tokens()
             
@@ -2028,9 +2032,9 @@ class SignalGeneratorV3:
             
             notif = signal.to_notification_dict()
             
-            logger.info(f"📤 Sending notification for {signal.signal_id}")
+            logger.info(f"📤 Sending notification for {signal.signal_id} via FCM v1")
             
-            results = await push_service.send_to_all_devices(
+            results = await fcm_push_service.send_to_all_devices(
                 tokens=tokens,
                 title=notif['title'],
                 body=notif['body'],
@@ -2043,7 +2047,7 @@ class SignalGeneratorV3:
                     successful += 1
                 else:
                     error_str = str(result.error) if result.error else ""
-                    if any(err in error_str for err in ["DeviceNotRegistered", "InvalidCredentials", "Unregistered"]):
+                    if any(err in error_str.lower() for err in ["not registered", "invalid", "unregistered"]):
                         await self._remove_invalid_token(tokens[i])
             
             self.notification_count += 1
