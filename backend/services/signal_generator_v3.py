@@ -8,35 +8,44 @@ Signal Generator v3 - Technical Structure-Based Signal Engine
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-VERSION 3.1 - STRUCTURAL UPGRADE (March 2026):
-1. Entry Validation - late entry detection and rejection
-2. Structural Stop Loss - based on swing points, not just ATR
-3. Technical Take Profit - based on market structure, not fixed R:R
-4. Dynamic R:R - calculated from actual SL/TP, not imposed
-5. Dynamic Risk% - based on confidence score (0.5%-0.75%)
-6. Asset Concentration Penalty - prevents over-clustering
-7. Enhanced News Penalties - updated scoring
-8. Fixed Position Sizing Tracking - lot_size and money_at_risk properly saved
+VERSION 3.2 - DATA-DRIVEN OPTIMIZATION (March 2026):
+Based on 100-trade performance analysis, this version applies STRICT filters:
+
+DATA-DRIVEN FILTERS (CRITICAL):
+1. SCORE: Minimum 75 (was 60) - lower scores had negative expectancy
+2. MTF ALIGNMENT: Only >= 80 allowed (-18R on weak MTF vs +7R on strong)
+3. SESSION: London ONLY (London=+7R, Overlap=-17R, NY=-2R)
+4. ASSETS: EURUSD ONLY (EURUSD=+0.6R, XAUUSD=-12R)
+5. SETUPS: Only HTF Continuation (+8R) and Momentum Breakout (+3R)
+   DISABLED: Fib Retracement (-10R), Structure Pullback (-4R), Technical Setup (-9R)
+6. FTA: Do NOT block, only adjust TP or score
+
+TRADE MANAGEMENT (NEW):
+- Partial TP at 0.5R (close 50%) - 69% of losers saw profit first
+- Move to BE at 1R
+- Trailing stop after 1R
+
+EXPECTED OUTCOME:
+- Reduce signals from ~100 to ~15-20
+- Transform from -0.12R expectancy to POSITIVE expectancy
 
 PROP TRADING ASSUMPTIONS:
 - account_size = 100,000
 - max_daily_loss = 3,000
 - operational_warning = 1,500
 - risk_per_trade = 0.5% to 0.75% (DYNAMIC based on confidence)
-- primary instruments = EURUSD, XAUUSD
+- primary instruments = EURUSD ONLY (XAUUSD DISABLED)
 
-CONFIDENCE CLASSIFICATION:
-- 80-100: Strong setup (high confidence) -> 0.75% risk
-- 70-79: Good setup (medium confidence) -> 0.60-0.65% risk
-- 60-69: Acceptable setup (lower confidence) -> 0.50% risk
-- Below 60: Reject (don't send notification) - MANDATORY THRESHOLD
+CONFIDENCE CLASSIFICATION (UPDATED):
+- 80-100: Strong setup (high priority) -> 0.75% risk
+- 75-79: Good setup (normal priority) -> 0.65% risk
+- Below 75: REJECT - data shows negative expectancy
 
 MINIMUM STOP LOSS ENFORCED:
 - EURUSD: 8.5 pips minimum
-- XAUUSD: 85 pips minimum
 
 R:R HARD REJECTION:
-- R:R < 0.95 = REJECT
+- R:R < 1.1 = REJECT (raised from 0.95)
 """
 
 import asyncio
@@ -588,17 +597,17 @@ class SignalGeneratorV3:
     
     # Hard rejection thresholds
     MAX_SPREAD_PIPS_EURUSD = 3.0
-    MAX_SPREAD_PIPS_XAUUSD = 50.0
+    MAX_SPREAD_PIPS_XAUUSD = 50.0  # Not used - XAUUSD disabled
     ELEVATED_SPREAD_EURUSD = 1.5
-    ELEVATED_SPREAD_XAUUSD = 30.0
+    ELEVATED_SPREAD_XAUUSD = 30.0  # Not used - XAUUSD disabled
     MIN_ATR_MULTIPLIER = 0.3
     MAX_DATA_AGE_SECONDS = 60
     
     # Entry validation
     ENTRY_REJECT_ATR_MULTIPLIER = 0.35  # Reject if price > 0.35 ATR from ideal
     
-    # R:R thresholds
-    MIN_RR_HARD_REJECT = 0.95  # Hard reject below this
+    # R:R thresholds - RAISED based on data (low RR = negative expectancy)
+    MIN_RR_HARD_REJECT = 1.1  # Raised from 0.95 - data shows low RR underperforms
     
     # Duplicate suppression (unchanged)
     DUPLICATE_WINDOW_MINUTES = 25
@@ -608,6 +617,30 @@ class SignalGeneratorV3:
     # Asset concentration
     CONCENTRATION_WINDOW = 5  # Check last N signals
     CONCENTRATION_THRESHOLD = 4  # Penalty if >= N signals same asset
+    
+    # ==================== DATA-DRIVEN FILTERS (v3.2) ====================
+    # Based on 100-trade performance analysis
+    
+    # MINIMUM SCORE - Raised from 60 to 75
+    # Data: Score 60-70 = -10.73R, Score 75+ = +7.63R
+    MIN_CONFIDENCE_SCORE = 75
+    
+    # MTF ALIGNMENT - Only strong alignment allowed
+    # Data: Strong MTF (>=80) = +6.91R, Weak MTF (<80) = -18.36R
+    MIN_MTF_SCORE = 80
+    
+    # ALLOWED ASSETS - EURUSD ONLY
+    # Data: EURUSD = +0.63R, XAUUSD = -12.08R
+    ALLOWED_ASSETS = [Asset.EURUSD]
+    
+    # ALLOWED SESSIONS - London ONLY
+    # Data: London = +7.25R, Overlap = -16.70R, NY = -2.00R
+    ALLOWED_SESSIONS = ["London"]
+    
+    # ALLOWED SETUP TYPES - Only profitable setups
+    # Data: HTF Continuation = +8.29R, Momentum Breakout = +2.98R
+    # DISABLED: Fib Retracement = -10.34R, Structure Pullback = -4R, Technical Setup = -9R
+    ALLOWED_SETUP_PATTERNS = ["HTF Continuation", "Momentum Breakout", "HTF Trend Continuation"]
     
     def __init__(self, db):
         self.db = db
@@ -633,12 +666,20 @@ class SignalGeneratorV3:
         # Load persisted state
         self._load_state()
         
-        logger.info("🚀 Signal Generator v3.1 initialized (STRUCTURAL UPGRADE)")
+        logger.info("🚀 Signal Generator v3.2 initialized (DATA-DRIVEN OPTIMIZATION)")
         logger.info(f"   Prop Config: ${PROP_CONFIG.account_size:,.0f} account, ${PROP_CONFIG.max_daily_loss:,.0f} max daily loss")
         logger.info(f"   Dynamic Risk Range: {PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%")
-        logger.info(f"   Min SL: EURUSD={ASSET_CONFIGS[Asset.EURUSD].min_sl_pips}p, XAUUSD={ASSET_CONFIGS[Asset.XAUUSD].min_sl_pips}p")
+        logger.info(f"   Min SL: EURUSD={ASSET_CONFIGS[Asset.EURUSD].min_sl_pips}p")
         logger.info(f"   R:R Hard Reject: < {self.MIN_RR_HARD_REJECT}")
-        logger.info(f"   Min confidence: 60% (MANDATORY)")
+        logger.info(f"   ========== DATA-DRIVEN FILTERS (v3.2) ==========")
+        logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}% (raised from 60%)")
+        logger.info(f"   Min MTF score: {self.MIN_MTF_SCORE} (only strong alignment)")
+        logger.info(f"   Allowed assets: {[a.value for a in self.ALLOWED_ASSETS]}")
+        logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS}")
+        logger.info(f"   Allowed setups: {self.ALLOWED_SETUP_PATTERNS}")
+        logger.info(f"   DISABLED: XAUUSD, Fib Retracement, Structure Pullback")
+        logger.info(f"   =================================================")
+        logger.info(f"   TRADE MANAGEMENT: Partial TP@0.5R, BE@1R, Trailing@1R")
     
     # ==================== STATE PERSISTENCE ====================
     
@@ -748,13 +789,17 @@ class SignalGeneratorV3:
         self.start_time = datetime.utcnow()
         
         logger.info("=" * 60)
-        logger.info("🚀 SIGNAL GENERATOR V3.1 STARTED (STRUCTURAL)")
-        logger.info("   Mode: Technical structure-based SL/TP")
-        logger.info("   R:R: DYNAMIC (not fixed)")
+        logger.info("🚀 SIGNAL GENERATOR V3.2 STARTED (DATA-DRIVEN)")
+        logger.info("   Mode: High-quality, low-frequency signals")
+        logger.info("   R:R: DYNAMIC (min 1.1)")
         logger.info("   Risk%: DYNAMIC based on confidence")
-        logger.info("   MANDATORY Min confidence: 60%")
+        logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}%")
+        logger.info(f"   Min MTF: {self.MIN_MTF_SCORE}")
+        logger.info(f"   Assets: {[a.value for a in self.ALLOWED_ASSETS]}")
+        logger.info(f"   Sessions: {self.ALLOWED_SESSIONS}")
         logger.info(f"   Scan interval: {self.scan_interval}s")
         logger.info(f"   Prop: ${PROP_CONFIG.account_size:,.0f} | Max Daily: ${PROP_CONFIG.max_daily_loss:,.0f}")
+        logger.info("   MANAGEMENT: Partial@0.5R | BE@1R | Trail@1R")
         logger.info("=" * 60)
         
         self.scanner_task = asyncio.create_task(self._run_loop())
@@ -790,7 +835,7 @@ class SignalGeneratorV3:
     # ==================== MAIN SCAN PIPELINE ====================
     
     async def _scan_all_assets(self):
-        """Scan all assets"""
+        """Scan all assets - DATA-DRIVEN FILTERS APPLIED"""
         from services.production_control import production_control, EngineType
         
         self.scan_count += 1
@@ -809,7 +854,16 @@ class SignalGeneratorV3:
                 logger.info(f"🌙 [MARKET] Forex closed ({status['day_of_week']} {status['hour_utc']}:00 UTC)")
             return
         
-        for asset in [Asset.EURUSD, Asset.XAUUSD]:
+        # ========== SESSION FILTER (DATA-DRIVEN) ==========
+        current_session = self._get_session_name(session_detector.get_current_session())
+        if current_session not in self.ALLOWED_SESSIONS:
+            if self.scan_count % 60 == 0:
+                logger.info(f"🚫 [SESSION FILTER] {current_session} not in {self.ALLOWED_SESSIONS} - skipping")
+            return
+        
+        # ========== ASSET FILTER (DATA-DRIVEN) ==========
+        # Only scan allowed assets (EURUSD only based on data)
+        for asset in self.ALLOWED_ASSETS:
             price_data = market_data_cache.get_price(asset)
             m5_candles = market_data_cache.get_candles(asset, Timeframe.M5)
             m15_candles = market_data_cache.get_candles(asset, Timeframe.M15)
@@ -1714,17 +1768,26 @@ class SignalGeneratorV3:
         
         final_score = max(0, min(100, final_score))
         
-        # Confidence classification
+        # ========== MTF ALIGNMENT FILTER (DATA-DRIVEN) ==========
+        # Data: Strong MTF (>=80) = +6.91R, Weak MTF (<80) = -18.36R
+        if mtf_score_val < self.MIN_MTF_SCORE:
+            self._record_rejection("weak_mtf")
+            logger.info(f"🚫 {asset.value} {direction}: MTF score {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (DATA-DRIVEN FILTER)")
+            self._log_score_breakdown(asset, direction, components, final_score)
+            return None
+        
+        # ========== CONFIDENCE CLASSIFICATION (v3.2 - DATA-DRIVEN) ==========
+        # Raised threshold from 60 to 75 based on performance data
         if final_score >= 80:
             confidence = SignalConfidence.STRONG
-        elif final_score >= 70:
+            priority = "HIGH"
+        elif final_score >= self.MIN_CONFIDENCE_SCORE:  # 75
             confidence = SignalConfidence.GOOD
-        elif final_score >= 60:
-            confidence = SignalConfidence.ACCEPTABLE
+            priority = "NORMAL"
         else:
             confidence = SignalConfidence.REJECTED
             self._record_rejection("low_confidence")
-            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < 60% - Rejected")
+            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}% - Rejected (DATA-DRIVEN)")
             self._log_score_breakdown(asset, direction, components, final_score)
             return None
         
@@ -1752,6 +1815,16 @@ class SignalGeneratorV3:
         
         signal_id = f"{asset.value}_{direction}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
         setup_type = self._determine_setup_type(components, sl_type, tp_type)
+        
+        # ========== SETUP TYPE FILTER (DATA-DRIVEN) ==========
+        # Only allow profitable setup types
+        if not self._is_allowed_setup(setup_type):
+            self._record_rejection("unprofitable_setup")
+            logger.info(f"🚫 {asset.value} {direction}: Setup '{setup_type}' not in allowed list (DATA-DRIVEN)")
+            logger.info(f"   Allowed: {self.ALLOWED_SETUP_PATTERNS}")
+            self._log_score_breakdown(asset, direction, components, final_score)
+            return None
+        
         sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
         invalidation = f"{'Below' if direction == 'BUY' else 'Above'} {sl_formatted}"
         
@@ -1898,6 +1971,8 @@ class SignalGeneratorV3:
         logger.info("=" * 60)
         logger.info(f"{emoji} SIGNAL GENERATED: {signal.asset.value} {signal.direction}")
         logger.info(f"   Confidence: {signal.confidence_score:.0f}% ({signal.confidence_level.value})")
+        logger.info(f"   Priority: {'HIGH' if signal.confidence_score >= 80 else 'NORMAL'}")
+        logger.info(f"   Setup: {signal.setup_type}")
         
         if signal.asset == Asset.EURUSD:
             entry_fmt = f"{signal.entry_price:.5f}"
@@ -1931,6 +2006,11 @@ class SignalGeneratorV3:
         else:
             logger.info(f"   FTA: clean path (no obstacles)")
         logger.info(f"   Session: {signal.session} | Spread: {signal.spread_pips:.1f} pips")
+        logger.info("-" * 40)
+        logger.info(f"   TRADE MANAGEMENT (v3.2):")
+        logger.info(f"   • Partial TP: 50% at +0.5R")
+        logger.info(f"   • Move to BE: at +1R")
+        logger.info(f"   • Trailing Stop: after +1R")
         logger.info("=" * 60)
         
         # Track for duplicate prevention
@@ -2454,26 +2534,58 @@ class SignalGeneratorV3:
         return False
     
     def _determine_setup_type(self, components: List[ScoreComponent], sl_type: str, tp_type: str) -> str:
-        """Determine setup type"""
+        """
+        Determine setup type - DATA-DRIVEN FILTER (v3.2)
+        
+        ALLOWED (positive expectancy):
+        - HTF Continuation: +8.29R (MTF>80, struct>70)
+        - Momentum Breakout: +2.98R (momentum-based)
+        - HTF Trend Continuation: +8.29R (alias)
+        
+        DISABLED (negative expectancy):
+        - Fib Retracement: -10.34R (pb>80 without strong MTF/struct)
+        - Structure Pullback: -4.00R (struct>80, pb>70 but no MTF)
+        - Technical Setup: -9.02R (generic fallback)
+        """
         struct_score = next((c.score for c in components if c.name == "Market Structure"), 0)
         pb_score = next((c.score for c in components if c.name == "Pullback Quality"), 0)
         mtf_score = next((c.score for c in components if c.name == "MTF Alignment"), 0)
+        mom_score = next((c.score for c in components if c.name == "Momentum"), 0)
         
-        base_type = ""
-        if mtf_score > 80 and struct_score > 70:
-            base_type = "HTF Continuation"
-        elif struct_score > 80 and pb_score > 70:
-            base_type = "Structure Pullback"
-        elif pb_score > 80:
-            base_type = "Fib Retracement"
+        # PRIORITY 1: HTF Continuation (BEST performer: +8.29R)
+        # Requires: Strong MTF alignment AND good structure
+        if mtf_score >= 80 and struct_score >= 70:
+            base_type = "HTF Trend Continuation"
+        # PRIORITY 2: Momentum Breakout (POSITIVE: +2.98R)
+        # Requires: Strong momentum signal with good MTF
+        elif mom_score >= 75 and mtf_score >= 80:
+            base_type = "Momentum Breakout"
         else:
-            base_type = "Technical Setup"
+            # FALLBACK: Still classify but will be filtered by setup check
+            # This allows logging what would have been generated
+            if struct_score > 80 and pb_score > 70:
+                base_type = "Structure Pullback"  # Will be REJECTED
+            elif pb_score > 80:
+                base_type = "Fib Retracement"  # Will be REJECTED
+            else:
+                base_type = "Technical Setup"  # Will be REJECTED
         
         # Add structure info
         if sl_type == "swing_low" or sl_type == "swing_high":
             base_type += " [Structural SL]"
         
         return base_type
+    
+    def _is_allowed_setup(self, setup_type: str) -> bool:
+        """
+        Check if setup type is in the allowed list (DATA-DRIVEN)
+        
+        Returns True if setup is profitable based on historical data
+        """
+        for allowed in self.ALLOWED_SETUP_PATTERNS:
+            if allowed in setup_type:
+                return True
+        return False
     
     def _get_session_name(self, session) -> str:
         """Get session name"""
@@ -2503,8 +2615,8 @@ class SignalGeneratorV3:
         
         return {
             "is_running": self.is_running,
-            "version": "v3.1",
-            "mode": "structural_sl_tp",
+            "version": "v3.2 (DATA-DRIVEN)",
+            "mode": "high_quality_low_frequency",
             "uptime_seconds": uptime,
             "scan_count": self.scan_count,
             "signal_count": self.signal_count,
@@ -2514,15 +2626,24 @@ class SignalGeneratorV3:
             "invalid_tokens_removed": self.invalid_tokens_removed,
             "recent_signals": len(self.recent_signals),
             "duplicate_window_minutes": self.DUPLICATE_WINDOW_MINUTES,
-            "min_confidence": 60,
-            "min_rr_hard": self.MIN_RR_HARD_REJECT,
-            "min_sl_eurusd": ASSET_CONFIGS[Asset.EURUSD].min_sl_pips,
-            "min_sl_xauusd": ASSET_CONFIGS[Asset.XAUUSD].min_sl_pips,
+            # v3.2 DATA-DRIVEN configuration
+            "data_driven_filters": {
+                "min_confidence": self.MIN_CONFIDENCE_SCORE,
+                "min_mtf_score": self.MIN_MTF_SCORE,
+                "allowed_assets": [a.value for a in self.ALLOWED_ASSETS],
+                "allowed_sessions": self.ALLOWED_SESSIONS,
+                "allowed_setups": self.ALLOWED_SETUP_PATTERNS,
+                "min_rr": self.MIN_RR_HARD_REJECT
+            },
+            "trade_management": {
+                "partial_tp": "50% at 0.5R",
+                "breakeven": "at 1R",
+                "trailing_stop": "after 1R"
+            },
             "classification": {
-                "strong": "80-100 (0.75% risk)",
-                "good": "70-79 (0.60-0.65% risk)",
-                "acceptable": "60-69 (0.50% risk)",
-                "rejected": "<60"
+                "strong": "80-100 (0.75% risk, HIGH priority)",
+                "good": "75-79 (0.65% risk, NORMAL priority)",
+                "rejected": "<75 (DATA-DRIVEN FILTER)"
             },
             "prop_config": {
                 "account_size": PROP_CONFIG.account_size,
@@ -2530,7 +2651,8 @@ class SignalGeneratorV3:
                 "operational_warning": PROP_CONFIG.operational_warning,
                 "risk_per_trade": f"{PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}% (dynamic)"
             },
-            "daily_risk_status": self.position_sizer.get_daily_status()
+            "daily_risk_status": self.position_sizer.get_daily_status(),
+            "optimization_applied": "2026-03-18 based on 100-trade analysis"
         }
 
 

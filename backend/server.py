@@ -1269,27 +1269,33 @@ async def get_advanced_scanner_status():
 @api_router.get("/scanner/v3/status")
 async def get_signal_generator_v3_status():
     """
-    Get status of Signal Generator v3 (confidence-based)
+    Get status of Signal Generator v3.2 (DATA-DRIVEN OPTIMIZATION)
     
-    This is the PRIMARY signal generator with:
-    - Minimum threshold: 60%
-    - Classification: STRONG (80+), GOOD (70-79), ACCEPTABLE (60-69), REJECTED (<60)
-    - Position Sizing Engine (lot_size, money_at_risk, risk_percent, pip_risk)
-    - Prop Firm Awareness ($100k account, $3k max daily loss)
-    - News Risk Detection
-    - Advanced MTF Bias Scoring
+    This is the PRIMARY signal generator with DATA-DRIVEN filters:
+    - Min confidence: 75% (raised from 60% based on performance data)
+    - Min MTF: 80 (only strong alignment)
+    - Assets: EURUSD only (XAUUSD disabled due to -12R performance)
+    - Sessions: London only (overlap and NY disabled)
+    - Setups: HTF Continuation and Momentum Breakout only
+    - Trade Management: Partial@0.5R, BE@1R, Trail@1R
     """
     if not signal_generator_instance:
         return {"error": "Signal Generator v3 not initialized"}
     
     stats = signal_generator_instance.get_stats()
     
+    # Extract data-driven filters
+    data_driven = stats.get("data_driven_filters", {})
+    
     return {
         "version": stats["version"],
         "mode": stats["mode"],
         "is_running": stats["is_running"],
         "uptime_seconds": stats["uptime_seconds"],
-        "min_confidence_threshold": stats["min_confidence"],
+        
+        # v3.2 DATA-DRIVEN configuration
+        "data_driven_filters": data_driven,
+        "trade_management": stats.get("trade_management", {}),
         "classification": stats["classification"],
         
         "statistics": {
@@ -1300,12 +1306,14 @@ async def get_signal_generator_v3_status():
             "invalid_tokens_removed": stats.get("invalid_tokens_removed", 0)
         },
         
+        "rejection_reasons": stats.get("rejection_reasons", {}),
         "duplicate_window_minutes": stats["duplicate_window_minutes"],
         "recent_signals_count": stats["recent_signals"],
         
-        # NEW: Prop firm configuration and risk status
+        # Prop firm configuration and risk status
         "prop_config": stats.get("prop_config", {}),
-        "daily_risk_status": stats.get("daily_risk_status", {})
+        "daily_risk_status": stats.get("daily_risk_status", {}),
+        "optimization_applied": stats.get("optimization_applied", "")
     }
 
 
