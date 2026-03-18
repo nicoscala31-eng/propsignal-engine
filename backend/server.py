@@ -1090,6 +1090,54 @@ async def list_devices():
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
+@api_router.post("/push/test-debug")
+async def send_test_notification_debug():
+    """Send test push with full debug info"""
+    try:
+        devices = await device_storage.get_active_devices()
+        if not devices:
+            return {"status": "error", "message": "No devices registered"}
+        
+        results = []
+        for device in devices:
+            token = device.push_token
+            logger.info(f"📬 Testing push to token: {token}")
+            
+            # Test directly with Expo API
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                payload = {
+                    "to": token,
+                    "title": "🔔 PropSignal Test",
+                    "body": "Test notification - se vedi questo, le notifiche funzionano!",
+                    "sound": "default",
+                    "data": {"type": "test"}
+                }
+                
+                async with session.post(
+                    "https://exp.host/--/api/v2/push/send",
+                    json=payload,
+                    headers={"Content-Type": "application/json"}
+                ) as response:
+                    resp_data = await response.json()
+                    results.append({
+                        "device_id": device.device_id,
+                        "token_length": len(token),
+                        "token_valid_format": token.startswith("ExponentPushToken["),
+                        "http_status": response.status,
+                        "expo_response": resp_data
+                    })
+                    logger.info(f"📬 Expo response: {resp_data}")
+        
+        return {
+            "status": "debug_complete",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"❌ Debug push error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
 # ==================== MARKET SCANNER CONTROL ====================
 
 @api_router.post("/scanner/start")
