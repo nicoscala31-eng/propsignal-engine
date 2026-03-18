@@ -10,6 +10,8 @@ import os
 import json
 import time
 import logging
+import base64
+import zlib
 import aiohttp
 import asyncio
 from typing import List, Dict, Any, Optional
@@ -21,6 +23,21 @@ logger = logging.getLogger(__name__)
 
 # Path to service account credentials
 CREDENTIALS_PATH = Path(__file__).parent.parent / "credentials" / "firebase-service-account.json"
+CONFIG_PATH = Path(__file__).parent.parent / "config" / "fcm_config.dat"
+
+
+def _load_embedded_credentials() -> Optional[Dict]:
+    """Load credentials from embedded config file (compressed)"""
+    try:
+        if CONFIG_PATH.exists():
+            with open(CONFIG_PATH, 'r') as f:
+                encoded = f.read().strip()
+            compressed = base64.b64decode(encoded)
+            json_str = zlib.decompress(compressed).decode('utf-8')
+            return json.loads(json_str)
+    except Exception as e:
+        logger.error(f"Failed to load embedded credentials: {e}")
+    return None
 
 
 @dataclass
@@ -61,7 +78,9 @@ class FCMv1PushService:
     async def initialize(self) -> bool:
         """Load credentials and initialize the service"""
         try:
-            # Try multiple environment variable names
+            # Try multiple sources for credentials
+            
+            # 1. Try environment variables first
             creds_base64 = (
                 os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64") or
                 os.environ.get("FIREBASE_CREDENTIALS_BASE64") or
@@ -77,7 +96,6 @@ class FCMv1PushService:
             )
             
             if creds_base64:
-                import base64
                 creds_json = base64.b64decode(creds_base64).decode('utf-8')
                 self.credentials = json.loads(creds_json)
                 logger.info("✅ FCM v1: Loaded credentials from base64 env var")
@@ -89,9 +107,13 @@ class FCMv1PushService:
                     self.credentials = json.load(f)
                 logger.info(f"✅ FCM v1: Loaded credentials from {CREDENTIALS_PATH}")
             else:
-                logger.error("❌ FCM v1: No credentials found. Set one of: FIREBASE_SERVICE_ACCOUNT_BASE64, FIREBASE_CREDENTIALS, FCM_CREDENTIALS")
-                logger.error(f"   Available env vars: {[k for k in os.environ.keys() if 'FIRE' in k.upper() or 'FCM' in k.upper() or 'GOOGLE' in k.upper()]}")
-                return False
+                # 2. Try embedded config file (compressed)
+                self.credentials = _load_embedded_credentials()
+                if self.credentials:
+                    logger.info("✅ FCM v1: Loaded credentials from embedded config")
+                else:
+                    logger.error("❌ FCM v1: No credentials found")
+                    return False
             
             self.project_id = self.credentials.get("project_id")
             if not self.project_id:
