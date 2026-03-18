@@ -1092,24 +1092,44 @@ async def list_devices():
 
 @api_router.get("/push/fcm-status")
 async def get_fcm_status():
-    """Check FCM v1 service status and credentials"""
+    """Check FCM v1 service status and credentials - FULL DEBUG"""
     import os
     from services.fcm_push_service import fcm_push_service
     
+    # Get all env vars that might be related
+    all_env = dict(os.environ)
+    firebase_vars = {k: f"{v[:20]}..." if len(v) > 20 else v for k, v in all_env.items() if "FIREBASE" in k.upper()}
+    
+    # Check specific variable
     env_base64 = os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64")
     env_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
     
     # Try to initialize
     init_result = await fcm_push_service.initialize()
     
+    # List all env var names (for debugging)
+    all_var_names = sorted([k for k in all_env.keys()])
+    
     return {
         "fcm_status": fcm_push_service.get_stats(),
         "initialized": fcm_push_service._initialized,
         "project_id": fcm_push_service.project_id,
-        "has_env_base64": bool(env_base64),
-        "env_base64_length": len(env_base64) if env_base64 else 0,
-        "has_env_json": bool(env_json),
-        "has_credentials_file": fcm_push_service.credentials is not None,
+        "debug": {
+            "FIREBASE_SERVICE_ACCOUNT_BASE64": {
+                "exists": env_base64 is not None,
+                "length": len(env_base64) if env_base64 else 0,
+                "first_20_chars": env_base64[:20] + "..." if env_base64 and len(env_base64) > 20 else env_base64
+            },
+            "FIREBASE_SERVICE_ACCOUNT_JSON": {
+                "exists": env_json is not None,
+                "length": len(env_json) if env_json else 0
+            },
+            "all_firebase_vars": firebase_vars,
+            "total_env_vars": len(all_var_names),
+            "env_var_names_containing_fire": [k for k in all_var_names if "FIRE" in k.upper()],
+            "env_var_names_containing_fcm": [k for k in all_var_names if "FCM" in k.upper()],
+            "env_var_names_containing_service": [k for k in all_var_names if "SERVICE" in k.upper()]
+        },
         "init_result": init_result
     }
 
