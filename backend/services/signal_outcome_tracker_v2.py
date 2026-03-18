@@ -237,6 +237,8 @@ class SignalOutcomeTracker:
         now = datetime.utcnow()
         signals_to_complete = []
         
+        self.stats["total_checks"] = self.stats.get("total_checks", 0) + 1
+        
         for signal_id, signal in list(self.active_signals.items()):
             try:
                 # Get current price
@@ -313,10 +315,28 @@ class SignalOutcomeTracker:
                 # Check outcomes
                 outcome = self._check_outcome(signal, current_price, now)
                 
+                # Log every price check for active signals (ogni 30 secondi per non spammare)
+                if self.stats.get("total_checks", 0) % 6 == 0:  # Log every ~30 seconds (5s interval * 6)
+                    risk = abs(signal.entry_price - signal.stop_loss)
+                    distance_to_tp = abs(signal.take_profit_1 - current_price)
+                    distance_to_sl = abs(signal.stop_loss - current_price)
+                    logger.info(f"📊 TRACKER UPDATE: {signal.asset} {signal.direction}")
+                    logger.info(f"   Price: {current_price:.5f} | Entry: {signal.entry_price:.5f}")
+                    logger.info(f"   TP: {signal.take_profit_1:.5f} ({distance_to_tp:.1f} away) | SL: {signal.stop_loss:.5f} ({distance_to_sl:.1f} away)")
+                    logger.info(f"   MFE: {signal.max_favorable_excursion:.2f} | MAE: {signal.max_adverse_excursion:.2f}")
+                    if risk > 0:
+                        r_multiple = (signal.entry_price - current_price) / risk if signal.direction == "SELL" else (current_price - signal.entry_price) / risk
+                        logger.info(f"   Current R: {r_multiple:.2f}R | Peak R: {signal.peak_r_before_reversal:.2f}R")
+                
                 if outcome:
                     # Determine if trailing would have helped
                     if outcome == "sl_hit" and signal.reached_one_r:
                         signal.trailing_would_improve = True
+                    
+                    # Log outcome
+                    logger.info(f"🎯 TRADE CLOSED: {signal.asset} {signal.direction} -> {outcome.upper()}")
+                    logger.info(f"   Entry: {signal.entry_price:.5f} | Close: {current_price:.5f}")
+                    logger.info(f"   Final MFE: {signal.max_favorable_excursion:.2f} | Final MAE: {signal.max_adverse_excursion:.2f}")
                     
                     signals_to_complete.append((signal_id, outcome))
                 
