@@ -2031,10 +2031,18 @@ async def get_push_stats():
 
 @api_router.post("/push/test")
 async def send_test_notification(device_id: Optional[str] = None):
-    """Send a test push notification"""
+    """Send a test push notification using hybrid FCM/Expo service"""
+    from services.fcm_push_service import fcm_push_service
+    
     logger.info(f"📬 Test push notification requested for device: {device_id or 'all devices'}")
     
     try:
+        # Initialize FCM service if needed
+        if not fcm_push_service._initialized:
+            init_ok = await fcm_push_service.initialize()
+            if not init_ok:
+                logger.warning("⚠️ FCM service not initialized, will use Expo API for Expo tokens")
+        
         if device_id:
             device = await device_storage.get_device(device_id)
             if not device or not device.is_active:
@@ -2050,11 +2058,12 @@ async def send_test_notification(device_id: Optional[str] = None):
             logger.warning("⚠️ No active devices to send test to")
             return {"status": "no_devices", "message": "No active devices to send to"}
         
-        results = await push_service.send_to_all_devices(
+        # Use hybrid push service
+        results = await fcm_push_service.send_to_all_devices(
             tokens=tokens,
-            title="🧪 Test Notification",
-            body="This is a test notification from PropSignal Engine",
-            data={"type": "test"}
+            title="🧪 Test PropSignal",
+            body="Notifica di test - sistema push funzionante!",
+            data={"type": "test", "timestamp": datetime.utcnow().isoformat()}
         )
         
         successful = sum(1 for r in results if r.success)
@@ -2062,11 +2071,21 @@ async def send_test_notification(device_id: Optional[str] = None):
         
         logger.info(f"📬 Test push results: {successful} successful, {failed} failed")
         
+        # Return detailed results
         return {
             "status": "sent",
             "total": len(results),
             "successful": successful,
-            "failed": failed
+            "failed": failed,
+            "details": [
+                {
+                    "token_type": "expo" if t.startswith("ExponentPushToken") else "fcm",
+                    "success": r.success,
+                    "message_id": r.message_id,
+                    "error": r.error
+                }
+                for t, r in zip(tokens, results)
+            ]
         }
     except HTTPException:
         raise
