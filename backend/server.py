@@ -30,6 +30,7 @@ from services.market_data_engine import market_data_engine
 from services.market_data_fetch_engine import market_data_fetch_engine
 from services.market_data_cache import market_data_cache
 from services.device_storage_service import device_storage
+from services.rejected_trade_tracker import rejected_trade_tracker
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
@@ -240,12 +241,17 @@ async def startup_event():
             asyncio.create_task(run_periodic_simulation())
             logger.info("📊 Missed Opportunity Analyzer background simulation started")
             
+            # ========== START REJECTED TRADE OUTCOME TRACKER (AUDIT) ==========
+            await rejected_trade_tracker.start()
+            logger.info("📊 Rejected Trade Outcome Tracker started (audit/analysis only)")
+            
             logger.info("=" * 60)
             logger.info("🛡️ PRODUCTION SAFETY ACTIVE")
             logger.info("   ✅ Signal Generator v3: RUNNING (authorized)")
             logger.info("   🚫 Legacy Scanner: BLOCKED")
             logger.info("   🚫 Advanced Scanner v2: BLOCKED")
             logger.info("   📊 Missed Opportunity Analyzer: RUNNING (audit only)")
+            logger.info("   📊 Rejected Trade Tracker: RUNNING (audit only)")
             logger.info("=" * 60)
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
@@ -2354,6 +2360,170 @@ async def download_page():
 </html>
 """
     return HTMLResponse(content=html)
+
+
+# ==================== REJECTED TRADE AUDIT ENDPOINTS ====================
+
+@api_router.get("/audit/rejected/stats")
+async def get_rejected_trade_stats():
+    """
+    Get overall statistics for rejected trades.
+    
+    Shows:
+    - Total rejected trades tracked
+    - Simulations completed/pending
+    - Simulated win rate and expectancy
+    - Average MFE/MAE for rejected trades
+    """
+    return rejected_trade_tracker.get_overall_stats()
+
+
+@api_router.get("/audit/rejected/by-reason")
+async def get_rejected_stats_by_reason():
+    """
+    Get rejected trade statistics broken down by rejection reason.
+    
+    For each rejection reason shows:
+    - Count of blocked trades
+    - Simulated outcomes (TP hit, SL hit, expired)
+    - Win rate and expectancy if those trades had been taken
+    """
+    return rejected_trade_tracker.get_stats_by_reason()
+
+
+@api_router.get("/audit/rejected/filter-quality")
+async def get_filter_quality_report():
+    """
+    Filter quality analysis report.
+    
+    For each active filter shows:
+    - How many trades it blocked
+    - How many would have been winners
+    - How many would have been losers
+    - Quality rating (good, too_strict, neutral)
+    - Assessment of filter effectiveness
+    
+    Use this to identify which filters are correctly blocking bad trades
+    vs which filters are being too restrictive and blocking good trades.
+    """
+    return rejected_trade_tracker.get_filter_quality_report()
+
+
+@api_router.get("/audit/rejected/samples")
+async def get_rejected_trade_samples(n: int = 5):
+    """
+    Get n sample rejected trades with full simulation details.
+    
+    Includes:
+    - Entry/SL/TP levels
+    - Rejection reason
+    - Simulated outcome
+    - MFE/MAE and peak R
+    - Time to outcome
+    
+    Use this to validate the simulator is working correctly.
+    """
+    samples = rejected_trade_tracker.get_sample_rejections(n)
+    return {
+        "samples": samples,
+        "count": len(samples),
+        "note": "These are the most recently completed simulations"
+    }
+
+
+@api_router.get("/audit/rejected/pending")
+async def get_pending_rejections():
+    """Get list of pending simulations"""
+    pending = list(rejected_trade_tracker.pending_candidates.values())
+    return {
+        "count": len(pending),
+        "oldest": min([p.timestamp for p in pending]) if pending else None,
+        "newest": max([p.timestamp for p in pending]) if pending else None,
+        "candidates": [
+            {
+                "candidate_id": p.candidate_id,
+                "asset": p.asset,
+                "direction": p.direction,
+                "rejection_reason": p.rejection_reason,
+                "timestamp": p.timestamp,
+                "simulation_status": p.simulation_status
+            }
+            for p in pending[:20]  # Show first 20
+        ]
+    }
+
+
+@api_router.get("/audit/rejected/summary")
+async def get_rejected_trade_summary():
+    """
+    Complete summary of rejected trade analysis.
+    
+    Combines:
+    - Overall stats
+    - Stats by reason
+    - Filter quality assessment
+    - Sample validations
+    """
+    overall = rejected_trade_tracker.get_overall_stats()
+    by_reason = rejected_trade_tracker.get_stats_by_reason()
+    filter_quality = rejected_trade_tracker.get_filter_quality_report()
+    samples = rejected_trade_tracker.get_sample_rejections(5)
+    
+    # Calculate key insights
+    insights = []
+    
+    # Check if any filters are too strict
+    for filter_name, data in filter_quality.get("filters", {}).items():
+        if data.get("quality_rating") == "too_strict":
+            insights.append({
+                "type": "warning",
+                "message": f"Filter '{filter_name}' is blocking profitable trades (expectancy: {data['simulated_expectancy']:+.2f}R)",
+                "recommendation": "Consider relaxing this filter"
+            })
+        elif data.get("quality_rating") == "good":
+            insights.append({
+                "type": "success",
+                "message": f"Filter '{filter_name}' is correctly blocking losing trades",
+                "impact": f"Saved {abs(data['simulated_expectancy']):+.2f}R per blocked trade"
+            })
+    
+    return {
+        "generated_at": datetime.utcnow().isoformat(),
+        "overall_stats": overall,
+        "stats_by_reason": by_reason,
+        "filter_quality": filter_quality,
+        "sample_validations": samples,
+        "insights": insights,
+        "conclusion": {
+            "rejected_winrate": overall.get("winrate_pct", 0),
+            "rejected_expectancy": overall.get("expectancy_r", 0),
+            "interpretation": (
+                "Rejected trades would have LOST money - filters are working well"
+                if overall.get("expectancy_r", 0) < 0
+                else "Rejected trades would have been PROFITABLE - filters may be too strict"
+                if overall.get("expectancy_r", 0) > 0.1
+                else "Rejected trades have neutral expectancy - filters are appropriately calibrated"
+            )
+        }
+    }
+
+
+@api_router.post("/audit/rejected/save")
+async def force_save_rejected_data():
+    """Force save rejected trade data to disk"""
+    await rejected_trade_tracker._save_data()
+    return {"status": "saved", "path": rejected_trade_tracker.STORAGE_PATH}
+
+
+@api_router.post("/audit/rejected/simulate-batch")
+async def trigger_simulation_batch():
+    """Manually trigger a batch simulation of rejected trades"""
+    await rejected_trade_tracker._process_simulation_batch()
+    return {
+        "status": "batch_processed",
+        "pending": len(rejected_trade_tracker.pending_candidates),
+        "completed": len(rejected_trade_tracker.completed_simulations)
+    }
 
 
 # Include the router in the main app

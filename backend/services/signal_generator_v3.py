@@ -755,6 +755,56 @@ class SignalGeneratorV3:
         self.rejection_count += 1
         self.rejection_reasons[reason] = self.rejection_reasons.get(reason, 0) + 1
     
+    def _record_rejected_candidate_for_simulation(
+        self,
+        reason: str,
+        asset: Asset,
+        direction: str,
+        entry_price: float,
+        stop_loss: float,
+        take_profit: float,
+        confidence_score: float,
+        mtf_score: float,
+        session: str,
+        setup_type: str,
+        risk_reward: float = 0,
+        rejection_details: str = "",
+        fta_distance: float = None,
+        clean_space: float = None,
+        fta_level: float = None,
+        score_breakdown: Dict = None
+    ):
+        """
+        Record a rejected candidate for outcome simulation.
+        
+        This is AUDIT/ANALYSIS ONLY - does not affect rejection decision.
+        The candidate is saved and will be simulated in background to determine
+        what would have happened if the trade had been taken.
+        """
+        try:
+            from services.rejected_trade_tracker import rejected_trade_tracker
+            
+            rejected_trade_tracker.record_rejected_candidate(
+                asset=asset.value,
+                direction=direction,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                confidence_score=confidence_score,
+                mtf_score=mtf_score,
+                session=session,
+                setup_type=setup_type,
+                rejection_reason=reason,
+                rejection_details=rejection_details,
+                risk_reward=risk_reward,
+                fta_distance=fta_distance,
+                clean_space=clean_space,
+                fta_level=fta_level,
+                score_breakdown=score_breakdown
+            )
+        except Exception as e:
+            logger.debug(f"Error recording rejected candidate: {e}")
+    
     def _record_rejection_with_audit(
         self, 
         reason: str, 
@@ -1744,6 +1794,32 @@ class SignalGeneratorV3:
                         "fta_decision": fta_decision_reason
                     }
                 )
+                
+                # Record for Rejected Trade Outcome Simulation
+                self._record_rejected_candidate_for_simulation(
+                    reason="fta_blocked",
+                    asset=asset,
+                    direction=direction,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    confidence_score=preliminary_score,
+                    mtf_score=mtf_score_val,
+                    session=session_name,
+                    setup_type="FTA_BLOCKED",
+                    risk_reward=rr_ratio,
+                    rejection_details=f"FTA {fta.fta_type} @ {fta_price_str}, ratio={fta.clean_space_ratio:.2f}",
+                    fta_distance=fta.fta_distance,
+                    clean_space=fta.clean_space_ratio,
+                    fta_level=fta.fta_price,
+                    score_breakdown={
+                        "preliminary_score": preliminary_score,
+                        "mtf_score": mtf_score_val,
+                        "pullback_score": pullback_score_val,
+                        "fta_penalty": fta.fta_penalty
+                    }
+                )
+                
                 logger.info(f"   📊 Recorded for Missed Opportunity Analysis")
                 return None
             else:
@@ -1774,6 +1850,23 @@ class SignalGeneratorV3:
             self._record_rejection("weak_mtf")
             logger.info(f"🚫 {asset.value} {direction}: MTF score {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (DATA-DRIVEN FILTER)")
             self._log_score_breakdown(asset, direction, components, final_score)
+            
+            # Record for simulation
+            self._record_rejected_candidate_for_simulation(
+                reason="weak_mtf",
+                asset=asset,
+                direction=direction,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                confidence_score=final_score,
+                mtf_score=mtf_score_val,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                risk_reward=rr_ratio,
+                rejection_details=f"MTF {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}%",
+                score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
+            )
             return None
         
         # ========== CONFIDENCE CLASSIFICATION (v3.2 - DATA-DRIVEN) ==========
@@ -1789,6 +1882,23 @@ class SignalGeneratorV3:
             self._record_rejection("low_confidence")
             logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}% - Rejected (DATA-DRIVEN)")
             self._log_score_breakdown(asset, direction, components, final_score)
+            
+            # Record for simulation
+            self._record_rejected_candidate_for_simulation(
+                reason="low_confidence",
+                asset=asset,
+                direction=direction,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                confidence_score=final_score,
+                mtf_score=mtf_score_val,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                risk_reward=rr_ratio,
+                rejection_details=f"Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}%",
+                score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
+            )
             return None
         
         # Duplicate check
@@ -1823,6 +1933,23 @@ class SignalGeneratorV3:
             logger.info(f"🚫 {asset.value} {direction}: Setup '{setup_type}' not in allowed list (DATA-DRIVEN)")
             logger.info(f"   Allowed: {self.ALLOWED_SETUP_PATTERNS}")
             self._log_score_breakdown(asset, direction, components, final_score)
+            
+            # Record for simulation
+            self._record_rejected_candidate_for_simulation(
+                reason="unprofitable_setup",
+                asset=asset,
+                direction=direction,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                confidence_score=final_score,
+                mtf_score=mtf_score_val,
+                session=session_name,
+                setup_type=setup_type,
+                risk_reward=rr_ratio,
+                rejection_details=f"Setup '{setup_type}' not in {self.ALLOWED_SETUP_PATTERNS}",
+                score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
+            )
             return None
         
         sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
