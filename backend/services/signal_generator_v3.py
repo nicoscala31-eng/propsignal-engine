@@ -2212,34 +2212,56 @@ class SignalGeneratorV3:
             logger.warning(f"Outcome tracking error: {e}")
     
     async def _send_notification(self, signal: GeneratedSignal):
-        """Send push notification"""
+        """Send push notification with full delivery tracking"""
         from services.production_control import production_control, EngineType
         
+        # ===== PIPELINE STAGE: AUTHORIZATION CHECK =====
         authorized, reason = production_control.authorize_notification(
             EngineType.SIGNAL_GENERATOR_V3, 
             signal.signal_id
         )
         if not authorized:
-            logger.info(f"📵 [PRODUCTION] Notification blocked for {signal.signal_id}: {reason}")
+            logger.info(f"📵 [PIPELINE] {signal.signal_id} - BLOCKED at authorization: {reason}")
+            self._log_delivery_status(signal.signal_id, "BLOCKED", f"Authorization denied: {reason}")
             return
         
         try:
             from services.device_storage_service import device_storage
             from services.fcm_push_service import fcm_push_service
             
-            # Initialize FCM service if needed
+            # ===== PIPELINE STAGE: FCM INITIALIZATION =====
             if not fcm_push_service._initialized:
-                await fcm_push_service.initialize()
+                init_ok = await fcm_push_service.initialize()
+                if not init_ok:
+                    logger.error(f"❌ [PIPELINE] {signal.signal_id} - FAILED: FCM service initialization failed")
+                    self._log_delivery_status(signal.signal_id, "FAILED", "FCM service initialization failed")
+                    return
             
+            # ===== PIPELINE STAGE: GET DEVICE TOKENS =====
             tokens = await device_storage.get_active_tokens()
             
             if not tokens:
-                logger.warning("📭 No devices registered for notifications")
+                logger.warning(f"📭 [PIPELINE] {signal.signal_id} - SKIPPED: No devices registered")
+                self._log_delivery_status(signal.signal_id, "SKIPPED", "No devices registered")
                 return
             
+            # Log token validation
+            valid_tokens = 0
+            invalid_tokens = 0
+            for token in tokens:
+                is_test = 'TEST' in token.upper() or 'REAL_TOKEN' in token
+                if is_test:
+                    invalid_tokens += 1
+                else:
+                    valid_tokens += 1
+            
+            if valid_tokens == 0 and invalid_tokens > 0:
+                logger.warning(f"⚠️ [PIPELINE] {signal.signal_id} - WARNING: Only test tokens registered ({invalid_tokens} tokens)")
+            
+            # ===== PIPELINE STAGE: SEND NOTIFICATION =====
             notif = signal.to_notification_dict()
             
-            logger.info(f"📤 Sending notification for {signal.signal_id} via FCM v1")
+            logger.info(f"📤 [PIPELINE] {signal.signal_id} - SENDING to {len(tokens)} device(s)")
             
             results = await fcm_push_service.send_to_all_devices(
                 tokens=tokens,
@@ -2248,20 +2270,46 @@ class SignalGeneratorV3:
                 data=notif['data']
             )
             
+            # ===== PIPELINE STAGE: PROCESS RESULTS =====
             successful = 0
+            failed = 0
+            failure_reasons = []
+            
             for i, result in enumerate(results):
                 if result.success:
                     successful += 1
+                    logger.info(f"✅ [PIPELINE] {signal.signal_id} - DELIVERED to device {i+1}")
                 else:
-                    error_str = str(result.error) if result.error else ""
-                    if any(err in error_str.lower() for err in ["not registered", "invalid", "unregistered"]):
+                    failed += 1
+                    error_str = str(result.error) if result.error else "Unknown error"
+                    failure_reasons.append(error_str)
+                    logger.error(f"❌ [PIPELINE] {signal.signal_id} - FAILED for device {i+1}: {error_str}")
+                    
+                    # Remove invalid tokens
+                    if any(err in error_str.lower() for err in ["not registered", "invalid", "unregistered", "not a valid"]):
                         await self._remove_invalid_token(tokens[i])
             
             self.notification_count += 1
-            logger.info(f"📤 Notification sent: {successful}/{len(results)} devices")
+            
+            # ===== PIPELINE STAGE: LOG FINAL STATUS =====
+            if successful == len(results):
+                logger.info(f"✅ [PIPELINE] {signal.signal_id} - ALL DELIVERED ({successful}/{len(results)})")
+                self._log_delivery_status(signal.signal_id, "DELIVERED", f"{successful}/{len(results)} devices")
+            elif successful > 0:
+                logger.warning(f"⚠️ [PIPELINE] {signal.signal_id} - PARTIAL DELIVERY ({successful}/{len(results)})")
+                self._log_delivery_status(signal.signal_id, "PARTIAL", f"{successful}/{len(results)} devices, failures: {failure_reasons[:2]}")
+            else:
+                logger.error(f"❌ [PIPELINE] {signal.signal_id} - ALL FAILED ({len(results)} attempts)")
+                self._log_delivery_status(signal.signal_id, "FAILED", f"All {len(results)} attempts failed: {failure_reasons[:2]}")
             
         except Exception as e:
-            logger.error(f"❌ Failed to send notification: {e}")
+            logger.error(f"❌ [PIPELINE] {signal.signal_id} - EXCEPTION: {e}")
+            self._log_delivery_status(signal.signal_id, "ERROR", str(e))
+    
+    def _log_delivery_status(self, signal_id: str, status: str, details: str):
+        """Log delivery status for audit trail"""
+        # This creates a clear audit trail in the logs
+        logger.info(f"📋 [DELIVERY AUDIT] {signal_id} | Status: {status} | Details: {details}")
     
     async def _remove_invalid_token(self, token: str):
         """Remove invalid push token"""

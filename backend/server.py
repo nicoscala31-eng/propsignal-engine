@@ -2526,6 +2526,90 @@ async def trigger_simulation_batch():
     }
 
 
+@api_router.get("/audit/signal-delivery")
+async def get_signal_delivery_audit():
+    """
+    Full signal delivery pipeline audit.
+    
+    Shows:
+    - Total signals generated
+    - Notifications attempted
+    - Successful deliveries
+    - Failed deliveries
+    - Failure reasons
+    - Device token status
+    """
+    # Get signal stats
+    stats = signal_generator_instance.get_stats() if signal_generator_instance else {}
+    
+    # Get device info
+    devices = await device_storage.get_active_devices()
+    active_devices = [d for d in devices if d.is_active]
+    
+    # Analyze tokens
+    token_analysis = []
+    for d in devices:
+        token = d.push_token
+        is_test = 'TEST' in token.upper() or 'REAL_TOKEN' in token
+        is_expo = token.startswith('ExponentPushToken')
+        
+        token_analysis.append({
+            "device_id": d.device_id,
+            "platform": d.platform,
+            "token_type": "expo" if is_expo else "fcm_native",
+            "is_test_token": is_test,
+            "is_valid": not is_test,
+            "token_preview": token[:40] + "..."
+        })
+    
+    # Get FCM status
+    from services.fcm_push_service import fcm_push_service
+    fcm_status = fcm_push_service.get_stats()
+    
+    # Calculate delivery rate
+    signals_generated = stats.get("signal_count", 0)
+    notifications_attempted = stats.get("notification_count", 0)
+    
+    # Check recent logs for delivery status
+    valid_tokens = sum(1 for t in token_analysis if t["is_valid"])
+    
+    return {
+        "generated_at": datetime.utcnow().isoformat(),
+        "pipeline_summary": {
+            "total_signals_generated": signals_generated,
+            "notifications_attempted": notifications_attempted,
+            "not_attempted": signals_generated - notifications_attempted,
+            "estimated_successful_deliveries": 0 if valid_tokens == 0 else "unknown",
+            "estimated_failed_deliveries": notifications_attempted if valid_tokens == 0 else "unknown"
+        },
+        "device_status": {
+            "total_devices": len(devices),
+            "active_devices": len(active_devices),
+            "valid_tokens": valid_tokens,
+            "test_tokens": len(devices) - valid_tokens
+        },
+        "token_analysis": token_analysis,
+        "fcm_status": fcm_status,
+        "delivery_issues": [
+            {
+                "issue": "No valid device tokens",
+                "impact": "All notifications fail",
+                "solution": "User needs to open the app and enable notifications to register a real token"
+            }
+        ] if valid_tokens == 0 else [],
+        "pipeline_stages": {
+            "1_generation": "Signal created in signal_generator_v3",
+            "2_authorization": "Production control check",
+            "3_fcm_init": "FCM service initialization",
+            "4_token_fetch": "Get active device tokens",
+            "5_send": "Send via FCM v1 / Expo API",
+            "6_delivery": "Track success/failure per device"
+        },
+        "logging_enabled": True,
+        "log_format": "[PIPELINE] {signal_id} - {STAGE}: {details}"
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
