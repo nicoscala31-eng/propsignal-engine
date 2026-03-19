@@ -191,6 +191,13 @@ async def startup_event():
     production_control.initialize()
     logger.info("🛡️ Production Control Service ACTIVE")
     
+    # ========== DEVICE STORAGE - MONGODB CONNECTION ==========
+    if db is not None:
+        device_storage.set_mongodb(db)
+        logger.info("✅ Device Storage connected to MongoDB (persistent)")
+    else:
+        logger.warning("⚠️ Device Storage using FILE storage (not persistent across deploys)")
+    
     try:
         # Initialize market scanners
         logger.info("🔄 Initializing Signal Generators...")
