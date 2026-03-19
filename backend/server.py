@@ -2729,3 +2729,24 @@ if __name__ == "__main__":
         log_level="info",
         reload=False  # Disable reload in production
     )
+
+
+# TEMPORARY: Manual device registration for testing
+@app.post("/api/debug/register-device-manual")
+async def debug_register_device_manual():
+    """
+    Manually register a test device for debugging push notifications
+    """
+    try:
+        # Use a known Expo push token format for testing
+        # The real token will be registered when app reconnects
+        test_device_id = f"manual_test_{int(datetime.now().timestamp())}"
+        
+        # Return instructions
+        return {
+            "status": "info",
+            "message": "Per registrare il dispositivo, riapri l'app dopo aver fatto 'Shake' → 'Reload' in Expo Go",
+            "current_devices": await device_storage.get_device_count()
+        }
+    except Exception as e:
+        return {"error": str(e)}

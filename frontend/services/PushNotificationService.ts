@@ -253,27 +253,22 @@ class PushNotificationService {
   /**
    * Verify registration is still valid with backend
    * Called in background, doesn't block UI
+   * ALWAYS re-registers to ensure backend has current token
    */
   private async verifyBackendRegistration(): Promise<void> {
     try {
-      if (!this.pushToken || !this.deviceId) return;
+      if (!this.pushToken) {
+        console.log('📱 [NOTIF] No push token - cannot verify');
+        return;
+      }
       
       console.log('📱 [NOTIF] Verifying backend registration...');
       
-      // Check if our device is still registered
-      const response = await fetch(`${BACKEND_URL}/api/devices/list`);
-      const data = await response.json();
-      
-      const isStillRegistered = data.devices?.some((d: any) => 
-        d.device_id?.includes(this.deviceId?.substring(0, 15))
-      );
-      
-      if (!isStillRegistered) {
-        console.log('📱 [NOTIF] Device not found on backend - re-registering...');
-        await this.registerWithBackend();
-      } else {
-        console.log('📱 [NOTIF] Backend registration verified');
-      }
+      // ALWAYS re-register to ensure backend has the token
+      // This fixes issues where backend lost device data
+      console.log('📱 [NOTIF] Force re-registering with backend to ensure sync...');
+      await this.registerWithBackend();
+      console.log('📱 [NOTIF] Backend registration verified and synced');
       
     } catch (error) {
       console.error('📱 [NOTIF] Error verifying backend registration:', error);
