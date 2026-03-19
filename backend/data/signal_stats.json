@@ -1,19 +1,19 @@
 {
   "total_tracked": 195,
-  "wins": 93,
+  "wins": 97,
   "losses": 75,
-  "expired": 15,
+  "expired": 20,
   "invalidated": 0,
   "by_asset": {
     "XAUUSD": {
-      "wins": 65,
+      "wins": 69,
       "losses": 51,
       "expired": 15
     },
     "EURUSD": {
       "wins": 28,
       "losses": 24,
-      "expired": 0
+      "expired": 5
     }
   },
   "by_session": {
@@ -26,17 +26,17 @@
       "losses": 32
     },
     "London/NY Overlap": {
-      "wins": 14,
+      "wins": 18,
       "losses": 33
     }
   },
   "by_confidence": {
     "strong_80_100": {
-      "wins": 16,
+      "wins": 18,
       "losses": 1
     },
     "good_70_79": {
-      "wins": 26,
+      "wins": 28,
       "losses": 27
     },
     "acceptable_60_69": {
@@ -44,5 +44,5 @@
       "losses": 47
     }
   },
-  "total_checks": 716
+  "total_checks": 840
 }
