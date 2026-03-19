@@ -1004,30 +1004,64 @@ async def register_device(request: RegisterDeviceRequest):
     This endpoint uses resilient storage that works with:
     - MongoDB (primary, when available)
     - File-based storage (fallback, always available)
-    """
-    # Log incoming request
-    logger.info(f"📱 Device registration request: platform={request.platform}, device_id={request.device_id[:20] if request.device_id else 'None'}...")
-    logger.info(f"📱 Token: {request.push_token[:30] if request.push_token else 'None'}...")
     
-    # Validate token format
+    VALIDATION:
+    - Rejects placeholder/test tokens
+    - Validates Expo push token format
+    - Logs full registration pipeline
+    """
+    # ===== PIPELINE: LOG INCOMING REQUEST =====
+    logger.info(f"📱 [DEVICE REG] Incoming registration request")
+    logger.info(f"   Platform: {request.platform}")
+    logger.info(f"   Device ID: {request.device_id[:30] if request.device_id else 'None'}...")
+    logger.info(f"   Token: {request.push_token[:50] if request.push_token else 'None'}...")
+    
+    # ===== PIPELINE: VALIDATE REQUIRED FIELDS =====
     if not request.push_token:
-        logger.error("❌ Missing push_token")
+        logger.error("❌ [DEVICE REG] REJECTED: Missing push_token")
         raise HTTPException(status_code=400, detail="push_token is required")
     
     if not request.device_id:
-        logger.error("❌ Missing device_id")
+        logger.error("❌ [DEVICE REG] REJECTED: Missing device_id")
         raise HTTPException(status_code=400, detail="device_id is required")
     
     if not request.platform or request.platform not in ['ios', 'android', 'web']:
-        logger.error(f"❌ Invalid platform: {request.platform}")
+        logger.error(f"❌ [DEVICE REG] REJECTED: Invalid platform: {request.platform}")
         raise HTTPException(status_code=400, detail="platform must be 'ios', 'android', or 'web'")
     
-    # Validate Expo push token format (warning only, not blocking)
-    if not request.push_token.startswith('ExponentPushToken[') and not request.push_token.startswith('ExpoPushToken['):
-        logger.warning(f"⚠️ Unusual token format (not Expo): {request.push_token[:30]}...")
+    # ===== PIPELINE: REJECT TEST/PLACEHOLDER TOKENS =====
+    token_upper = request.push_token.upper()
+    is_test_token = any([
+        'TEST' in token_upper,
+        'PLACEHOLDER' in token_upper,
+        'REAL_TOKEN' in token_upper,
+        'FAKE' in token_upper,
+        'DEMO' in token_upper,
+        request.push_token == 'ExponentPushToken[REAL_TOKEN_TEST]',
+        len(request.push_token) < 30
+    ])
     
+    if is_test_token:
+        logger.error(f"❌ [DEVICE REG] REJECTED: Test/placeholder token detected")
+        logger.error(f"   Token: {request.push_token}")
+        raise HTTPException(
+            status_code=400, 
+            detail="Test/placeholder tokens are not accepted. Please use a real device token."
+        )
+    
+    # ===== PIPELINE: VALIDATE TOKEN FORMAT =====
+    is_expo_token = request.push_token.startswith('ExponentPushToken[') or request.push_token.startswith('ExpoPushToken[')
+    is_fcm_token = len(request.push_token) > 100 and ':' in request.push_token  # FCM tokens are typically very long
+    
+    if not is_expo_token and not is_fcm_token:
+        logger.warning(f"⚠️ [DEVICE REG] Unusual token format (not Expo or FCM): {request.push_token[:50]}...")
+        # Continue anyway - might be a valid native token
+    
+    token_type = "expo" if is_expo_token else "fcm_native" if is_fcm_token else "unknown"
+    logger.info(f"   Token type: {token_type}")
+    
+    # ===== PIPELINE: REGISTER DEVICE =====
     try:
-        # Use resilient device storage
         result = await device_storage.register_device(
             device_id=request.device_id,
             push_token=request.push_token,
@@ -1035,17 +1069,21 @@ async def register_device(request: RegisterDeviceRequest):
             device_name=request.device_name
         )
         
-        logger.info(f"✅ Device {result['status']}: {request.device_id[:20]}... (backend: {result.get('storage_backend', 'unknown')})")
+        logger.info(f"✅ [DEVICE REG] SUCCESS: {result['status']}")
+        logger.info(f"   Device ID: {result['device_id'][:30]}...")
+        logger.info(f"   Storage: {result.get('storage_backend', 'file')}")
         
         return {
             "status": result['status'],
-            "device_id": result['device_id']
+            "device_id": result['device_id'],
+            "token_type": token_type,
+            "message": "Device registered successfully for push notifications"
         }
         
     except Exception as e:
-        logger.error(f"❌ Device registration error: {str(e)}")
+        logger.error(f"❌ [DEVICE REG] ERROR: {str(e)}")
         import traceback
-        logger.error(f"❌ Stack trace: {traceback.format_exc()}")
+        logger.error(f"   Stack trace: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Registration error: {str(e)}")
 
 @api_router.delete("/devices/{device_id}")
@@ -1075,21 +1113,62 @@ async def get_device_count():
 
 @api_router.get("/devices/list")
 async def list_devices():
-    """List all registered devices (for debugging)"""
+    """
+    List all registered devices with validation status.
+    
+    Shows:
+    - device_id (masked)
+    - platform
+    - token (masked)
+    - is_valid (true if real token)
+    - is_placeholder (true if test token)
+    - is_active
+    - last_seen
+    """
     try:
         devices = await device_storage.get_active_devices()
+        
+        device_list = []
+        valid_count = 0
+        placeholder_count = 0
+        
+        for d in devices:
+            # Check if token is test/placeholder
+            token_upper = (d.push_token or '').upper()
+            is_placeholder = any([
+                'TEST' in token_upper,
+                'PLACEHOLDER' in token_upper,
+                'REAL_TOKEN' in token_upper,
+                'FAKE' in token_upper,
+                'DEMO' in token_upper,
+                d.push_token == 'ExponentPushToken[REAL_TOKEN_TEST]',
+                len(d.push_token or '') < 30
+            ])
+            
+            is_valid = not is_placeholder and len(d.push_token or '') > 30
+            
+            if is_valid:
+                valid_count += 1
+            if is_placeholder:
+                placeholder_count += 1
+            
+            device_list.append({
+                "device_id": d.device_id[:25] + "..." if len(d.device_id) > 25 else d.device_id,
+                "platform": d.platform,
+                "token_preview": d.push_token[:40] + "..." if d.push_token else None,
+                "is_valid": is_valid,
+                "is_placeholder": is_placeholder,
+                "is_active": d.is_active,
+                "created_at": d.created_at,
+                "updated_at": d.updated_at
+            })
+        
         return {
             "count": len(devices),
-            "devices": [
-                {
-                    "device_id": d.device_id[:20] + "...",
-                    "platform": d.platform,
-                    "token_prefix": d.push_token[:40] + "..." if d.push_token else None,
-                    "is_active": d.is_active,
-                    "created_at": d.created_at
-                }
-                for d in devices
-            ]
+            "valid_devices": valid_count,
+            "placeholder_devices": placeholder_count,
+            "can_receive_notifications": valid_count > 0,
+            "devices": device_list
         }
     except Exception as e:
         logger.error(f"❌ Error listing devices: {str(e)}")
