@@ -1,956 +1,6 @@
 {
   "pending": [
     {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084818_569743",
-      "timestamp": "2026-03-23T08:48:18.569754",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_XAUUSD_SELL_20260323_084818_571996",
-      "timestamp": "2026-03-23T08:48:18.572001",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4260.94,
-      "stop_loss": 4275.237929821428,
-      "take_profit": 4213.52693,
-      "risk_reward": 3.316079361988516,
-      "confidence_score": 68.9,
-      "mtf_score": 80,
-      "session": "London",
-      "setup_type": "Technical Setup [Structural SL]",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 69% < 75%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 100
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 80
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 30
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 35
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 60
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 100
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 75
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084823_575488",
-      "timestamp": "2026-03-23T08:48:23.575500",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_XAUUSD_SELL_20260323_084823_577757",
-      "timestamp": "2026-03-23T08:48:23.577763",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4260.94,
-      "stop_loss": 4275.237929821428,
-      "take_profit": 4213.52693,
-      "risk_reward": 3.316079361988516,
-      "confidence_score": 68.9,
-      "mtf_score": 80,
-      "session": "London",
-      "setup_type": "Technical Setup [Structural SL]",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 69% < 75%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 100
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 80
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 30
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 35
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 60
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 100
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 75
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084828_580898",
-      "timestamp": "2026-03-23T08:48:28.580909",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084833_584589",
-      "timestamp": "2026-03-23T08:48:33.584600",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084838_588848",
-      "timestamp": "2026-03-23T08:48:38.588858",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084843_593416",
-      "timestamp": "2026-03-23T08:48:43.593429",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084848_597684",
-      "timestamp": "2026-03-23T08:48:48.597694",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
-      "candidate_id": "REJ_EURUSD_SELL_20260323_084853_602700",
-      "timestamp": "2026-03-23T08:48:53.602711",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.1532,
-      "stop_loss": 1.1548800000000001,
-      "take_profit": 1.15068,
-      "risk_reward": 1.4999999999999338,
-      "confidence_score": 62.5,
-      "mtf_score": 40,
-      "session": "London",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 80%",
-      "fta_distance": null,
-      "clean_space_available": null,
-      "fta_level": null,
-      "score_breakdown": {
-        "components": [
-          {
-            "name": "H1 Directional Bias",
-            "score": 60
-          },
-          {
-            "name": "M15 Context",
-            "score": 35
-          },
-          {
-            "name": "MTF Alignment",
-            "score": 40
-          },
-          {
-            "name": "Market Structure",
-            "score": 65
-          },
-          {
-            "name": "Momentum",
-            "score": 55
-          },
-          {
-            "name": "Pullback Quality",
-            "score": 83
-          },
-          {
-            "name": "Entry Quality",
-            "score": 100
-          },
-          {
-            "name": "Key Level Reaction",
-            "score": 95
-          },
-          {
-            "name": "Session Quality",
-            "score": 90
-          },
-          {
-            "name": "Risk/Reward",
-            "score": 70
-          },
-          {
-            "name": "Volatility",
-            "score": 90
-          },
-          {
-            "name": "Market Regime",
-            "score": 70
-          },
-          {
-            "name": "Spread",
-            "score": 100
-          },
-          {
-            "name": "Concentration",
-            "score": 100
-          }
-        ]
-      },
-      "simulation_status": "pending",
-      "simulation_started_at": null,
-      "simulation_completed_at": null,
-      "simulated_outcome": null,
-      "mfe": 0.0,
-      "mae": 0.0,
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "peak_r": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "candles_processed": 0,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "would_have_won": null,
-      "r_result": 0.0
-    },
-    {
       "candidate_id": "REJ_EURUSD_SELL_20260323_084858_606726",
       "timestamp": "2026-03-23T08:48:58.606730",
       "asset": "EURUSD",
@@ -74433,6 +73483,129 @@
       "reached_two_r": false,
       "would_have_won": null,
       "r_result": 0.0
+    },
+    {
+      "candidate_id": "REJ_XAUUSD_SELL_20260323_094946_649024",
+      "timestamp": "2026-03-23T09:49:46.649027",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4239.46,
+      "stop_loss": 4308.893398214286,
+      "take_profit": 4135.309902678571,
+      "risk_reward": 1.4999999999999936,
+      "confidence_score": 69.55000000000001,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "FTA_BLOCKED",
+      "rejection_reason": "fta_blocked",
+      "rejection_details": "FTA swing_low @ 4222.74, ratio=0.16",
+      "fta_distance": 16.718759999999747,
+      "clean_space_available": 0.16052563012401405,
+      "fta_level": 4222.74124,
+      "score_breakdown": {
+        "preliminary_score": 69.55000000000001,
+        "mtf_score": 40,
+        "pullback_score": 83,
+        "fta_penalty": 15
+      },
+      "simulation_status": "pending",
+      "simulation_started_at": null,
+      "simulation_completed_at": null,
+      "simulated_outcome": null,
+      "mfe": 0.0,
+      "mae": 0.0,
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "candles_processed": 0,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": null,
+      "r_result": 0.0
+    },
+    {
+      "candidate_id": "REJ_XAUUSD_SELL_20260323_094951_654892",
+      "timestamp": "2026-03-23T09:49:51.654896",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4239.46,
+      "stop_loss": 4308.893398214286,
+      "take_profit": 4135.309902678571,
+      "risk_reward": 1.4999999999999936,
+      "confidence_score": 69.55000000000001,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "FTA_BLOCKED",
+      "rejection_reason": "fta_blocked",
+      "rejection_details": "FTA swing_low @ 4222.74, ratio=0.16",
+      "fta_distance": 16.718759999999747,
+      "clean_space_available": 0.16052563012401405,
+      "fta_level": 4222.74124,
+      "score_breakdown": {
+        "preliminary_score": 69.55000000000001,
+        "mtf_score": 40,
+        "pullback_score": 83,
+        "fta_penalty": 15
+      },
+      "simulation_status": "pending",
+      "simulation_started_at": null,
+      "simulation_completed_at": null,
+      "simulated_outcome": null,
+      "mfe": 0.0,
+      "mae": 0.0,
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "candles_processed": 0,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": null,
+      "r_result": 0.0
+    },
+    {
+      "candidate_id": "REJ_XAUUSD_SELL_20260323_094956_661341",
+      "timestamp": "2026-03-23T09:49:56.661344",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4239.46,
+      "stop_loss": 4308.893398214286,
+      "take_profit": 4135.309902678571,
+      "risk_reward": 1.4999999999999936,
+      "confidence_score": 69.55000000000001,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "FTA_BLOCKED",
+      "rejection_reason": "fta_blocked",
+      "rejection_details": "FTA swing_low @ 4222.74, ratio=0.16",
+      "fta_distance": 16.718759999999747,
+      "clean_space_available": 0.16052563012401405,
+      "fta_level": 4222.74124,
+      "score_breakdown": {
+        "preliminary_score": 69.55000000000001,
+        "mtf_score": 40,
+        "pullback_score": 83,
+        "fta_penalty": 15
+      },
+      "simulation_status": "pending",
+      "simulation_started_at": null,
+      "simulation_completed_at": null,
+      "simulated_outcome": null,
+      "mfe": 0.0,
+      "mae": 0.0,
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "candles_processed": 0,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": null,
+      "r_result": 0.0
     }
   ],
   "completed": [
@@ -146285,15 +145458,965 @@
       "reached_two_r": false,
       "would_have_won": false,
       "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084818_569743",
+      "timestamp": "2026-03-23T08:48:18.569754",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.464507",
+      "simulation_completed_at": "2026-03-23T09:50:01.465167",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_XAUUSD_SELL_20260323_084818_571996",
+      "timestamp": "2026-03-23T08:48:18.572001",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4260.94,
+      "stop_loss": 4275.237929821428,
+      "take_profit": 4213.52693,
+      "risk_reward": 3.316079361988516,
+      "confidence_score": 68.9,
+      "mtf_score": 80,
+      "session": "London",
+      "setup_type": "Technical Setup [Structural SL]",
+      "rejection_reason": "low_confidence",
+      "rejection_details": "Score 69% < 75%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 100
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 80
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 30
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 35
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 60
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 100
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 75
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.465293",
+      "simulation_completed_at": "2026-03-23T09:50:01.465902",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 236.6265200000007,
+      "mfe_r": 0.0,
+      "mae_r": 16.549704954164994,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 300,
+      "candles_processed": 1,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084823_575488",
+      "timestamp": "2026-03-23T08:48:23.575500",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.465952",
+      "simulation_completed_at": "2026-03-23T09:50:01.466536",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_XAUUSD_SELL_20260323_084823_577757",
+      "timestamp": "2026-03-23T08:48:23.577763",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4260.94,
+      "stop_loss": 4275.237929821428,
+      "take_profit": 4213.52693,
+      "risk_reward": 3.316079361988516,
+      "confidence_score": 68.9,
+      "mtf_score": 80,
+      "session": "London",
+      "setup_type": "Technical Setup [Structural SL]",
+      "rejection_reason": "low_confidence",
+      "rejection_details": "Score 69% < 75%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 100
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 80
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 30
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 35
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 60
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 100
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 75
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.466575",
+      "simulation_completed_at": "2026-03-23T09:50:01.467147",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 236.6265200000007,
+      "mfe_r": 0.0,
+      "mae_r": 16.549704954164994,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 300,
+      "candles_processed": 1,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084828_580898",
+      "timestamp": "2026-03-23T08:48:28.580909",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.467184",
+      "simulation_completed_at": "2026-03-23T09:50:01.467767",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084833_584589",
+      "timestamp": "2026-03-23T08:48:33.584600",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.467802",
+      "simulation_completed_at": "2026-03-23T09:50:01.468395",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084838_588848",
+      "timestamp": "2026-03-23T08:48:38.588858",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.468428",
+      "simulation_completed_at": "2026-03-23T09:50:01.468995",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084843_593416",
+      "timestamp": "2026-03-23T08:48:43.593429",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.469026",
+      "simulation_completed_at": "2026-03-23T09:50:01.469600",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084848_597684",
+      "timestamp": "2026-03-23T08:48:48.597694",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.469630",
+      "simulation_completed_at": "2026-03-23T09:50:01.470188",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
+    },
+    {
+      "candidate_id": "REJ_EURUSD_SELL_20260323_084853_602700",
+      "timestamp": "2026-03-23T08:48:53.602711",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1532,
+      "stop_loss": 1.1548800000000001,
+      "take_profit": 1.15068,
+      "risk_reward": 1.4999999999999338,
+      "confidence_score": 62.5,
+      "mtf_score": 40,
+      "session": "London",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 80%",
+      "fta_distance": null,
+      "clean_space_available": null,
+      "fta_level": null,
+      "score_breakdown": {
+        "components": [
+          {
+            "name": "H1 Directional Bias",
+            "score": 60
+          },
+          {
+            "name": "M15 Context",
+            "score": 35
+          },
+          {
+            "name": "MTF Alignment",
+            "score": 40
+          },
+          {
+            "name": "Market Structure",
+            "score": 65
+          },
+          {
+            "name": "Momentum",
+            "score": 55
+          },
+          {
+            "name": "Pullback Quality",
+            "score": 83
+          },
+          {
+            "name": "Entry Quality",
+            "score": 100
+          },
+          {
+            "name": "Key Level Reaction",
+            "score": 95
+          },
+          {
+            "name": "Session Quality",
+            "score": 90
+          },
+          {
+            "name": "Risk/Reward",
+            "score": 70
+          },
+          {
+            "name": "Volatility",
+            "score": 90
+          },
+          {
+            "name": "Market Regime",
+            "score": 70
+          },
+          {
+            "name": "Spread",
+            "score": 100
+          },
+          {
+            "name": "Concentration",
+            "score": 100
+          }
+        ]
+      },
+      "simulation_status": "sl_hit",
+      "simulation_started_at": "2026-03-23T09:50:01.470223",
+      "simulation_completed_at": "2026-03-23T09:50:01.470786",
+      "simulated_outcome": "sl_hit",
+      "mfe": 0.0,
+      "mae": 0.0017599999999999838,
+      "mfe_r": 0.0,
+      "mae_r": 1.0476190476189595,
+      "peak_r": 0.0,
+      "time_to_outcome_seconds": 900,
+      "candles_processed": 3,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "would_have_won": false,
+      "r_result": -1.0
     }
   ],
   "stats": {
-    "total_rejected": 2210,
-    "simulations_completed": 1140,
-    "simulations_pending": 1070,
+    "total_rejected": 2213,
+    "simulations_completed": 1150,
+    "simulations_pending": 1063,
     "by_reason": {
       "fta_blocked": {
-        "count": 1179,
+        "count": 1182,
         "tp_hit": 100,
         "sl_hit": 575,
         "expired": 0,
@@ -146304,42 +146427,42 @@
       "weak_mtf": {
         "count": 769,
         "tp_hit": 0,
-        "sl_hit": 394,
+        "sl_hit": 402,
         "expired": 0,
         "total_mfe_r": 246.08273246170467,
-        "total_mae_r": 423.4729916278068,
-        "total_r": -394.0
+        "total_mae_r": 431.8539440087586,
+        "total_r": -402.0
       },
       "low_confidence": {
         "count": 262,
         "tp_hit": 0,
-        "sl_hit": 71,
+        "sl_hit": 73,
         "expired": 0,
         "total_mfe_r": 1.623529411765905,
-        "total_mae_r": 237.58124514759788,
-        "total_r": -71.0
+        "total_mae_r": 270.6806550559279,
+        "total_r": -73.0
       }
     },
     "by_asset": {
       "EURUSD": {
         "tp_hit": 100,
-        "sl_hit": 1030,
+        "sl_hit": 1038,
         "expired": 0,
-        "total_r": -879.9999999999975
+        "total_r": -887.9999999999975
       },
       "XAUUSD": {
         "tp_hit": 0,
-        "sl_hit": 10,
+        "sl_hit": 12,
         "expired": 0,
-        "total_r": -10.0
+        "total_r": -12.0
       }
     },
     "by_session": {
       "London": {
         "tp_hit": 100,
-        "sl_hit": 1040,
+        "sl_hit": 1050,
         "expired": 0,
-        "total_r": -889.9999999999975
+        "total_r": -899.9999999999975
       }
     },
     "by_setup": {
@@ -146351,15 +146474,15 @@
       },
       "Fib Retracement [Structural SL]": {
         "tp_hit": 0,
-        "sl_hit": 65,
+        "sl_hit": 73,
         "expired": 0,
-        "total_r": -65.0
+        "total_r": -73.0
       },
       "Technical Setup [Structural SL]": {
         "tp_hit": 0,
-        "sl_hit": 351,
+        "sl_hit": 353,
         "expired": 0,
-        "total_r": -351.0
+        "total_r": -353.0
       },
       "Technical Setup": {
         "tp_hit": 0,
@@ -146369,5 +146492,5 @@
       }
     }
   },
-  "last_updated": "2026-03-23T09:49:41.755291"
+  "last_updated": "2026-03-23T09:50:01.583898"
 }
