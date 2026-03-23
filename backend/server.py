@@ -2305,14 +2305,14 @@ async def send_real_pipeline_test():
             take_profit_2=1.15450,
             risk_reward=1.33,
             confidence_score=85.0,
-            confidence_level=SignalConfidence.HIGH,
+            confidence_level=SignalConfidence.STRONG,
             setup_type="REAL PIPELINE TEST",
             invalidation="Below 1.15100",
             session="London",
             score_breakdown=SignalScore(
                 total=85.0,
                 breakdown=[],
-                confidence_level=SignalConfidence.HIGH
+                confidence_level=SignalConfidence.STRONG
             ),
             timestamp=datetime.utcnow()
         )
