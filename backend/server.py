@@ -2266,6 +2266,173 @@ async def get_push_health():
         }
 
 
+@api_router.post("/push/real-pipeline-test")
+async def send_real_pipeline_test():
+    """
+    Send a notification through the EXACT SAME pipeline as real signals.
+    Uses the SignalGenerator._send_notification() method.
+    NOT a test endpoint - uses real production code path.
+    """
+    from services.signal_generator_v3 import signal_generator_v3, GeneratedSignal, PROP_CONFIG
+    from services.device_storage_service import device_storage
+    from services.fcm_push_service import fcm_push_service
+    from datetime import datetime
+    
+    pipeline_log = []
+    
+    def log_stage(stage: str, status: str, details: str = ""):
+        entry = {"stage": stage, "status": status, "details": details, "timestamp": datetime.utcnow().isoformat()}
+        pipeline_log.append(entry)
+        logger.info(f"📋 [PIPELINE-TEST] {stage}: {status} - {details}")
+    
+    try:
+        # ===== STAGE 1: SIGNAL GENERATION =====
+        signal_id = f"PIPELINE_TEST_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Create a real GeneratedSignal object (same structure as production)
+        test_signal = GeneratedSignal(
+            signal_id=signal_id,
+            asset="EURUSD",
+            direction="BUY",
+            entry_price=1.15250,
+            stop_loss=1.15150,
+            take_profit_1=1.15383,
+            take_profit_2=1.15450,
+            take_profit_3=1.15517,
+            risk_reward=1.33,
+            confidence_score=85,
+            risk_percent=0.5,
+            position_size=0.5,
+            position_size_lots=0.5,
+            dollar_risk=100.0,
+            dollar_target=133.0,
+            setup_type="REAL PIPELINE TEST",
+            sl_type="structural",
+            tp_type="calculated",
+            session="London",
+            timestamp=datetime.utcnow(),
+            prop_config=PROP_CONFIG,
+            score_breakdown={"total": 85, "note": "Pipeline test signal"},
+            management_rules={
+                "partial_tp_0_5r": True,
+                "move_to_be_at_1r": True,
+                "trail_after_1r": True
+            },
+            htf_bias="bullish"
+        )
+        
+        log_stage("SIGNAL_GENERATED", "✅ SUCCESS", f"ID: {signal_id}")
+        
+        # ===== STAGE 2: GET DEVICES =====
+        tokens = await device_storage.get_active_tokens()
+        device_count = len(tokens)
+        
+        if device_count == 0:
+            log_stage("DEVICES_FOUND", "❌ FAILED", "No active devices registered")
+            return {
+                "status": "no_devices",
+                "signal_id": signal_id,
+                "pipeline_log": pipeline_log,
+                "message": "No devices registered to receive notification"
+            }
+        
+        log_stage("DEVICES_FOUND", "✅ SUCCESS", f"{device_count} device(s) found")
+        
+        # ===== STAGE 3: FCM INITIALIZATION =====
+        if not fcm_push_service._initialized:
+            init_ok = await fcm_push_service.initialize()
+            if not init_ok:
+                log_stage("FCM_INIT", "⚠️ WARNING", "FCM not initialized, using Expo API")
+            else:
+                log_stage("FCM_INIT", "✅ SUCCESS", "FCM service ready")
+        else:
+            log_stage("FCM_INIT", "✅ SUCCESS", "FCM already initialized")
+        
+        # ===== STAGE 4: SEND NOTIFICATION (REAL PIPELINE) =====
+        notif = test_signal.to_notification_dict()
+        
+        # Override title for clear identification
+        notif['title'] = "🔔 REAL PIPELINE TEST - EURUSD BUY"
+        notif['body'] = f"Entry: 1.15250 | SL: 1.15150 | TP: 1.15383 | Score: 85% | ID: {signal_id[-8:]}"
+        
+        log_stage("PUSH_ATTEMPTED", "⏳ SENDING", f"To {device_count} device(s)")
+        
+        results = await fcm_push_service.send_to_all_devices(
+            tokens=tokens,
+            title=notif['title'],
+            body=notif['body'],
+            data=notif['data']
+        )
+        
+        # ===== STAGE 5: PROCESS RESULTS =====
+        successful = 0
+        failed = 0
+        result_details = []
+        
+        for i, result in enumerate(results):
+            token_preview = tokens[i][:30] + "..." if len(tokens[i]) > 30 else tokens[i]
+            token_type = "expo" if tokens[i].startswith("ExponentPushToken") else "fcm"
+            
+            if result.success:
+                successful += 1
+                result_details.append({
+                    "device": i + 1,
+                    "token_type": token_type,
+                    "status": "✅ DELIVERED",
+                    "message_id": result.message_id,
+                    "error": None
+                })
+                log_stage(f"DEVICE_{i+1}", "✅ DELIVERED", f"Type: {token_type}, MsgID: {result.message_id}")
+            else:
+                failed += 1
+                error_str = str(result.error) if result.error else "Unknown error"
+                result_details.append({
+                    "device": i + 1,
+                    "token_type": token_type,
+                    "status": "❌ FAILED",
+                    "message_id": None,
+                    "error": error_str
+                })
+                log_stage(f"DEVICE_{i+1}", "❌ FAILED", f"Type: {token_type}, Error: {error_str}")
+        
+        # ===== FINAL STATUS =====
+        if successful == device_count:
+            final_status = "✅ ALL DELIVERED"
+            log_stage("FINAL_STATUS", "✅ SUCCESS", f"All {successful}/{device_count} delivered")
+        elif successful > 0:
+            final_status = "⚠️ PARTIAL DELIVERY"
+            log_stage("FINAL_STATUS", "⚠️ PARTIAL", f"{successful}/{device_count} delivered")
+        else:
+            final_status = "❌ ALL FAILED"
+            log_stage("FINAL_STATUS", "❌ FAILED", f"0/{device_count} delivered")
+        
+        return {
+            "status": "sent",
+            "signal_id": signal_id,
+            "final_status": final_status,
+            "devices_found": device_count,
+            "successful": successful,
+            "failed": failed,
+            "result_details": result_details,
+            "pipeline_log": pipeline_log,
+            "notification": {
+                "title": notif['title'],
+                "body": notif['body']
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Pipeline test error: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        log_stage("ERROR", "❌ EXCEPTION", str(e))
+        return {
+            "status": "error",
+            "error": str(e),
+            "pipeline_log": pipeline_log
+        }
+
+
 # ==================== OUTCOME TRACKER ====================
 
 @api_router.get("/tracker/status")
