@@ -69,6 +69,7 @@ from services.direction_quality_audit import (
     NewsRiskBucket
 )
 from services.missed_opportunity_analyzer import missed_opportunity_analyzer
+from services.candidate_audit_service import candidate_audit_service
 
 logger = logging.getLogger(__name__)
 
@@ -855,6 +856,103 @@ class SignalGeneratorV3:
             active_penalties=penalties or {},
             direction_context=context
         )
+    
+    def _log_candidate_audit(
+        self,
+        symbol: str,
+        direction: str,
+        session: str,
+        setup_type: str,
+        decision: str,
+        rejection_reason: str = "",
+        rejection_details: str = "",
+        components: List[ScoreComponent] = None,
+        final_score: float = 0.0,
+        threshold: float = 75.0,
+        mtf_score: float = 0.0,
+        fta: FirstTroubleArea = None,
+        entry_price: float = 0.0,
+        stop_loss: float = 0.0,
+        take_profit: float = 0.0,
+        risk_reward: float = 0.0,
+        news_penalty: float = 0.0,
+        spread_penalty: float = 0.0,
+        setup_penalty: float = 0.0
+    ):
+        """
+        Log candidate trade with FULL THRESHOLD BREAKDOWN.
+        
+        Called for EVERY trade that reaches evaluation stage,
+        whether accepted or rejected.
+        
+        This is ASYNC-SAFE and does NOT slow down the scanner.
+        """
+        try:
+            # Build score breakdown dict
+            score_breakdown = {
+                "total": final_score,
+                "threshold": threshold,
+                "mtf": mtf_score,
+                "fta_penalty": fta.fta_penalty if fta else 0,
+                "fta_distance_r": fta.fta_distance_in_r if fta else 0,
+                "fta_level": fta.fta_price if fta else 0,
+                "clean_space_r": fta.clean_space_ratio if fta else 0,
+                "news_penalty": news_penalty,
+                "spread_penalty": spread_penalty,
+                "setup_penalty": setup_penalty
+            }
+            
+            # Extract individual component scores if available
+            components_list = None
+            if components:
+                components_list = [{"name": comp.name, "score": comp.score, "weight": comp.weight, "reason": comp.reason} for comp in components]
+                for comp in components:
+                    name_key = comp.name.lower().replace(' ', '_').replace('/', '_')
+                    score_breakdown[name_key] = comp.score
+            
+            # Build filter flags based on rejection reason
+            filter_flags = {
+                "score_passed": final_score >= threshold,
+                "mtf_passed": mtf_score >= self.MIN_MTF_SCORE,
+                "fta_passed": not (fta and fta.fta_blocked_trade),
+                "session_passed": session in self.ALLOWED_SESSIONS,
+                "asset_passed": True,  # Already checked at scan level
+                "duplicate_blocked": "duplicate" in rejection_reason.lower(),
+                "news_blocked": "news" in rejection_reason.lower(),
+                "rr_passed": risk_reward >= self.MIN_RR_HARD_REJECT,
+                "spread_passed": True,  # Already checked at scan level
+                "daily_limit_passed": "daily" not in rejection_reason.lower()
+            }
+            
+            # Build trade levels
+            trade_levels = {
+                "entry": entry_price,
+                "stop_loss": stop_loss,
+                "take_profit_1": take_profit,
+                "take_profit_2": 0,  # Will be set if available
+                "risk_reward": risk_reward,
+                "sl_pips": abs(entry_price - stop_loss) / 0.0001 if entry_price > 0 and stop_loss > 0 else 0,
+                "tp_pips": abs(take_profit - entry_price) / 0.0001 if entry_price > 0 and take_profit > 0 else 0
+            }
+            
+            # Record in audit service
+            candidate_audit_service.record_candidate(
+                symbol=symbol,
+                direction=direction,
+                session=session,
+                setup_type=setup_type,
+                decision=decision,
+                rejection_reason=rejection_reason,
+                rejection_details=rejection_details,
+                score_breakdown=score_breakdown,
+                filter_flags=filter_flags,
+                trade_levels=trade_levels,
+                components=components_list
+            )
+            
+        except Exception as e:
+            # Never let audit logging crash the scanner
+            logger.debug(f"Candidate audit logging error: {e}")
     
     # ==================== LIFECYCLE ====================
     
@@ -1746,6 +1844,22 @@ class SignalGeneratorV3:
         if not entry_valid:
             self._record_rejection("late_entry")
             logger.info(f"⏭️ {asset.value} {direction}: {entry_reason}")
+            # Log candidate audit (early rejection, partial data)
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="UNKNOWN",
+                decision="rejected",
+                rejection_reason="late_entry",
+                rejection_details=entry_reason,
+                final_score=0,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                entry_price=current_price,
+                stop_loss=0,
+                take_profit=0,
+                risk_reward=0
+            )
             return None
         
         entry_price = current_price
@@ -1772,6 +1886,22 @@ class SignalGeneratorV3:
         if rr_ratio < self.MIN_RR_HARD_REJECT:
             self._record_rejection("low_rr")
             logger.info(f"⏭️ {asset.value} {direction}: R:R {rr_ratio:.2f} < {self.MIN_RR_HARD_REJECT} (REJECT)")
+            # Log candidate audit (early rejection, partial data)
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="UNKNOWN",
+                decision="rejected",
+                rejection_reason="low_rr",
+                rejection_details=f"R:R {rr_ratio:.2f} < {self.MIN_RR_HARD_REJECT}",
+                final_score=0,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # ========== FIRST TROUBLE AREA (FTA) ANALYSIS ==========
@@ -1954,6 +2084,26 @@ class SignalGeneratorV3:
                     }
                 )
                 
+                # Log candidate audit with FULL BREAKDOWN
+                self._log_candidate_audit(
+                    symbol=asset.value,
+                    direction=direction,
+                    session=session_name,
+                    setup_type="FTA_BLOCKED",
+                    decision="rejected",
+                    rejection_reason="fta_blocked",
+                    rejection_details=f"FTA {fta.fta_type} @ {fta_price_str}, ratio={fta.clean_space_ratio:.2f}, decision={fta_decision_reason}",
+                    components=components,
+                    final_score=preliminary_score,
+                    threshold=self.MIN_CONFIDENCE_SCORE,
+                    mtf_score=mtf_score_val,
+                    fta=fta,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    risk_reward=rr_ratio
+                )
+                
                 logger.info("   📊 Recorded for Missed Opportunity Analysis")
                 return None
             else:
@@ -2001,6 +2151,26 @@ class SignalGeneratorV3:
                 rejection_details=f"MTF {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}%",
                 score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
             )
+            
+            # Log candidate audit with FULL BREAKDOWN
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                decision="rejected",
+                rejection_reason="weak_mtf",
+                rejection_details=f"MTF {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (DATA-DRIVEN FILTER)",
+                components=components,
+                final_score=final_score,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                mtf_score=mtf_score_val,
+                fta=fta,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # ========== CONFIDENCE CLASSIFICATION (v3.2 - DATA-DRIVEN) ==========
@@ -2033,11 +2203,50 @@ class SignalGeneratorV3:
                 rejection_details=f"Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}%",
                 score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
             )
+            
+            # Log candidate audit with FULL BREAKDOWN
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                decision="rejected",
+                rejection_reason="low_confidence",
+                rejection_details=f"Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}% (DATA-DRIVEN)",
+                components=components,
+                final_score=final_score,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                mtf_score=mtf_score_val,
+                fta=fta,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # Duplicate check
         if self._is_duplicate(asset, direction, current_price):
             self._record_rejection("duplicate")
+            # Log candidate audit (duplicate)
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                decision="rejected",
+                rejection_reason="duplicate",
+                rejection_details="Duplicate signal within window",
+                components=components,
+                final_score=final_score,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                mtf_score=mtf_score_val,
+                fta=fta,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # ========== POSITION SIZING (with confidence-based risk) ==========
@@ -2053,6 +2262,25 @@ class SignalGeneratorV3:
         if position.recommended_lot_size == 0:
             self._record_rejection("daily_limit")
             logger.info(f"⛔ {asset.value} {direction}: Daily risk limit exhausted")
+            # Log candidate audit
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                decision="rejected",
+                rejection_reason="daily_limit",
+                rejection_details="Daily risk limit exhausted",
+                components=components,
+                final_score=final_score,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                mtf_score=mtf_score_val,
+                fta=fta,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # ========== GENERATE SIGNAL ==========
@@ -2071,6 +2299,26 @@ class SignalGeneratorV3:
                 self._record_rejection("setup_penalty_dropped_score")
                 logger.info(f"📉 {asset.value} {direction}: Score dropped to {final_score:.0f}% after setup penalty - Rejected")
                 self._log_score_breakdown(asset, direction, components, final_score)
+                # Log candidate audit
+                self._log_candidate_audit(
+                    symbol=asset.value,
+                    direction=direction,
+                    session=session_name,
+                    setup_type=setup_type,
+                    decision="rejected",
+                    rejection_reason="setup_penalty_dropped_score",
+                    rejection_details=f"Score dropped from {final_score + setup_penalty:.0f}% to {final_score:.0f}% after setup penalty ({setup_type})",
+                    components=components,
+                    final_score=final_score,
+                    threshold=self.MIN_CONFIDENCE_SCORE,
+                    mtf_score=mtf_score_val,
+                    fta=fta,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    risk_reward=rr_ratio,
+                    setup_penalty=setup_penalty
+                )
                 return None
         
         sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
@@ -2200,6 +2448,28 @@ class SignalGeneratorV3:
             mtf_alignment=mtf_alignment_quality,
             news_risk=news_bucket,
             fta_quality=fta_quality_str
+        )
+        
+        # Log ACCEPTED candidate for audit
+        self._log_candidate_audit(
+            symbol=asset.value,
+            direction=direction,
+            session=session_name,
+            setup_type=setup_type,
+            decision="accepted",
+            rejection_reason="",
+            rejection_details="",
+            components=components,
+            final_score=final_score,
+            threshold=self.MIN_CONFIDENCE_SCORE,
+            mtf_score=mtf_score_val,
+            fta=fta,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit_1,
+            risk_reward=rr_ratio,
+            news_penalty=news_risk.score_penalty,
+            spread_penalty=100 - spread_score
         )
         
         return signal
