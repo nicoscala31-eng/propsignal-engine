@@ -2290,35 +2290,32 @@ async def send_real_pipeline_test():
         signal_id = f"PIPELINE_TEST_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
         
         # Create a real GeneratedSignal object (same structure as production)
+        from services.signal_generator_v3 import SignalConfidence, SignalScore
+        from models.asset import Asset as AssetEnum
+        from dataclasses import field
+        
         test_signal = GeneratedSignal(
             signal_id=signal_id,
-            asset="EURUSD",
+            asset=AssetEnum.EURUSD,
             direction="BUY",
             entry_price=1.15250,
+            entry_zone_low=1.15240,
+            entry_zone_high=1.15260,
             stop_loss=1.15150,
             take_profit_1=1.15383,
             take_profit_2=1.15450,
-            take_profit_3=1.15517,
             risk_reward=1.33,
-            confidence_score=85,
-            risk_percent=0.5,
-            position_size=0.5,
-            position_size_lots=0.5,
-            dollar_risk=100.0,
-            dollar_target=133.0,
+            confidence_score=85.0,
+            confidence_level=SignalConfidence.HIGH,
             setup_type="REAL PIPELINE TEST",
-            sl_type="structural",
-            tp_type="calculated",
+            invalidation="Below 1.15100",
             session="London",
-            timestamp=datetime.utcnow(),
-            prop_config=PROP_CONFIG,
-            score_breakdown={"total": 85, "note": "Pipeline test signal"},
-            management_rules={
-                "partial_tp_0_5r": True,
-                "move_to_be_at_1r": True,
-                "trail_after_1r": True
-            },
-            htf_bias="bullish"
+            score_breakdown=SignalScore(
+                total=85.0,
+                breakdown=[],
+                confidence_level=SignalConfidence.HIGH
+            ),
+            timestamp=datetime.utcnow()
         )
         
         log_stage("SIGNAL_GENERATED", "✅ SUCCESS", f"ID: {signal_id}")
