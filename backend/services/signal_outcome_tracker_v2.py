@@ -480,19 +480,24 @@ class SignalOutcomeTracker:
         # Update candidate audit service with outcome data
         try:
             # Find matching candidate by symbol, direction, and approximate timestamp
-            candidate_audit_service.update_outcome(
+            updated = candidate_audit_service.update_outcome(
                 symbol=signal.asset,
                 direction=signal.direction,
                 outcome="win" if outcome == "tp_hit" else "loss" if outcome == "sl_hit" else "expired",
+                is_simulated=False,
                 total_r=total_r,
                 exit_price=signal.highest_price_seen if outcome == "tp_hit" else signal.lowest_price_seen if outcome == "sl_hit" else 0,
                 mfe_r=mfe_r,
                 mae_r=mae_r,
+                peak_r=signal.peak_r_before_reversal,
                 time_to_outcome=(datetime.utcnow() - datetime.fromisoformat(signal.timestamp.replace('Z', ''))).total_seconds() / 60
             )
-            logger.info(f"📊 Updated candidate audit: {signal.asset} {signal.direction} -> {outcome} | MFE: {mfe_r:.2f}R | MAE: {mae_r:.2f}R")
+            if updated:
+                logger.info(f"📊 Updated candidate audit: {signal.asset} {signal.direction} -> {outcome} | MFE: {mfe_r:.2f}R | MAE: {mae_r:.2f}R")
+            else:
+                logger.warning(f"⚠️ No matching candidate found for: {signal.asset} {signal.direction}")
         except Exception as e:
-            logger.debug(f"Could not update candidate audit: {e}")
+            logger.error(f"❌ Error updating candidate audit: {e}")
         
         # Log outcome
         emoji = "✅" if signal.final_outcome == "win" else "❌" if signal.final_outcome == "loss" else "⏰"

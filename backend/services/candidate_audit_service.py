@@ -238,18 +238,28 @@ class CandidateAuditService:
         try:
             self.STORAGE_FILE.parent.mkdir(parents=True, exist_ok=True)
             
-            # Keep only last N records
+            # Apply trim logic: keep all accepted, trim rejected
             if len(self.candidates) > self.MAX_RECORDS:
-                self.candidates = self.candidates[-self.MAX_RECORDS:]
+                accepted = [c for c in self.candidates if c.decision == "accepted"]
+                rejected = [c for c in self.candidates if c.decision == "rejected"]
+                max_rejected = self.MAX_RECORDS - len(accepted)
+                if max_rejected > 0:
+                    self.candidates = accepted + rejected[-max_rejected:]
+                else:
+                    self.candidates = accepted[-self.MAX_RECORDS:]
             
             data = {
                 "updated_at": datetime.utcnow().isoformat(),
                 "total_candidates": len(self.candidates),
+                "accepted_count": len([c for c in self.candidates if c.decision == "accepted"]),
+                "rejected_count": len([c for c in self.candidates if c.decision == "rejected"]),
                 "candidates": [c.to_dict() for c in self.candidates]
             }
             
             with open(self.STORAGE_FILE, 'w') as f:
                 json.dump(data, f, indent=2)
+            
+            logger.debug(f"📊 Saved {len(self.candidates)} candidates (accepted: {data['accepted_count']})")
                 
         except Exception as e:
             logger.error(f"Error saving candidate audit data: {e}")
@@ -380,6 +390,21 @@ class CandidateAuditService:
             
             self.candidates.append(candidate)
             
+            # Trim old candidates, but NEVER remove accepted trades (with any outcome)
+            if len(self.candidates) > self.MAX_RECORDS:
+                # Keep all accepted trades (they are valuable for analysis)
+                accepted_trades = [c for c in self.candidates if c.decision == "accepted"]
+                # Keep most recent rejected trades
+                rejected_trades = [c for c in self.candidates if c.decision == "rejected"]
+                # Calculate how many rejected we can keep
+                max_rejected = self.MAX_RECORDS - len(accepted_trades)
+                if max_rejected > 0:
+                    self.candidates = accepted_trades + rejected_trades[-max_rejected:]
+                else:
+                    # If we have too many accepted, keep them all but warn
+                    self.candidates = accepted_trades[-self.MAX_RECORDS:]
+                    logger.warning(f"⚠️ Too many accepted trades ({len(accepted_trades)}), trimmed to {self.MAX_RECORDS}")
+            
             # Save periodically
             if len(self.candidates) % 10 == 0:
                 self._save_data()
@@ -395,29 +420,60 @@ class CandidateAuditService:
     
     def update_outcome(
         self,
-        candidate_id: str,
-        outcome: str,
-        is_simulated: bool,
+        candidate_id: str = None,
+        symbol: str = None,
+        direction: str = None,
+        outcome: str = "pending",
+        is_simulated: bool = False,
         total_r: float = 0,
+        exit_price: float = 0,
         mfe_r: float = 0,
         mae_r: float = 0,
         peak_r: float = 0,
         time_to_outcome: float = 0
     ):
-        """Update outcome data for a candidate"""
-        for candidate in self.candidates:
-            if candidate.candidate_id == candidate_id:
-                candidate.outcome_data = OutcomeData(
-                    outcome=outcome,
-                    is_simulated=is_simulated,
-                    total_r=total_r,
-                    mfe_r=mfe_r,
-                    mae_r=mae_r,
-                    peak_r=peak_r,
-                    time_to_outcome_minutes=time_to_outcome
-                )
-                self._save_data()
-                return True
+        """
+        Update outcome data for a candidate.
+        
+        Can match by:
+        - candidate_id (exact match)
+        - symbol + direction (finds most recent accepted matching candidate)
+        """
+        matched = None
+        
+        # Try to match by candidate_id first
+        if candidate_id:
+            for candidate in self.candidates:
+                if candidate.candidate_id == candidate_id:
+                    matched = candidate
+                    break
+        
+        # If no match, try symbol + direction (find most recent accepted)
+        if not matched and symbol and direction:
+            matching = [c for c in self.candidates 
+                       if c.symbol == symbol 
+                       and c.direction == direction 
+                       and c.decision == "accepted"
+                       and c.outcome_data.outcome == "pending"]
+            if matching:
+                # Get most recent one
+                matched = matching[-1]
+        
+        if matched:
+            matched.outcome_data = OutcomeData(
+                outcome=outcome,
+                is_simulated=is_simulated,
+                total_r=total_r,
+                mfe_r=mfe_r,
+                mae_r=mae_r,
+                peak_r=peak_r,
+                time_to_outcome_minutes=time_to_outcome
+            )
+            self._save_data()
+            logger.info(f"📊 Candidate outcome updated: {matched.candidate_id} -> {outcome} | MFE: {mfe_r:.2f}R | MAE: {mae_r:.2f}R")
+            return True
+        
+        logger.debug(f"No matching candidate found for outcome update: {candidate_id or f'{symbol} {direction}'}")
         return False
     
     # ==================== ANALYSIS METHODS ====================
