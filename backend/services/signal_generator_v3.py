@@ -618,29 +618,44 @@ class SignalGeneratorV3:
     CONCENTRATION_WINDOW = 5  # Check last N signals
     CONCENTRATION_THRESHOLD = 4  # Penalty if >= N signals same asset
     
-    # ==================== DATA-DRIVEN FILTERS (v3.2) ====================
-    # Based on 100-trade performance analysis
+    # ==================== DATA-DRIVEN FILTERS (v3.3) ====================
+    # OPTIMIZED: Controlled signal flow with preserved edge
+    # Target: 5-15 signals per day (not over-filtered)
     
-    # MINIMUM SCORE - Raised from 60 to 75
-    # Data: Score 60-70 = -10.73R, Score 75+ = +7.63R
+    # MINIMUM SCORE - Keep high edge threshold
+    # Data: Score 75+ = +46R combined, Score <75 = -15R
     MIN_CONFIDENCE_SCORE = 75
     
-    # MTF ALIGNMENT - Only strong alignment allowed
-    # Data: Strong MTF (>=80) = +6.91R, Weak MTF (<80) = -18.36R
+    # MTF ALIGNMENT - Keep strong alignment requirement
+    # Data: Strong MTF (>=80) = +35R, Weak MTF (<80) = -3R
     MIN_MTF_SCORE = 80
     
-    # ALLOWED ASSETS - EURUSD ONLY
-    # Data: EURUSD = +0.63R, XAUUSD = -12.08R
-    ALLOWED_ASSETS = [Asset.EURUSD]
+    # ALLOWED ASSETS - RE-ENABLED XAUUSD (top performer)
+    # Data: XAUUSD = +33.53R (66% WR), EURUSD = -2.03R (39% WR)
+    # Previous filter was WRONG - XAUUSD is the winner!
+    ALLOWED_ASSETS = [Asset.EURUSD, Asset.XAUUSD]
     
-    # ALLOWED SESSIONS - London ONLY
-    # Data: London = +7.25R, Overlap = -16.70R, NY = -2.00R
-    ALLOWED_SESSIONS = ["London"]
+    # ALLOWED SESSIONS - London + Overlap (expanded flow)
+    # Data: London = +34R (82% WR), Overlap has volume
+    ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap"]
     
-    # ALLOWED SETUP TYPES - Only profitable setups
-    # Data: HTF Continuation = +8.29R, Momentum Breakout = +2.98R
-    # DISABLED: Fib Retracement = -10.34R, Structure Pullback = -4R, Technical Setup = -9R
-    ALLOWED_SETUP_PATTERNS = ["HTF Continuation", "Momentum Breakout", "HTF Trend Continuation"]
+    # SETUP TYPES - SOFT FILTER (penalty instead of block)
+    # All setups allowed, but non-preferred get score penalty
+    # Preferred: Technical Setup, HTF Continuation, Momentum Breakout
+    PREFERRED_SETUP_PATTERNS = ["Technical Setup", "HTF Continuation", "Momentum Breakout", "HTF Trend Continuation"]
+    PENALIZED_SETUP_PATTERNS = ["Fib Retracement", "Structure Pullback"]  # -10 score penalty
+    
+    # SOFT FILTER PENALTIES (instead of hard blocks)
+    PENALTY_WEAK_SESSION = 5      # NY session penalty
+    PENALTY_NON_PREFERRED_SETUP = 10  # Fib, Structure Pullback
+    PENALTY_WEAK_MOMENTUM = 5     # Low momentum
+    
+    # MINIMUM SIGNAL TARGET
+    MIN_SIGNALS_PER_DAY = 5
+    MAX_SIGNALS_PER_DAY = 15
+    
+    # FTA - SOFT FILTER (never hard block unless <0.3R)
+    FTA_HARD_BLOCK_THRESHOLD = 0.3  # Only block if FTA < 0.3R from entry
     
     def __init__(self, db):
         self.db = db
@@ -666,18 +681,19 @@ class SignalGeneratorV3:
         # Load persisted state
         self._load_state()
         
-        logger.info("🚀 Signal Generator v3.2 initialized (DATA-DRIVEN OPTIMIZATION)")
+        logger.info("🚀 Signal Generator v3.3 initialized (OPTIMIZED FLOW + EDGE)")
         logger.info(f"   Prop Config: ${PROP_CONFIG.account_size:,.0f} account, ${PROP_CONFIG.max_daily_loss:,.0f} max daily loss")
         logger.info(f"   Dynamic Risk Range: {PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%")
         logger.info(f"   Min SL: EURUSD={ASSET_CONFIGS[Asset.EURUSD].min_sl_pips}p")
         logger.info(f"   R:R Hard Reject: < {self.MIN_RR_HARD_REJECT}")
-        logger.info(f"   ========== DATA-DRIVEN FILTERS (v3.2) ==========")
-        logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}% (raised from 60%)")
-        logger.info(f"   Min MTF score: {self.MIN_MTF_SCORE} (only strong alignment)")
-        logger.info(f"   Allowed assets: {[a.value for a in self.ALLOWED_ASSETS]}")
-        logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS}")
-        logger.info(f"   Allowed setups: {self.ALLOWED_SETUP_PATTERNS}")
-        logger.info(f"   DISABLED: XAUUSD, Fib Retracement, Structure Pullback")
+        logger.info(f"   ========== OPTIMIZED FILTERS (v3.3) ==========")
+        logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}% (edge preserved)")
+        logger.info(f"   Min MTF score: {self.MIN_MTF_SCORE}% (strong only)")
+        logger.info(f"   Allowed assets: {[a.value for a in self.ALLOWED_ASSETS]} (XAUUSD RE-ENABLED)")
+        logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS} (Overlap RE-ENABLED)")
+        logger.info(f"   Setup filter: SOFT (penalties, not blocks)")
+        logger.info(f"   FTA filter: SOFT (block only if < {self.FTA_HARD_BLOCK_THRESHOLD}R)")
+        logger.info(f"   Target signals/day: {self.MIN_SIGNALS_PER_DAY}-{self.MAX_SIGNALS_PER_DAY}")
         logger.info(f"   =================================================")
         logger.info(f"   TRADE MANAGEMENT: Partial TP@0.5R, BE@1R, Trailing@1R")
     
@@ -1926,31 +1942,18 @@ class SignalGeneratorV3:
         signal_id = f"{asset.value}_{direction}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
         setup_type = self._determine_setup_type(components, sl_type, tp_type)
         
-        # ========== SETUP TYPE FILTER (DATA-DRIVEN) ==========
-        # Only allow profitable setup types
-        if not self._is_allowed_setup(setup_type):
-            self._record_rejection("unprofitable_setup")
-            logger.info(f"🚫 {asset.value} {direction}: Setup '{setup_type}' not in allowed list (DATA-DRIVEN)")
-            logger.info(f"   Allowed: {self.ALLOWED_SETUP_PATTERNS}")
-            self._log_score_breakdown(asset, direction, components, final_score)
-            
-            # Record for simulation
-            self._record_rejected_candidate_for_simulation(
-                reason="unprofitable_setup",
-                asset=asset,
-                direction=direction,
-                entry_price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit_1,
-                confidence_score=final_score,
-                mtf_score=mtf_score_val,
-                session=session_name,
-                setup_type=setup_type,
-                risk_reward=rr_ratio,
-                rejection_details=f"Setup '{setup_type}' not in {self.ALLOWED_SETUP_PATTERNS}",
-                score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
-            )
-            return None
+        # ========== SETUP TYPE SOFT FILTER (v3.3) ==========
+        # All setups allowed, apply score penalty for non-preferred
+        is_allowed, setup_penalty = self._is_allowed_setup(setup_type)
+        if setup_penalty > 0:
+            logger.info(f"⚠️ {asset.value} {direction}: Setup '{setup_type}' penalty: -{setup_penalty} (soft filter)")
+            final_score -= setup_penalty
+            # Re-check confidence after penalty
+            if final_score < self.MIN_CONFIDENCE_SCORE:
+                self._record_rejection("setup_penalty_dropped_score")
+                logger.info(f"📉 {asset.value} {direction}: Score dropped to {final_score:.0f}% after setup penalty - Rejected")
+                self._log_score_breakdown(asset, direction, components, final_score)
+                return None
         
         sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
         invalidation = f"{'Below' if direction == 'BUY' else 'Above'} {sl_formatted}"
@@ -2751,16 +2754,25 @@ class SignalGeneratorV3:
         
         return base_type
     
-    def _is_allowed_setup(self, setup_type: str) -> bool:
+    def _is_allowed_setup(self, setup_type: str) -> Tuple[bool, int]:
         """
-        Check if setup type is in the allowed list (DATA-DRIVEN)
+        Check setup type - SOFT FILTER (v3.3)
         
-        Returns True if setup is profitable based on historical data
+        Returns (is_allowed, score_penalty)
+        - All setups allowed, but non-preferred get penalty
         """
-        for allowed in self.ALLOWED_SETUP_PATTERNS:
-            if allowed in setup_type:
-                return True
-        return False
+        # Check if preferred setup
+        for preferred in self.PREFERRED_SETUP_PATTERNS:
+            if preferred in setup_type:
+                return True, 0  # No penalty
+        
+        # Check if penalized setup
+        for penalized in self.PENALIZED_SETUP_PATTERNS:
+            if penalized in setup_type:
+                return True, self.PENALTY_NON_PREFERRED_SETUP  # Apply penalty but allow
+        
+        # Default: allow with small penalty
+        return True, 5
     
     def _get_session_name(self, session) -> str:
         """Get session name"""
@@ -2790,7 +2802,7 @@ class SignalGeneratorV3:
         
         return {
             "is_running": self.is_running,
-            "version": "v3.2 (DATA-DRIVEN)",
+            "version": "v3.3 (OPTIMIZED FLOW)",
             "mode": "high_quality_low_frequency",
             "uptime_seconds": uptime,
             "scan_count": self.scan_count,
@@ -2801,14 +2813,17 @@ class SignalGeneratorV3:
             "invalid_tokens_removed": self.invalid_tokens_removed,
             "recent_signals": len(self.recent_signals),
             "duplicate_window_minutes": self.DUPLICATE_WINDOW_MINUTES,
-            # v3.2 DATA-DRIVEN configuration
+            # v3.3 OPTIMIZED configuration
             "data_driven_filters": {
                 "min_confidence": self.MIN_CONFIDENCE_SCORE,
                 "min_mtf_score": self.MIN_MTF_SCORE,
                 "allowed_assets": [a.value for a in self.ALLOWED_ASSETS],
                 "allowed_sessions": self.ALLOWED_SESSIONS,
-                "allowed_setups": self.ALLOWED_SETUP_PATTERNS,
-                "min_rr": self.MIN_RR_HARD_REJECT
+                "preferred_setups": self.PREFERRED_SETUP_PATTERNS,
+                "penalized_setups": self.PENALIZED_SETUP_PATTERNS,
+                "min_rr": self.MIN_RR_HARD_REJECT,
+                "fta_hard_block_threshold": self.FTA_HARD_BLOCK_THRESHOLD,
+                "target_signals_per_day": f"{self.MIN_SIGNALS_PER_DAY}-{self.MAX_SIGNALS_PER_DAY}"
             },
             "trade_management": {
                 "partial_tp": "50% at 0.5R",
