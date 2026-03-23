@@ -31,6 +31,8 @@ from typing import Dict, List, Optional, Any
 from enum import Enum
 import logging
 
+from services.candidate_audit_service import candidate_audit_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -533,6 +535,27 @@ class RejectedTradeOutcomeTracker:
             self._update_stats_for_completed(candidate)
             
             logger.info(f"📊 Simulated {candidate.candidate_id}: {outcome} | MFE: {candidate.mfe_r:.2f}R | MAE: {candidate.mae_r:.2f}R")
+            
+            # Update candidate_audit_service with simulated outcome
+            try:
+                # Map simulation outcome to audit outcome
+                audit_outcome = "win" if outcome == SimulationStatus.TP_HIT.value else "loss" if outcome == SimulationStatus.SL_HIT.value else "expired"
+                
+                # Try to find and update matching rejected candidate in audit
+                candidate_audit_service.update_rejected_outcome(
+                    symbol=candidate.symbol,
+                    direction=candidate.direction,
+                    rejection_reason=candidate.rejection_reason,
+                    outcome=audit_outcome,
+                    is_simulated=True,
+                    total_r=candidate.r_result,
+                    mfe_r=candidate.mfe_r,
+                    mae_r=candidate.mae_r,
+                    peak_r=candidate.peak_r,
+                    time_to_outcome=candidate.time_to_outcome_seconds / 60 if candidate.time_to_outcome_seconds else 0
+                )
+            except Exception as e:
+                logger.debug(f"Could not update candidate audit with rejected simulation: {e}")
             
         except Exception as e:
             logger.error(f"Simulation error for {candidate.candidate_id}: {e}")

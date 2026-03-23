@@ -924,15 +924,25 @@ class SignalGeneratorV3:
                 "daily_limit_passed": "daily" not in rejection_reason.lower()
             }
             
-            # Build trade levels
+            # Build trade levels - use correct pip_size for asset
+            # Get pip_size from asset config (EURUSD=0.0001, XAUUSD=0.01)
+            pip_size = 0.0001  # default for forex
+            try:
+                from services.signal_generator_v3 import ASSET_CONFIGS, Asset
+                asset_enum = Asset(symbol) if symbol in [a.value for a in Asset] else None
+                if asset_enum and asset_enum in ASSET_CONFIGS:
+                    pip_size = ASSET_CONFIGS[asset_enum].pip_size
+            except:
+                pip_size = 0.01 if "XAU" in symbol or "GOLD" in symbol else 0.0001
+            
             trade_levels = {
                 "entry": entry_price,
                 "stop_loss": stop_loss,
                 "take_profit_1": take_profit,
                 "take_profit_2": 0,  # Will be set if available
                 "risk_reward": risk_reward,
-                "sl_pips": abs(entry_price - stop_loss) / 0.0001 if entry_price > 0 and stop_loss > 0 else 0,
-                "tp_pips": abs(take_profit - entry_price) / 0.0001 if entry_price > 0 and take_profit > 0 else 0
+                "sl_pips": abs(entry_price - stop_loss) / pip_size if entry_price > 0 and stop_loss > 0 else 0,
+                "tp_pips": abs(take_profit - entry_price) / pip_size if entry_price > 0 and take_profit > 0 else 0
             }
             
             # Record in audit service

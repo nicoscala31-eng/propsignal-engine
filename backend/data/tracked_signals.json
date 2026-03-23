@@ -1845,9 +1845,7 @@
       "time_in_profit_seconds": 30.0,
       "time_in_drawdown_seconds": 4710.0,
       "peak_r_before_reversal": 0.009922395436359711
-    }
-  ],
-  "active": [
+    },
     {
       "signal_id": "EURUSD_BUY_20260323_142128",
       "timestamp": "2026-03-23T14:21:28.666357",
@@ -1967,19 +1965,19 @@
           }
         ]
       },
-      "status": "generated",
+      "status": "sl_hit",
       "notified_at": null,
       "entry_triggered_at": null,
-      "closed_at": null,
+      "closed_at": "2026-03-23T16:20:53.916727",
       "max_favorable_excursion": 0.0019599999999999618,
-      "max_adverse_excursion": 0.0031799999999999606,
+      "max_adverse_excursion": 0.0038599999999999746,
       "highest_price_seen": 1.1637,
-      "lowest_price_seen": 1.15856,
-      "final_outcome": null,
+      "lowest_price_seen": 1.15788,
+      "final_outcome": "loss",
       "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
+      "pips_lost": 0.0038491071428572443,
+      "time_to_outcome_seconds": 7165.25037,
+      "moved_favorable_before_fail": true,
       "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
@@ -1987,9 +1985,11 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 3780.0,
-      "time_in_drawdown_seconds": 2700.0,
+      "time_in_drawdown_seconds": 3750.0,
       "peak_r_before_reversal": 0.5092090002319414
-    },
+    }
+  ],
+  "active": [
     {
       "signal_id": "EURUSD_BUY_20260323_142517",
       "timestamp": "2026-03-23T14:25:17.739461",
@@ -2114,9 +2114,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0011399999999999189,
-      "max_adverse_excursion": 0.0040000000000000036,
+      "max_adverse_excursion": 0.0046800000000000175,
       "highest_price_seen": 1.1637,
-      "lowest_price_seen": 1.15856,
+      "lowest_price_seen": 1.15788,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -2129,7 +2129,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1710.0,
-      "time_in_drawdown_seconds": 4500.0,
+      "time_in_drawdown_seconds": 7110.0,
       "peak_r_before_reversal": 0.24340399572973007
     },
     {
@@ -2256,9 +2256,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0011699999999998933,
-      "max_adverse_excursion": 0.003970000000000029,
+      "max_adverse_excursion": 0.004650000000000043,
       "highest_price_seen": 1.1637,
-      "lowest_price_seen": 1.15856,
+      "lowest_price_seen": 1.15788,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -2271,7 +2271,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1740.0,
-      "time_in_drawdown_seconds": 4440.0,
+      "time_in_drawdown_seconds": 7050.0,
       "peak_r_before_reversal": 0.25141980046044415
     },
     {
@@ -2398,9 +2398,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0010300000000000864,
-      "max_adverse_excursion": 0.004109999999999836,
+      "max_adverse_excursion": 0.00478999999999985,
       "highest_price_seen": 1.1637,
-      "lowest_price_seen": 1.15856,
+      "lowest_price_seen": 1.15788,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -2413,7 +2413,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1290.0,
-      "time_in_drawdown_seconds": 4800.0,
+      "time_in_drawdown_seconds": 7410.0,
       "peak_r_before_reversal": 0.21487110713755483
     },
     {
@@ -2540,9 +2540,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0010699999999999044,
-      "max_adverse_excursion": 0.004070000000000018,
+      "max_adverse_excursion": 0.004750000000000032,
       "highest_price_seen": 1.1637,
-      "lowest_price_seen": 1.15856,
+      "lowest_price_seen": 1.15788,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -2555,7 +2555,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1440.0,
-      "time_in_drawdown_seconds": 4620.0,
+      "time_in_drawdown_seconds": 7230.0,
       "peak_r_before_reversal": 0.22509391435008544
     },
     {
@@ -2682,9 +2682,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.00045000000000006146,
-      "max_adverse_excursion": 0.003889999999999949,
+      "max_adverse_excursion": 0.004569999999999963,
       "highest_price_seen": 1.1629,
-      "lowest_price_seen": 1.15856,
+      "lowest_price_seen": 1.15788,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -2697,9 +2697,9 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 660.0,
-      "time_in_drawdown_seconds": 3900.0,
+      "time_in_drawdown_seconds": 6510.0,
       "peak_r_before_reversal": 0.09820732657834522
     }
   ],
-  "saved_at": "2026-03-23T16:03:51.630967"
+  "saved_at": "2026-03-23T17:51:15.191387"
 }

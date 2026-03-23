@@ -476,6 +476,56 @@ class CandidateAuditService:
         logger.debug(f"No matching candidate found for outcome update: {candidate_id or f'{symbol} {direction}'}")
         return False
     
+    def update_rejected_outcome(
+        self,
+        symbol: str,
+        direction: str,
+        rejection_reason: str,
+        outcome: str,
+        is_simulated: bool = True,
+        total_r: float = 0,
+        mfe_r: float = 0,
+        mae_r: float = 0,
+        peak_r: float = 0,
+        time_to_outcome: float = 0
+    ) -> bool:
+        """
+        Update outcome for a rejected candidate (from simulation).
+        
+        Matches by symbol + direction + rejection_reason.
+        Only updates if current outcome is 'pending'.
+        """
+        # Find matching rejected candidate with pending outcome
+        matching = [c for c in self.candidates 
+                   if c.symbol == symbol 
+                   and c.direction == direction 
+                   and c.decision == "rejected"
+                   and c.rejection_reason == rejection_reason
+                   and c.outcome_data.outcome == "pending"]
+        
+        if matching:
+            # Update the oldest pending one first
+            matched = matching[0]
+            matched.outcome_data = OutcomeData(
+                outcome=outcome,
+                is_simulated=is_simulated,
+                total_r=total_r,
+                mfe_r=mfe_r,
+                mae_r=mae_r,
+                peak_r=peak_r,
+                time_to_outcome_minutes=time_to_outcome
+            )
+            
+            # Save periodically (every 10 updates)
+            outcomes_updated = sum(1 for c in self.candidates if c.outcome_data.outcome != "pending")
+            if outcomes_updated % 10 == 0:
+                self._save_data()
+            
+            logger.debug(f"📊 Rejected outcome updated: {matched.candidate_id} -> {outcome} (simulated)")
+            return True
+        
+        return False
+    
     # ==================== ANALYSIS METHODS ====================
     
     def get_latest_candidates(self, limit: int = 50) -> List[Dict]:
