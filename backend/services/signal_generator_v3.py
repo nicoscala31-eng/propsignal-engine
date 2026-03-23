@@ -981,11 +981,19 @@ class SignalGeneratorV3:
         logger.info("✅ Scanner loop restarted successfully")
     
     async def _run_loop(self):
-        """Main loop with heartbeat updates"""
+        """Main loop with heartbeat updates - VERBOSE LOGGING"""
+        logger.info("🔁 SCAN LOOP STARTING - entering main loop")
+        loop_count = 0
+        
         while self.is_running:
+            loop_count += 1
             try:
                 # Update heartbeat BEFORE scan
                 self.last_scan_timestamp = datetime.utcnow()
+                
+                # VERBOSE: Log every cycle
+                if loop_count % 10 == 1:  # Log every 10th cycle (every ~50s)
+                    logger.info(f"🔁 SCAN LOOP ACTIVE | Cycle: {loop_count} | Total Scans: {self.scan_count} | Time: {self.last_scan_timestamp.strftime('%H:%M:%S')}")
                 
                 await self._scan_all_assets()
                 
@@ -1005,6 +1013,8 @@ class SignalGeneratorV3:
                     logger.error("🚨 ALERT: MAX_CONSECUTIVE_FAILURES reached")
             
             await asyncio.sleep(self.scan_interval)
+        
+        logger.warning("🔁 SCAN LOOP EXITED - is_running is False")
     
     # ==================== MAIN SCAN PIPELINE ====================
     
