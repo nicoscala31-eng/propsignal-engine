@@ -666,6 +666,472 @@ class CandidateAuditService:
             }
         
         return results
+    
+    # ==================== THRESHOLD ANALYSIS REPORT ====================
+    
+    def get_threshold_analysis_report(self) -> Dict:
+        """
+        Comprehensive threshold analysis report for data-driven optimization.
+        
+        Groups trades by score buckets, analyzes rejections, and ranks
+        component importance based on real outcome data.
+        
+        This is ANALYTICS ONLY - does not modify strategy.
+        """
+        return {
+            "generated_at": datetime.utcnow().isoformat(),
+            "data_summary": self._get_data_summary(),
+            "buckets": self._get_bucket_analysis(),
+            "rejections": self._get_rejection_performance(),
+            "components": self._get_component_importance(),
+            "summary": self._get_executive_summary()
+        }
+    
+    def _get_data_summary(self) -> Dict:
+        """Summary of available data"""
+        total = len(self.candidates)
+        accepted = [c for c in self.candidates if c.decision == "accepted"]
+        rejected = [c for c in self.candidates if c.decision == "rejected"]
+        
+        # Outcome counts for accepted trades
+        accepted_wins = len([c for c in accepted if c.outcome_data.outcome == "win"])
+        accepted_losses = len([c for c in accepted if c.outcome_data.outcome == "loss"])
+        accepted_pending = len([c for c in accepted if c.outcome_data.outcome == "pending"])
+        
+        # Simulated outcome counts for rejected trades
+        rejected_sim_wins = len([c for c in rejected if c.outcome_data.outcome == "win"])
+        rejected_sim_losses = len([c for c in rejected if c.outcome_data.outcome == "loss"])
+        rejected_pending = len([c for c in rejected if c.outcome_data.outcome == "pending"])
+        
+        return {
+            "total_candidates": total,
+            "accepted_count": len(accepted),
+            "rejected_count": len(rejected),
+            "acceptance_rate": round(len(accepted) / total * 100, 1) if total > 0 else 0,
+            "accepted_outcomes": {
+                "wins": accepted_wins,
+                "losses": accepted_losses,
+                "pending": accepted_pending,
+                "winrate": round(accepted_wins / (accepted_wins + accepted_losses) * 100, 1) if (accepted_wins + accepted_losses) > 0 else 0
+            },
+            "rejected_simulated": {
+                "sim_wins": rejected_sim_wins,
+                "sim_losses": rejected_sim_losses,
+                "pending": rejected_pending,
+                "sim_winrate": round(rejected_sim_wins / (rejected_sim_wins + rejected_sim_losses) * 100, 1) if (rejected_sim_wins + rejected_sim_losses) > 0 else 0
+            }
+        }
+    
+    def _get_bucket_analysis(self) -> Dict:
+        """
+        Analyze trades grouped by total_score buckets:
+        <70, 70-74, 75-79, 80-84, 85+
+        """
+        buckets_config = [
+            ("<70", 0, 70),
+            ("70-74", 70, 75),
+            ("75-79", 75, 80),
+            ("80-84", 80, 85),
+            ("85+", 85, 200)
+        ]
+        
+        results = {}
+        
+        for bucket_name, min_score, max_score in buckets_config:
+            # Filter candidates in this bucket
+            in_bucket = [c for c in self.candidates 
+                        if min_score <= c.score_breakdown.total_score < max_score]
+            
+            accepted = [c for c in in_bucket if c.decision == "accepted"]
+            rejected = [c for c in in_bucket if c.decision == "rejected"]
+            
+            # Real outcomes for accepted trades
+            accepted_wins = [c for c in accepted if c.outcome_data.outcome == "win"]
+            accepted_losses = [c for c in accepted if c.outcome_data.outcome == "loss"]
+            
+            # Simulated outcomes for rejected trades
+            rejected_sim_wins = [c for c in rejected if c.outcome_data.outcome == "win"]
+            rejected_sim_losses = [c for c in rejected if c.outcome_data.outcome == "loss"]
+            
+            # Calculate metrics
+            total_candidates = len(in_bucket)
+            acceptance_rate = round(len(accepted) / total_candidates * 100, 1) if total_candidates > 0 else 0
+            
+            # RR analysis
+            all_rr = [c.trade_levels.risk_reward for c in in_bucket if c.trade_levels.risk_reward > 0]
+            avg_rr = round(statistics.mean(all_rr), 2) if all_rr else 0
+            
+            # Real performance (accepted trades only)
+            real_wins = len(accepted_wins)
+            real_losses = len(accepted_losses)
+            real_winrate = round(real_wins / (real_wins + real_losses) * 100, 1) if (real_wins + real_losses) > 0 else 0
+            real_total_r = sum(c.outcome_data.total_r for c in accepted if c.outcome_data.outcome in ["win", "loss"])
+            
+            # Expectancy calculation
+            if real_wins + real_losses > 0:
+                avg_win_r = sum(c.outcome_data.total_r for c in accepted_wins) / real_wins if real_wins > 0 else 0
+                avg_loss_r = sum(c.outcome_data.total_r for c in accepted_losses) / real_losses if real_losses > 0 else -1
+                expectancy = (real_winrate / 100 * avg_win_r) + ((100 - real_winrate) / 100 * avg_loss_r)
+            else:
+                avg_win_r = 0
+                avg_loss_r = 0
+                expectancy = 0
+            
+            # Simulated performance (rejected trades)
+            sim_wins = len(rejected_sim_wins)
+            sim_losses = len(rejected_sim_losses)
+            sim_winrate = round(sim_wins / (sim_wins + sim_losses) * 100, 1) if (sim_wins + sim_losses) > 0 else 0
+            sim_total_r = sum(c.outcome_data.total_r for c in rejected if c.outcome_data.outcome in ["win", "loss"])
+            
+            # MFE/MAE for accepted trades
+            mfe_values = [c.outcome_data.mfe_r for c in accepted if c.outcome_data.mfe_r > 0]
+            mae_values = [c.outcome_data.mae_r for c in accepted if c.outcome_data.mae_r > 0]
+            avg_mfe = round(statistics.mean(mfe_values), 2) if mfe_values else 0
+            avg_mae = round(statistics.mean(mae_values), 2) if mae_values else 0
+            
+            results[bucket_name] = {
+                "total_candidates": total_candidates,
+                "accepted": len(accepted),
+                "rejected": len(rejected),
+                "acceptance_rate": acceptance_rate,
+                "avg_rr": avg_rr,
+                "real_performance": {
+                    "wins": real_wins,
+                    "losses": real_losses,
+                    "pending": len([c for c in accepted if c.outcome_data.outcome == "pending"]),
+                    "winrate": real_winrate,
+                    "total_r": round(real_total_r, 2),
+                    "avg_win_r": round(avg_win_r, 2),
+                    "avg_loss_r": round(avg_loss_r, 2),
+                    "expectancy": round(expectancy, 3),
+                    "avg_mfe": avg_mfe,
+                    "avg_mae": avg_mae
+                },
+                "simulated_rejected": {
+                    "sim_wins": sim_wins,
+                    "sim_losses": sim_losses,
+                    "pending": len([c for c in rejected if c.outcome_data.outcome == "pending"]),
+                    "sim_winrate": sim_winrate,
+                    "sim_total_r": round(sim_total_r, 2),
+                    "missed_profit_if_positive": sim_total_r > 0
+                }
+            }
+        
+        return results
+    
+    def _get_rejection_performance(self) -> Dict:
+        """
+        Analyze rejections by reason with hypothetical performance.
+        """
+        rejected = [c for c in self.candidates if c.decision == "rejected"]
+        
+        # Group by rejection reason
+        by_reason: Dict[str, List] = {}
+        for c in rejected:
+            reason = c.rejection_reason or "unknown"
+            if reason not in by_reason:
+                by_reason[reason] = []
+            by_reason[reason].append(c)
+        
+        results = {}
+        for reason, candidates in by_reason.items():
+            # Score distribution
+            scores = [c.score_breakdown.total_score for c in candidates]
+            avg_score = round(statistics.mean(scores), 1) if scores else 0
+            min_score = round(min(scores), 1) if scores else 0
+            max_score = round(max(scores), 1) if scores else 0
+            
+            # Simulated outcomes
+            sim_wins = [c for c in candidates if c.outcome_data.outcome == "win"]
+            sim_losses = [c for c in candidates if c.outcome_data.outcome == "loss"]
+            pending = [c for c in candidates if c.outcome_data.outcome == "pending"]
+            
+            sim_total_r = sum(c.outcome_data.total_r for c in candidates if c.outcome_data.outcome in ["win", "loss"])
+            sim_winrate = round(len(sim_wins) / (len(sim_wins) + len(sim_losses)) * 100, 1) if (len(sim_wins) + len(sim_losses)) > 0 else 0
+            
+            # Average MFE/MAE from simulations
+            mfe_values = [c.outcome_data.mfe_r for c in candidates if c.outcome_data.mfe_r > 0]
+            mae_values = [c.outcome_data.mae_r for c in candidates if c.outcome_data.mae_r > 0]
+            
+            # Close to threshold analysis (delta >= -5)
+            close_to_threshold = [c for c in candidates if c.score_breakdown.score_delta >= -5]
+            close_sim_wins = len([c for c in close_to_threshold if c.outcome_data.outcome == "win"])
+            close_sim_losses = len([c for c in close_to_threshold if c.outcome_data.outcome == "loss"])
+            
+            # Verdict
+            if len(sim_wins) + len(sim_losses) >= 5:
+                if sim_total_r > 0 and sim_winrate >= 50:
+                    verdict = "POTENTIALLY_OVER_FILTERING"
+                elif sim_total_r < -2:
+                    verdict = "FILTER_WORKING_WELL"
+                else:
+                    verdict = "NEUTRAL"
+            else:
+                verdict = "INSUFFICIENT_DATA"
+            
+            results[reason] = {
+                "count": len(candidates),
+                "frequency_pct": round(len(candidates) / len(rejected) * 100, 1) if rejected else 0,
+                "score_distribution": {
+                    "avg": avg_score,
+                    "min": min_score,
+                    "max": max_score
+                },
+                "hypothetical_performance": {
+                    "sim_wins": len(sim_wins),
+                    "sim_losses": len(sim_losses),
+                    "pending": len(pending),
+                    "sim_winrate": sim_winrate,
+                    "sim_total_r": round(sim_total_r, 2),
+                    "avg_mfe": round(statistics.mean(mfe_values), 2) if mfe_values else 0,
+                    "avg_mae": round(statistics.mean(mae_values), 2) if mae_values else 0
+                },
+                "close_to_threshold": {
+                    "count": len(close_to_threshold),
+                    "close_sim_wins": close_sim_wins,
+                    "close_sim_losses": close_sim_losses
+                },
+                "verdict": verdict
+            }
+        
+        return results
+    
+    def _get_component_importance(self) -> Dict:
+        """
+        Rank components by their correlation with winning trades.
+        Higher delta = stronger edge indicator.
+        """
+        accepted = [c for c in self.candidates if c.decision == "accepted"]
+        wins = [c for c in accepted if c.outcome_data.outcome == "win"]
+        losses = [c for c in accepted if c.outcome_data.outcome == "loss"]
+        
+        # All score components to analyze
+        components = [
+            ("mtf_score", "MTF Alignment"),
+            ("structure_score", "Market Structure"),
+            ("momentum_score", "Momentum"),
+            ("session_score", "Session Quality"),
+            ("pullback_score", "Pullback Quality"),
+            ("entry_quality_score", "Entry Quality"),
+            ("key_level_score", "Key Level Reaction"),
+            ("rr_score", "Risk/Reward"),
+            ("volatility_score", "Volatility"),
+            ("regime_score", "Market Regime"),
+            ("spread_score", "Spread"),
+            ("concentration_score", "Concentration"),
+            ("h1_bias_score", "H1 Directional Bias"),
+            ("m15_context_score", "M15 Context")
+        ]
+        
+        # Penalties to analyze (negative correlation expected)
+        penalties = [
+            ("fta_penalty", "FTA Penalty"),
+            ("news_penalty", "News Penalty"),
+            ("spread_penalty", "Spread Penalty"),
+            ("setup_penalty", "Setup Penalty")
+        ]
+        
+        results = {}
+        
+        # Analyze regular components
+        for attr_name, display_name in components:
+            win_scores = [getattr(c.score_breakdown, attr_name, 0) for c in wins]
+            loss_scores = [getattr(c.score_breakdown, attr_name, 0) for c in losses]
+            all_scores = [getattr(c.score_breakdown, attr_name, 0) for c in accepted]
+            
+            avg_win = round(statistics.mean(win_scores), 1) if win_scores else 0
+            avg_loss = round(statistics.mean(loss_scores), 1) if loss_scores else 0
+            avg_all = round(statistics.mean(all_scores), 1) if all_scores else 0
+            delta = round(avg_win - avg_loss, 1)
+            
+            results[attr_name] = {
+                "name": display_name,
+                "avg_in_wins": avg_win,
+                "avg_in_losses": avg_loss,
+                "avg_overall": avg_all,
+                "delta": delta,
+                "correlation": "STRONG_POSITIVE" if delta >= 10 else "POSITIVE" if delta > 0 else "NEGATIVE" if delta < -10 else "WEAK_NEGATIVE" if delta < 0 else "NEUTRAL"
+            }
+        
+        # Analyze penalties (lower penalty in wins = good filter)
+        for attr_name, display_name in penalties:
+            win_penalties = [getattr(c.score_breakdown, attr_name, 0) for c in wins]
+            loss_penalties = [getattr(c.score_breakdown, attr_name, 0) for c in losses]
+            
+            avg_win = round(statistics.mean(win_penalties), 1) if win_penalties else 0
+            avg_loss = round(statistics.mean(loss_penalties), 1) if loss_penalties else 0
+            delta = round(avg_loss - avg_win, 1)  # Inverted: higher loss penalty = good filter
+            
+            results[attr_name] = {
+                "name": display_name,
+                "avg_in_wins": avg_win,
+                "avg_in_losses": avg_loss,
+                "delta": delta,
+                "correlation": "GOOD_FILTER" if delta > 5 else "WEAK_FILTER" if delta > 0 else "BAD_FILTER" if delta < -5 else "INEFFECTIVE"
+            }
+        
+        return results
+    
+    def _get_executive_summary(self) -> Dict:
+        """
+        Generate actionable insights from the data.
+        """
+        accepted = [c for c in self.candidates if c.decision == "accepted"]
+        rejected = [c for c in self.candidates if c.decision == "rejected"]
+        
+        wins = [c for c in accepted if c.outcome_data.outcome == "win"]
+        losses = [c for c in accepted if c.outcome_data.outcome == "loss"]
+        
+        # Find best performing score range
+        bucket_analysis = self._get_bucket_analysis()
+        best_bucket = None
+        best_expectancy = -999
+        worst_bucket = None
+        worst_expectancy = 999
+        
+        for bucket_name, data in bucket_analysis.items():
+            exp = data["real_performance"]["expectancy"]
+            if exp > best_expectancy and (data["real_performance"]["wins"] + data["real_performance"]["losses"]) >= 3:
+                best_expectancy = exp
+                best_bucket = bucket_name
+            if exp < worst_expectancy and (data["real_performance"]["wins"] + data["real_performance"]["losses"]) >= 3:
+                worst_expectancy = exp
+                worst_bucket = bucket_name
+        
+        # Find potentially over-filtering rejection reasons
+        rejection_analysis = self._get_rejection_performance()
+        over_filtering = []
+        good_filters = []
+        
+        for reason, data in rejection_analysis.items():
+            if data["verdict"] == "POTENTIALLY_OVER_FILTERING":
+                over_filtering.append({
+                    "reason": reason,
+                    "missed_r": data["hypothetical_performance"]["sim_total_r"],
+                    "sim_winrate": data["hypothetical_performance"]["sim_winrate"]
+                })
+            elif data["verdict"] == "FILTER_WORKING_WELL":
+                good_filters.append({
+                    "reason": reason,
+                    "avoided_loss_r": abs(data["hypothetical_performance"]["sim_total_r"]),
+                    "sim_winrate": data["hypothetical_performance"]["sim_winrate"]
+                })
+        
+        # Rank components by edge
+        component_analysis = self._get_component_importance()
+        strongest_edge = sorted(
+            [(k, v) for k, v in component_analysis.items() if "penalty" not in k],
+            key=lambda x: x[1]["delta"],
+            reverse=True
+        )[:5]
+        
+        weakest_components = sorted(
+            [(k, v) for k, v in component_analysis.items() if "penalty" not in k],
+            key=lambda x: x[1]["delta"]
+        )[:3]
+        
+        # Calculate overall edge
+        total_r = sum(c.outcome_data.total_r for c in accepted if c.outcome_data.outcome in ["win", "loss"])
+        trade_count = len(wins) + len(losses)
+        avg_r_per_trade = round(total_r / trade_count, 3) if trade_count > 0 else 0
+        
+        return {
+            "data_quality": {
+                "total_candidates_analyzed": len(self.candidates),
+                "trades_with_outcomes": trade_count,
+                "sufficient_data": trade_count >= 20
+            },
+            "overall_performance": {
+                "winrate": round(len(wins) / trade_count * 100, 1) if trade_count > 0 else 0,
+                "total_r": round(total_r, 2),
+                "avg_r_per_trade": avg_r_per_trade,
+                "profitable": total_r > 0
+            },
+            "best_score_range": {
+                "bucket": best_bucket or "N/A",
+                "expectancy": round(best_expectancy, 3) if best_bucket else 0
+            },
+            "worst_score_range": {
+                "bucket": worst_bucket or "N/A",
+                "expectancy": round(worst_expectancy, 3) if worst_bucket else 0
+            },
+            "potentially_over_filtering": over_filtering,
+            "effective_filters": good_filters,
+            "strongest_edge_components": [
+                {"component": k, "name": v["name"], "delta": v["delta"]}
+                for k, v in strongest_edge
+            ],
+            "weakest_components": [
+                {"component": k, "name": v["name"], "delta": v["delta"]}
+                for k, v in weakest_components
+            ],
+            "recommendations": self._generate_recommendations(
+                bucket_analysis, rejection_analysis, component_analysis,
+                total_r, trade_count, over_filtering
+            )
+        }
+    
+    def _generate_recommendations(
+        self, 
+        buckets: Dict, 
+        rejections: Dict, 
+        components: Dict,
+        total_r: float,
+        trade_count: int,
+        over_filtering: List
+    ) -> List[str]:
+        """Generate actionable recommendations based on analysis."""
+        recommendations = []
+        
+        # Check if we have enough data
+        if trade_count < 20:
+            recommendations.append(
+                f"⚠️ Only {trade_count} trades with outcomes. Need 20+ for reliable analysis. Continue collecting data."
+            )
+            return recommendations
+        
+        # Overall profitability
+        if total_r > 0:
+            recommendations.append(
+                f"✅ Strategy is profitable (+{total_r:.2f}R over {trade_count} trades). Focus on consistency."
+            )
+        else:
+            recommendations.append(
+                f"⚠️ Strategy is negative ({total_r:.2f}R). Review filters and consider tightening thresholds."
+            )
+        
+        # Over-filtering check
+        if over_filtering:
+            for item in over_filtering[:2]:
+                recommendations.append(
+                    f"🔍 Consider relaxing '{item['reason']}' filter - simulated {item['sim_winrate']:.1f}% winrate with +{item['missed_r']:.2f}R missed."
+                )
+        
+        # Component-based recommendations
+        for comp_name, data in components.items():
+            if "penalty" not in comp_name and data["delta"] >= 15:
+                recommendations.append(
+                    f"✅ '{data['name']}' is a strong edge indicator (+{data['delta']} delta). Prioritize high values."
+                )
+            elif "penalty" not in comp_name and data["delta"] <= -10:
+                recommendations.append(
+                    f"⚠️ '{data['name']}' shows negative correlation ({data['delta']} delta). Consider de-weighting."
+                )
+        
+        # Bucket-based recommendations
+        for bucket_name, data in buckets.items():
+            perf = data["real_performance"]
+            if perf["wins"] + perf["losses"] >= 5:
+                if perf["expectancy"] >= 0.3:
+                    recommendations.append(
+                        f"✅ Score range {bucket_name} shows strong edge (expectancy: {perf['expectancy']:.2f}R)."
+                    )
+                elif perf["expectancy"] <= -0.2:
+                    recommendations.append(
+                        f"⚠️ Score range {bucket_name} is underperforming (expectancy: {perf['expectancy']:.2f}R). Consider tightening."
+                    )
+        
+        return recommendations[:7]  # Limit to top 7 recommendations
 
 
 # Global instance

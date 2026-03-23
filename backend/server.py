@@ -1761,6 +1761,42 @@ async def get_threshold_performance():
     return candidate_audit_service.get_threshold_performance_report()
 
 
+@api_router.get("/audit/threshold-report")
+async def get_threshold_analysis_report():
+    """
+    COMPLETE THRESHOLD ANALYSIS REPORT for data-driven optimization.
+    
+    Returns structured JSON with:
+    
+    1. BUCKETS: Trades grouped by total_score (<70, 70-74, 75-79, 80-84, 85+)
+       - total candidates, accepted, rejected, acceptance rate
+       - TP hits, SL hits, winrate, total R, expectancy
+       - avg MFE/MAE
+       
+    2. REJECTIONS: Analysis by rejection reason
+       - count, frequency
+       - hypothetical performance (if trades were taken)
+       - close-to-threshold analysis
+       - verdict (OVER_FILTERING / WORKING_WELL)
+       
+    3. COMPONENTS: Score component importance ranking
+       - avg in wins vs losses
+       - delta (higher = stronger edge indicator)
+       - correlation strength
+       
+    4. SUMMARY: Executive insights
+       - best/worst score ranges
+       - potentially over-filtering reasons
+       - strongest edge components
+       - actionable recommendations
+    
+    ANALYTICS ONLY - does NOT modify strategy or thresholds.
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return candidate_audit_service.get_threshold_analysis_report()
+
+
 @api_router.get("/audit/score-buckets")
 async def get_score_bucket_analysis():
     """
