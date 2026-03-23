@@ -2291,8 +2291,7 @@ async def send_real_pipeline_test():
         
         # Create a real GeneratedSignal object (same structure as production)
         from services.signal_generator_v3 import SignalConfidence, SignalScore
-        from models.asset import Asset as AssetEnum
-        from dataclasses import field
+        from models import Asset as AssetEnum
         
         test_signal = GeneratedSignal(
             signal_id=signal_id,
