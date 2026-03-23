@@ -25,6 +25,8 @@ from enum import Enum
 from pathlib import Path
 import aiofiles
 
+from services.candidate_audit_service import candidate_audit_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -320,10 +322,13 @@ class SignalOutcomeTracker:
                     risk = abs(signal.entry_price - signal.stop_loss)
                     distance_to_tp = abs(signal.take_profit_1 - current_price)
                     distance_to_sl = abs(signal.stop_loss - current_price)
+                    # Calculate MFE/MAE in R-multiples for logging
+                    mfe_r = signal.max_favorable_excursion / risk if risk > 0 else 0
+                    mae_r = signal.max_adverse_excursion / risk if risk > 0 else 0
                     logger.info(f"📊 TRACKER UPDATE: {signal.asset} {signal.direction}")
                     logger.info(f"   Price: {current_price:.5f} | Entry: {signal.entry_price:.5f}")
-                    logger.info(f"   TP: {signal.take_profit_1:.5f} ({distance_to_tp:.1f} away) | SL: {signal.stop_loss:.5f} ({distance_to_sl:.1f} away)")
-                    logger.info(f"   MFE: {signal.max_favorable_excursion:.2f} | MAE: {signal.max_adverse_excursion:.2f}")
+                    logger.info(f"   TP: {signal.take_profit_1:.5f} ({distance_to_tp:.5f} away) | SL: {signal.stop_loss:.5f} ({distance_to_sl:.5f} away)")
+                    logger.info(f"   MFE: {mfe_r:.2f}R | MAE: {mae_r:.2f}R")
                     if risk > 0:
                         r_multiple = (signal.entry_price - current_price) / risk if signal.direction == "SELL" else (current_price - signal.entry_price) / risk
                         logger.info(f"   Current R: {r_multiple:.2f}R | Peak R: {signal.peak_r_before_reversal:.2f}R")
@@ -333,10 +338,15 @@ class SignalOutcomeTracker:
                     if outcome == "sl_hit" and signal.reached_one_r:
                         signal.trailing_would_improve = True
                     
+                    # Calculate MFE/MAE in R-multiples for final log
+                    final_risk = abs(signal.entry_price - signal.stop_loss)
+                    final_mfe_r = signal.max_favorable_excursion / final_risk if final_risk > 0 else 0
+                    final_mae_r = signal.max_adverse_excursion / final_risk if final_risk > 0 else 0
+                    
                     # Log outcome
                     logger.info(f"🎯 TRADE CLOSED: {signal.asset} {signal.direction} -> {outcome.upper()}")
                     logger.info(f"   Entry: {signal.entry_price:.5f} | Close: {current_price:.5f}")
-                    logger.info(f"   Final MFE: {signal.max_favorable_excursion:.2f} | Final MAE: {signal.max_adverse_excursion:.2f}")
+                    logger.info(f"   Final MFE: {final_mfe_r:.2f}R | Final MAE: {final_mae_r:.2f}R")
                     
                     signals_to_complete.append((signal_id, outcome))
                 
@@ -461,9 +471,32 @@ class SignalOutcomeTracker:
         if len(self.completed_signals) > self.MAX_TRACKED_SIGNALS:
             self.completed_signals = self.completed_signals[-self.MAX_TRACKED_SIGNALS:]
         
+        # Calculate MFE/MAE in R-multiples
+        risk = abs(signal.entry_price - signal.stop_loss)
+        mfe_r = signal.max_favorable_excursion / risk if risk > 0 else 0
+        mae_r = signal.max_adverse_excursion / risk if risk > 0 else 0
+        total_r = signal.peak_r_before_reversal if outcome == "tp_hit" else -1.0 if outcome == "sl_hit" else 0
+        
+        # Update candidate audit service with outcome data
+        try:
+            # Find matching candidate by symbol, direction, and approximate timestamp
+            candidate_audit_service.update_outcome(
+                symbol=signal.asset,
+                direction=signal.direction,
+                outcome="win" if outcome == "tp_hit" else "loss" if outcome == "sl_hit" else "expired",
+                total_r=total_r,
+                exit_price=signal.highest_price_seen if outcome == "tp_hit" else signal.lowest_price_seen if outcome == "sl_hit" else 0,
+                mfe_r=mfe_r,
+                mae_r=mae_r,
+                time_to_outcome=(datetime.utcnow() - datetime.fromisoformat(signal.timestamp.replace('Z', ''))).total_seconds() / 60
+            )
+            logger.info(f"📊 Updated candidate audit: {signal.asset} {signal.direction} -> {outcome} | MFE: {mfe_r:.2f}R | MAE: {mae_r:.2f}R")
+        except Exception as e:
+            logger.debug(f"Could not update candidate audit: {e}")
+        
         # Log outcome
         emoji = "✅" if signal.final_outcome == "win" else "❌" if signal.final_outcome == "loss" else "⏰"
-        logger.info(f"{emoji} Signal {signal_id} outcome: {outcome} (MFE: {signal.max_favorable_excursion:.5f}, MAE: {signal.max_adverse_excursion:.5f})")
+        logger.info(f"{emoji} Signal {signal_id} outcome: {outcome} (MFE: {mfe_r:.2f}R, MAE: {mae_r:.2f}R)")
         
         # Save periodically
         await self._save_data()
