@@ -1679,6 +1679,163 @@ async def trigger_missed_opportunities_simulation():
     
     await missed_opportunity_analyzer.run_simulation_batch()
     
+    return {
+        "status": "simulation_triggered",
+        "note": "Check /audit/missed-opportunities for results"
+    }
+
+
+# ==================== CANDIDATE AUDIT ENDPOINTS ====================
+
+@api_router.get("/audit/candidates")
+async def get_candidate_audit():
+    """
+    Get latest candidate trades with FULL SCORE BREAKDOWN.
+    
+    Returns all candidates that reached pre-filter stage,
+    both accepted and rejected, with complete scoring details.
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "all_candidates",
+        "count": len(candidate_audit_service.candidates),
+        "candidates": candidate_audit_service.get_latest_candidates(50),
+        "note": "AUDIT ONLY - Full score breakdown for threshold analysis"
+    }
+
+
+@api_router.get("/audit/rejections")
+async def get_rejection_audit():
+    """
+    Get latest REJECTED trades with full score breakdown.
+    
+    Includes:
+    - Rejection reason
+    - Full score breakdown at rejection
+    - Filter flags showing which filter blocked
+    - Simulated outcome (if available)
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "rejections_only",
+        "rejections": candidate_audit_service.get_latest_rejections(50),
+        "analysis": candidate_audit_service.get_rejection_analysis(),
+        "note": "AUDIT ONLY - Rejected trade analysis"
+    }
+
+
+@api_router.get("/audit/score-breakdown")
+async def get_score_breakdown_analysis():
+    """
+    Get score component analysis - which components correlate with wins/losses.
+    
+    Shows for each score component:
+    - Average value in winning trades
+    - Average value in losing trades
+    - Difference (positive = correlates with wins)
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "score_component_analysis",
+        "component_analysis": candidate_audit_service.get_component_analysis(),
+        "note": "AUDIT ONLY - Higher difference = stronger correlation with wins"
+    }
+
+
+@api_router.get("/audit/threshold-performance")
+async def get_threshold_performance():
+    """
+    COMPREHENSIVE threshold performance report.
+    
+    Includes:
+    - Score bucket analysis (winrate/R by score range)
+    - Component analysis (which scores predict wins)
+    - Rejection analysis (which rejects would have won)
+    - Filter effectiveness (which filters are working)
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return candidate_audit_service.get_threshold_performance_report()
+
+
+@api_router.get("/audit/score-buckets")
+async def get_score_bucket_analysis():
+    """
+    Analyze trades by TOTAL SCORE buckets.
+    
+    Buckets: <70, 70-74, 75-79, 80-84, 85+
+    
+    For each bucket shows:
+    - Accepted/rejected count
+    - Wins/losses
+    - Winrate
+    - Total R
+    - Expectancy
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "score_bucket_analysis",
+        "buckets": candidate_audit_service.get_score_bucket_analysis(),
+        "note": "AUDIT ONLY - Score bucket performance"
+    }
+
+
+@api_router.get("/audit/mtf-buckets")
+async def get_mtf_bucket_analysis():
+    """
+    Analyze trades by MTF SCORE buckets.
+    
+    Buckets: <60, 60-69, 70-79, 80-89, 90+
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "mtf_bucket_analysis",
+        "buckets": candidate_audit_service.get_mtf_bucket_analysis(),
+        "note": "AUDIT ONLY - MTF score bucket performance"
+    }
+
+
+@api_router.get("/audit/pullback-buckets")
+async def get_pullback_bucket_analysis():
+    """
+    Analyze trades by PULLBACK SCORE buckets.
+    
+    Buckets: <50, 50-69, 70-84, 85-99, 100
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "pullback_bucket_analysis",
+        "buckets": candidate_audit_service.get_pullback_bucket_analysis(),
+        "note": "AUDIT ONLY - Pullback score bucket performance"
+    }
+
+
+@api_router.get("/audit/filter-effectiveness")
+async def get_filter_effectiveness():
+    """
+    Analyze which filters are correctly blocking losing trades.
+    
+    For each filter shows:
+    - Total blocked
+    - Correctly blocked (would have lost)
+    - Incorrectly blocked (would have won)
+    - Effectiveness percentage
+    - Verdict (effective/needs_review/potentially_harmful)
+    """
+    from services.candidate_audit_service import candidate_audit_service
+    
+    return {
+        "report_type": "filter_effectiveness",
+        "filters": candidate_audit_service.get_filter_effectiveness(),
+        "note": "AUDIT ONLY - Filter effectiveness analysis"
+    }
+    
     pending = sum(1 for r in missed_opportunity_analyzer.records if not r.simulation_completed)
     completed = len(missed_opportunity_analyzer.records) - pending
     
