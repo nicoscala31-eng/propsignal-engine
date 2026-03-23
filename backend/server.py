@@ -2270,10 +2270,9 @@ async def get_push_health():
 async def send_real_pipeline_test():
     """
     Send a notification through the EXACT SAME pipeline as real signals.
-    Uses the SignalGenerator._send_notification() method.
+    Uses fcm_push_service.send_to_all_devices() - same as production.
     NOT a test endpoint - uses real production code path.
     """
-    from services.signal_generator_v3 import signal_generator_v3, GeneratedSignal, PROP_CONFIG
     from services.device_storage_service import device_storage
     from services.fcm_push_service import fcm_push_service
     from datetime import datetime
@@ -2288,34 +2287,6 @@ async def send_real_pipeline_test():
     try:
         # ===== STAGE 1: SIGNAL GENERATION =====
         signal_id = f"PIPELINE_TEST_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Create a real GeneratedSignal object (same structure as production)
-        from services.signal_generator_v3 import SignalConfidence, SignalScore
-        from models import Asset as AssetEnum
-        
-        test_signal = GeneratedSignal(
-            signal_id=signal_id,
-            asset=AssetEnum.EURUSD,
-            direction="BUY",
-            entry_price=1.15250,
-            entry_zone_low=1.15240,
-            entry_zone_high=1.15260,
-            stop_loss=1.15150,
-            take_profit_1=1.15383,
-            take_profit_2=1.15450,
-            risk_reward=1.33,
-            confidence_score=85.0,
-            confidence_level=SignalConfidence.STRONG,
-            setup_type="REAL PIPELINE TEST",
-            invalidation="Below 1.15100",
-            session="London",
-            score_breakdown=SignalScore(
-                total=85.0,
-                breakdown=[],
-                confidence_level=SignalConfidence.STRONG
-            ),
-            timestamp=datetime.utcnow()
-        )
         
         log_stage("SIGNAL_GENERATED", "✅ SUCCESS", f"ID: {signal_id}")
         
@@ -2345,19 +2316,23 @@ async def send_real_pipeline_test():
             log_stage("FCM_INIT", "✅ SUCCESS", "FCM already initialized")
         
         # ===== STAGE 4: SEND NOTIFICATION (REAL PIPELINE) =====
-        notif = test_signal.to_notification_dict()
-        
-        # Override title for clear identification
-        notif['title'] = "🔔 REAL PIPELINE TEST - EURUSD BUY"
-        notif['body'] = f"Entry: 1.15250 | SL: 1.15150 | TP: 1.15383 | Score: 85% | ID: {signal_id[-8:]}"
+        title = "🔔 REAL PIPELINE TEST - EURUSD BUY"
+        body = f"Entry: 1.15250 | SL: 1.15150 | TP: 1.15383 | Score: 85% | ID: {signal_id[-8:]}"
+        data = {
+            "type": "trading_signal",
+            "signal_id": signal_id,
+            "asset": "EURUSD",
+            "direction": "BUY",
+            "is_pipeline_test": "true"
+        }
         
         log_stage("PUSH_ATTEMPTED", "⏳ SENDING", f"To {device_count} device(s)")
         
         results = await fcm_push_service.send_to_all_devices(
             tokens=tokens,
-            title=notif['title'],
-            body=notif['body'],
-            data=notif['data']
+            title=title,
+            body=body,
+            data=data
         )
         
         # ===== STAGE 5: PROCESS RESULTS =====
@@ -2412,8 +2387,8 @@ async def send_real_pipeline_test():
             "result_details": result_details,
             "pipeline_log": pipeline_log,
             "notification": {
-                "title": notif['title'],
-                "body": notif['body']
+                "title": title,
+                "body": body
             }
         }
         
