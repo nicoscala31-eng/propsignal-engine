@@ -2929,3 +2929,4 @@ async def debug_register_device_manual():
         }
     except Exception as e:
         return {"error": str(e)}
+# Force redeploy 1774258797
