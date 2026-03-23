@@ -636,9 +636,30 @@ class SignalGeneratorV3:
     # Previous filter was WRONG - XAUUSD is the winner!
     ALLOWED_ASSETS = [Asset.EURUSD, Asset.XAUUSD]
     
-    # ALLOWED SESSIONS - London + Overlap (expanded flow)
-    # Data: London = +34R (82% WR), Overlap has volume
-    ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap"]
+    # ALLOWED SESSIONS - London + Overlap + New York (expanded for data collection)
+    # Data: London = +34R (82% WR), Overlap has volume, NY for data
+    # Priority: HIGH = full confidence, MEDIUM = soft penalty
+    ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap", "New York"]
+    
+    # Session priority configuration
+    SESSION_PRIORITY = {
+        "London": "HIGH",           # Best performance, full confidence
+        "London/NY Overlap": "HIGH", # Good volume, full confidence  
+        "Overlap": "HIGH",          # Same as above
+        "New York": "MEDIUM",       # Data collection, -5 score penalty
+        "Asian": "LOW",             # Not allowed
+        "Sydney": "LOW"             # Not allowed
+    }
+    
+    # Session score adjustment (applied to final score)
+    SESSION_SCORE_ADJUSTMENT = {
+        "London": 0,
+        "London/NY Overlap": 0,
+        "Overlap": 0,
+        "New York": -5,  # Small penalty for lower priority session
+        "Asian": -15,
+        "Sydney": -15
+    }
     
     # SETUP TYPES - SOFT FILTER (penalty instead of block)
     # All setups allowed, but non-preferred get score penalty
@@ -703,7 +724,8 @@ class SignalGeneratorV3:
         logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}% (edge preserved)")
         logger.info(f"   Min MTF score: {self.MIN_MTF_SCORE}% (strong only)")
         logger.info(f"   Allowed assets: {[a.value for a in self.ALLOWED_ASSETS]} (XAUUSD RE-ENABLED)")
-        logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS} (Overlap RE-ENABLED)")
+        logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS}")
+        logger.info(f"   Session priorities: HIGH={[s for s,p in self.SESSION_PRIORITY.items() if p=='HIGH']}, MEDIUM={[s for s,p in self.SESSION_PRIORITY.items() if p=='MEDIUM']}")
         logger.info("   Setup filter: SOFT (penalties, not blocks)")
         logger.info(f"   FTA filter: SOFT (block only if < {self.FTA_HARD_BLOCK_THRESHOLD}R)")
         logger.info(f"   Target signals/day: {self.MIN_SIGNALS_PER_DAY}-{self.MAX_SIGNALS_PER_DAY}")
