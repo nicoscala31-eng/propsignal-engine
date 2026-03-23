@@ -268,6 +268,24 @@ async def startup_event():
     logger.info("=" * 60)
     logger.info("✅ PROPSIGNAL ENGINE STARTUP COMPLETE")
     logger.info("=" * 60)
+    
+    # Print all registered routes for debugging
+    logger.info("📋 REGISTERED API ROUTES:")
+    audit_routes = []
+    for route in app.routes:
+        if hasattr(route, 'path'):
+            if '/audit/' in route.path:
+                audit_routes.append(route.path)
+    
+    if audit_routes:
+        logger.info(f"   Found {len(audit_routes)} audit routes:")
+        for r in sorted(audit_routes)[:15]:
+            logger.info(f"      {r}")
+        if len(audit_routes) > 15:
+            logger.info(f"      ... and {len(audit_routes) - 15} more")
+    else:
+        logger.warning("   ⚠️ NO AUDIT ROUTES REGISTERED!")
+    logger.info("=" * 60)
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -346,8 +364,37 @@ class UpdateProfileBalanceRequest(BaseModel):
 async def root():
     return {
         "message": "PropSignal Engine API",
-        "version": "1.0.0",
+        "version": "3.3.1",  # Updated with audit endpoints
+        "build": "2026-03-23-audit-report",
         "status": "operational"
+    }
+
+@api_router.get("/routes")
+async def list_routes():
+    """
+    List all registered API routes.
+    Useful for debugging 404 errors in production.
+    """
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if route.methods else []
+            })
+    
+    # Group by prefix
+    audit_routes = [r for r in routes if '/audit/' in r['path']]
+    push_routes = [r for r in routes if '/push/' in r['path']]
+    scanner_routes = [r for r in routes if '/scanner/' in r['path']]
+    
+    return {
+        "total_routes": len(routes),
+        "audit_routes_count": len(audit_routes),
+        "audit_routes": sorted([r['path'] for r in audit_routes]),
+        "push_routes": sorted([r['path'] for r in push_routes]),
+        "scanner_routes": sorted([r['path'] for r in scanner_routes]),
+        "note": "All audit endpoints should be accessible at /api/audit/*"
     }
 
 @api_router.get("/health")
