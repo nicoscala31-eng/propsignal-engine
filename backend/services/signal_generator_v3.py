@@ -662,6 +662,7 @@ class SignalGeneratorV3:
         self.is_running = False
         self.scan_interval = 5
         self.scanner_task: Optional[asyncio.Task] = None
+        self.watchdog_task: Optional[asyncio.Task] = None
         
         # Recent signals tracking
         self.recent_signals: List[RecentSignal] = []
@@ -678,6 +679,17 @@ class SignalGeneratorV3:
         self.invalid_tokens_removed = 0
         self.start_time: Optional[datetime] = None
         
+        # ========== SELF-HEALING: Heartbeat & Watchdog ==========
+        self.last_scan_timestamp: Optional[datetime] = None
+        self.last_successful_scan: Optional[datetime] = None
+        self.scanner_restart_count = 0
+        self.consecutive_failures = 0
+        self.max_consecutive_failures = 5
+        self.watchdog_interval = 10  # Check every 10 seconds
+        self.scan_timeout = 15  # Restart if no scan for 15 seconds
+        self.is_degraded = False
+        self.degradation_reason: Optional[str] = None
+        
         # Load persisted state
         self._load_state()
         
@@ -686,16 +698,16 @@ class SignalGeneratorV3:
         logger.info(f"   Dynamic Risk Range: {PROP_CONFIG.min_risk_percent}% - {PROP_CONFIG.max_risk_percent}%")
         logger.info(f"   Min SL: EURUSD={ASSET_CONFIGS[Asset.EURUSD].min_sl_pips}p")
         logger.info(f"   R:R Hard Reject: < {self.MIN_RR_HARD_REJECT}")
-        logger.info(f"   ========== OPTIMIZED FILTERS (v3.3) ==========")
+        logger.info("   ========== OPTIMIZED FILTERS (v3.3) ==========")
         logger.info(f"   Min confidence: {self.MIN_CONFIDENCE_SCORE}% (edge preserved)")
         logger.info(f"   Min MTF score: {self.MIN_MTF_SCORE}% (strong only)")
         logger.info(f"   Allowed assets: {[a.value for a in self.ALLOWED_ASSETS]} (XAUUSD RE-ENABLED)")
         logger.info(f"   Allowed sessions: {self.ALLOWED_SESSIONS} (Overlap RE-ENABLED)")
-        logger.info(f"   Setup filter: SOFT (penalties, not blocks)")
+        logger.info("   Setup filter: SOFT (penalties, not blocks)")
         logger.info(f"   FTA filter: SOFT (block only if < {self.FTA_HARD_BLOCK_THRESHOLD}R)")
         logger.info(f"   Target signals/day: {self.MIN_SIGNALS_PER_DAY}-{self.MAX_SIGNALS_PER_DAY}")
-        logger.info(f"   =================================================")
-        logger.info(f"   TRADE MANAGEMENT: Partial TP@0.5R, BE@1R, Trailing@1R")
+        logger.info("   =================================================")
+        logger.info("   TRADE MANAGEMENT: Partial TP@0.5R, BE@1R, Trailing@1R")
     
     # ==================== STATE PERSISTENCE ====================
     
@@ -847,15 +859,17 @@ class SignalGeneratorV3:
     # ==================== LIFECYCLE ====================
     
     async def start(self):
-        """Start the generator"""
+        """Start the generator with self-healing watchdog"""
         if self.is_running:
             return
         
         self.is_running = True
         self.start_time = datetime.utcnow()
+        self.last_scan_timestamp = datetime.utcnow()
+        self.last_successful_scan = datetime.utcnow()
         
         logger.info("=" * 60)
-        logger.info("🚀 SIGNAL GENERATOR V3.2 STARTED (DATA-DRIVEN)")
+        logger.info("🚀 SIGNAL GENERATOR V3.3 STARTED (SELF-HEALING)")
         logger.info("   Mode: High-quality, low-frequency signals")
         logger.info("   R:R: DYNAMIC (min 1.1)")
         logger.info("   Risk%: DYNAMIC based on confidence")
@@ -864,15 +878,32 @@ class SignalGeneratorV3:
         logger.info(f"   Assets: {[a.value for a in self.ALLOWED_ASSETS]}")
         logger.info(f"   Sessions: {self.ALLOWED_SESSIONS}")
         logger.info(f"   Scan interval: {self.scan_interval}s")
+        logger.info(f"   Watchdog interval: {self.watchdog_interval}s")
+        logger.info(f"   Scan timeout: {self.scan_timeout}s")
         logger.info(f"   Prop: ${PROP_CONFIG.account_size:,.0f} | Max Daily: ${PROP_CONFIG.max_daily_loss:,.0f}")
         logger.info("   MANAGEMENT: Partial@0.5R | BE@1R | Trail@1R")
         logger.info("=" * 60)
         
+        # Start scanner loop
         self.scanner_task = asyncio.create_task(self._run_loop())
+        
+        # Start watchdog
+        self.watchdog_task = asyncio.create_task(self._watchdog_loop())
+        logger.info("🛡️ Watchdog started - monitoring scanner health")
     
     async def stop(self):
         """Stop the generator"""
         self.is_running = False
+        
+        # Stop watchdog
+        if self.watchdog_task:
+            self.watchdog_task.cancel()
+            try:
+                await self.watchdog_task
+            except asyncio.CancelledError:
+                pass
+        
+        # Stop scanner
         if self.scanner_task:
             self.scanner_task.cancel()
             try:
@@ -881,20 +912,97 @@ class SignalGeneratorV3:
                 pass
         
         self._save_state()
-        logger.info("🛑 Signal Generator v3.1 stopped")
+        logger.info("🛑 Signal Generator v3.3 stopped")
     
-    async def _run_loop(self):
-        """Main loop"""
+    async def _watchdog_loop(self):
+        """
+        SELF-HEALING WATCHDOG
+        Monitors scanner health and restarts if stalled
+        """
         while self.is_running:
             try:
+                await asyncio.sleep(self.watchdog_interval)
+                
+                if not self.is_running:
+                    break
+                
+                # Check if scanner is stalled
+                if self.last_scan_timestamp:
+                    scan_age = (datetime.utcnow() - self.last_scan_timestamp).total_seconds()
+                    
+                    if scan_age > self.scan_timeout:
+                        # SCANNER STALLED - trigger restart
+                        logger.warning("=" * 60)
+                        logger.warning("🚨 ALERT: SCANNER_STALLED")
+                        logger.warning(f"   Last scan: {scan_age:.1f}s ago (timeout: {self.scan_timeout}s)")
+                        logger.warning(f"   Consecutive failures: {self.consecutive_failures}")
+                        logger.warning("   Action: Restarting scanner loop...")
+                        logger.warning("=" * 60)
+                        
+                        await self._restart_scanner_loop()
+                
+                # Check for degraded state
+                if self.consecutive_failures >= self.max_consecutive_failures:
+                    if not self.is_degraded:
+                        self.is_degraded = True
+                        self.degradation_reason = f"{self.consecutive_failures} consecutive scan failures"
+                        logger.error("🚨 ALERT: SYSTEM_DEGRADED")
+                        logger.error(f"   Reason: {self.degradation_reason}")
+                elif self.is_degraded and self.consecutive_failures == 0:
+                    self.is_degraded = False
+                    self.degradation_reason = None
+                    logger.info("✅ System recovered from degraded state")
+                    
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Watchdog error: {e}")
+    
+    async def _restart_scanner_loop(self):
+        """Restart the scanner loop (self-healing)"""
+        self.scanner_restart_count += 1
+        logger.warning(f"🔄 SCANNER_RESTART #{self.scanner_restart_count}")
+        
+        # Cancel existing scanner task
+        if self.scanner_task:
+            self.scanner_task.cancel()
+            try:
+                await self.scanner_task
+            except asyncio.CancelledError:
+                pass
+        
+        # Reset failure counters
+        self.consecutive_failures = 0
+        
+        # Start new scanner task
+        self.scanner_task = asyncio.create_task(self._run_loop())
+        self.last_scan_timestamp = datetime.utcnow()
+        
+        logger.info("✅ Scanner loop restarted successfully")
+    
+    async def _run_loop(self):
+        """Main loop with heartbeat updates"""
+        while self.is_running:
+            try:
+                # Update heartbeat BEFORE scan
+                self.last_scan_timestamp = datetime.utcnow()
+                
                 await self._scan_all_assets()
+                
+                # Update successful scan timestamp
+                self.last_successful_scan = datetime.utcnow()
+                self.consecutive_failures = 0
                 
                 # Periodic state save
                 if self.scan_count % 20 == 0:
                     self._save_state()
                     
             except Exception as e:
-                logger.error(f"Generator error: {e}", exc_info=True)
+                self.consecutive_failures += 1
+                logger.error(f"Generator error (failure #{self.consecutive_failures}): {e}", exc_info=True)
+                
+                if self.consecutive_failures >= self.max_consecutive_failures:
+                    logger.error("🚨 ALERT: MAX_CONSECUTIVE_FAILURES reached")
             
             await asyncio.sleep(self.scan_interval)
     
@@ -1836,7 +1944,7 @@ class SignalGeneratorV3:
                     }
                 )
                 
-                logger.info(f"   📊 Recorded for Missed Opportunity Analysis")
+                logger.info("   📊 Recorded for Missed Opportunity Analysis")
                 return None
             else:
                 # FTA OVERRIDE - high quality setup passes with penalty
@@ -2118,7 +2226,7 @@ class SignalGeneratorV3:
         logger.info(f"   Take Profit: {tp_fmt} ({tp_pips:.1f} pips) [{signal.tp_type}]")
         logger.info(f"   R:R: {signal.risk_reward:.2f} (DYNAMIC)")
         logger.info("-" * 40)
-        logger.info(f"   POSITION SIZING:")
+        logger.info("   POSITION SIZING:")
         logger.info(f"   • Lot Size: {signal.recommended_lot_size:.2f}")
         logger.info(f"   • Money at Risk: ${signal.money_at_risk:.2f}")
         logger.info(f"   • Risk %: {signal.risk_percent:.2f}%")
@@ -2134,13 +2242,13 @@ class SignalGeneratorV3:
             fta_status = "clean" if signal.clean_space_ratio >= 0.80 else "moderate" if signal.clean_space_ratio >= 0.65 else "obstacle"
             logger.info(f"   FTA: {signal.fta_type} | ratio: {signal.clean_space_ratio:.2f} | penalty: -{signal.fta_penalty:.0f} [{fta_status}]")
         else:
-            logger.info(f"   FTA: clean path (no obstacles)")
+            logger.info("   FTA: clean path (no obstacles)")
         logger.info(f"   Session: {signal.session} | Spread: {signal.spread_pips:.1f} pips")
         logger.info("-" * 40)
-        logger.info(f"   TRADE MANAGEMENT (v3.2):")
-        logger.info(f"   • Partial TP: 50% at +0.5R")
-        logger.info(f"   • Move to BE: at +1R")
-        logger.info(f"   • Trailing Stop: after +1R")
+        logger.info("   TRADE MANAGEMENT (v3.2):")
+        logger.info("   • Partial TP: 50% at +0.5R")
+        logger.info("   • Move to BE: at +1R")
+        logger.info("   • Trailing Stop: after +1R")
         logger.info("=" * 60)
         
         # Track for duplicate prevention
@@ -2320,7 +2428,7 @@ class SignalGeneratorV3:
             from services.device_storage_service import device_storage
             await device_storage.deactivate_by_token(token)
             self.invalid_tokens_removed += 1
-            logger.info(f"🧹 Removed invalid push token")
+            logger.info("🧹 Removed invalid push token")
         except Exception as e:
             logger.debug(f"Could not remove invalid token: {e}")
     
@@ -2813,6 +2921,17 @@ class SignalGeneratorV3:
             "invalid_tokens_removed": self.invalid_tokens_removed,
             "recent_signals": len(self.recent_signals),
             "duplicate_window_minutes": self.DUPLICATE_WINDOW_MINUTES,
+            # ========== SELF-HEALING STATUS ==========
+            "health": {
+                "last_scan_timestamp": self.last_scan_timestamp.isoformat() if self.last_scan_timestamp else None,
+                "last_successful_scan": self.last_successful_scan.isoformat() if self.last_successful_scan else None,
+                "scan_age_seconds": (datetime.utcnow() - self.last_scan_timestamp).total_seconds() if self.last_scan_timestamp else None,
+                "consecutive_failures": self.consecutive_failures,
+                "scanner_restart_count": self.scanner_restart_count,
+                "is_degraded": self.is_degraded,
+                "degradation_reason": self.degradation_reason,
+                "watchdog_active": self.watchdog_task is not None and not self.watchdog_task.done() if self.watchdog_task else False
+            },
             # v3.3 OPTIMIZED configuration
             "data_driven_filters": {
                 "min_confidence": self.MIN_CONFIDENCE_SCORE,

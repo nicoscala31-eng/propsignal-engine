@@ -151,7 +151,7 @@ async def startup_event():
     logger.info("=" * 60)
     logger.info("🚀 PROPSIGNAL ENGINE - PRODUCTION STARTUP")
     logger.info("=" * 60)
-    logger.info(f"📊 Environment Configuration:")
+    logger.info("📊 Environment Configuration:")
     logger.info(f"   - PORT: {os.environ.get('PORT', '8080 (default)')}")
     logger.info(f"   - MONGO_URL: {'✅ configured' if os.environ.get('MONGO_URL') else '❌ missing'}")
     logger.info(f"   - DB_NAME: {os.environ.get('DB_NAME', 'not set')}")
@@ -355,8 +355,9 @@ async def health_check():
     """
     Production health check endpoint with full diagnostics.
     Returns status of all services, live prices, and configuration.
+    IMPROVED: Self-healing status and detailed monitoring
     """
-    global scanner, tracker
+    global scanner, tracker, signal_generator_instance
     
     # Get provider status
     provider_status = provider_manager.get_status()
@@ -396,19 +397,46 @@ async def health_check():
     except Exception as e:
         direct_error = str(e)
     
-    # Get scanner status with last cycle timestamp
+    # Get Signal Generator v3 status (the ONLY production engine)
+    v3_stats = signal_generator_instance.get_stats() if signal_generator_instance else None
+    v3_health = v3_stats.get('health', {}) if v3_stats else {}
+    
     scanner_status = {
-        "running": scanner.is_running if scanner else False,
-        "total_scans": scanner.scan_count if scanner else 0,
-        "signals_generated": scanner.signal_count if scanner else 0,
-        "active_profile": scanner.active_profile.name if (scanner and scanner.active_profile) else None,
-        "last_scan_timestamp": scanner.last_scan_time.isoformat() if (scanner and hasattr(scanner, 'last_scan_time') and scanner.last_scan_time) else None
+        "running": signal_generator_instance.is_running if signal_generator_instance else False,
+        "total_scans": v3_stats.get('scan_count', 0) if v3_stats else 0,
+        "signals_generated": v3_stats.get('signal_count', 0) if v3_stats else 0,
+        "version": v3_stats.get('version', 'unknown') if v3_stats else 'not initialized',
+        "last_scan_timestamp": v3_health.get('last_scan_timestamp'),
+        "last_scan_age_seconds": v3_health.get('scan_age_seconds'),
+        "consecutive_failures": v3_health.get('consecutive_failures', 0),
+        "scanner_restart_count": v3_health.get('scanner_restart_count', 0),
+        "is_degraded": v3_health.get('is_degraded', False),
+        "degradation_reason": v3_health.get('degradation_reason'),
+        "watchdog_active": v3_health.get('watchdog_active', False)
     }
     
     # Get tracker status
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    tracker_stats = signal_outcome_tracker.get_stats() if signal_outcome_tracker else {}
+    
     tracker_status = {
-        "running": tracker.is_running if tracker else False,
-        "checks_performed": tracker.checks_performed if tracker else 0
+        "running": signal_outcome_tracker.is_running if signal_outcome_tracker else False,
+        "checks_performed": tracker_stats.get('summary', {}).get('total_tracked', 0),
+        "active_trades": tracker_stats.get('summary', {}).get('active_signals', 0),
+        "wins": tracker_stats.get('summary', {}).get('wins', 0),
+        "losses": tracker_stats.get('summary', {}).get('losses', 0)
+    }
+    
+    # Get device/push status
+    device_stats = await device_storage.get_device_count()
+    device_count = device_stats.get('total', 0) if isinstance(device_stats, dict) else device_stats
+    valid_devices = device_stats.get('active', 0) if isinstance(device_stats, dict) else device_count
+    
+    push_status = {
+        "device_count": device_count,
+        "valid_devices": valid_devices,
+        "can_send": valid_devices > 0,
+        "status": "operational" if valid_devices > 0 else "no_valid_devices"
     }
     
     # Environment variables status
@@ -419,21 +447,33 @@ async def health_check():
         "PORT": os.getenv('PORT', '8001')
     }
     
-    # Determine overall health
-    is_healthy = (
-        (scanner and scanner.is_running) and
-        (tracker and tracker.is_running) and
-        market_data_engine.is_running
-    )
+    # Determine overall health with detailed reasoning
+    health_issues = []
+    
+    if not (signal_generator_instance and signal_generator_instance.is_running):
+        health_issues.append("scanner_not_running")
+    if v3_health.get('is_degraded'):
+        health_issues.append(f"scanner_degraded: {v3_health.get('degradation_reason')}")
+    if v3_health.get('scan_age_seconds') and v3_health.get('scan_age_seconds') > 30:
+        health_issues.append(f"scan_stale: {v3_health.get('scan_age_seconds'):.0f}s old")
+    if not (signal_outcome_tracker and signal_outcome_tracker.is_running):
+        health_issues.append("tracker_not_running")
+    if not market_data_engine.is_running:
+        health_issues.append("market_data_engine_not_running")
+    if valid_devices == 0:
+        health_issues.append("no_valid_push_devices")
+    
+    is_healthy = len(health_issues) == 0
     
     return {
         "status": "healthy" if is_healthy else "degraded",
+        "health_issues": health_issues if not is_healthy else None,
         "timestamp": datetime.utcnow().isoformat(),
         "uptime_check": "OK",
         
         "backend": {
             "status": "running",
-            "version": "1.0.0",
+            "version": "1.0.0-selfhealing",
             "host": "0.0.0.0",
             "port": os.getenv('PORT', '8001')
         },
@@ -464,7 +504,8 @@ async def health_check():
         },
         
         "scanner": scanner_status,
-        "tracker": tracker_status
+        "tracker": tracker_status,
+        "push": push_status
     }
 
 
@@ -1018,7 +1059,7 @@ async def register_device(request: RegisterDeviceRequest):
     - Logs full registration pipeline
     """
     # ===== PIPELINE: LOG INCOMING REQUEST =====
-    logger.info(f"📱 [DEVICE REG] Incoming registration request")
+    logger.info("📱 [DEVICE REG] Incoming registration request")
     logger.info(f"   Platform: {request.platform}")
     logger.info(f"   Device ID: {request.device_id[:30] if request.device_id else 'None'}...")
     logger.info(f"   Token: {request.push_token[:50] if request.push_token else 'None'}...")
@@ -1049,7 +1090,7 @@ async def register_device(request: RegisterDeviceRequest):
     ])
     
     if is_test_token:
-        logger.error(f"❌ [DEVICE REG] REJECTED: Test/placeholder token detected")
+        logger.error("❌ [DEVICE REG] REJECTED: Test/placeholder token detected")
         logger.error(f"   Token: {request.push_token}")
         raise HTTPException(
             status_code=400, 
@@ -1833,7 +1874,7 @@ async def get_current_mtf_bias(asset: str):
     try:
         asset_enum = Asset(asset)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid asset. Use EURUSD or XAUUSD")
+        raise HTTPException(status_code=400, detail="Invalid asset. Use EURUSD or XAUUSD")
     
     if asset_enum not in mtf_bias_engine.last_analysis:
         return {
@@ -1896,7 +1937,7 @@ async def get_msb_sequence(asset: str):
     try:
         asset_enum = Asset(asset)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid asset. Use EURUSD or XAUUSD")
+        raise HTTPException(status_code=400, detail="Invalid asset. Use EURUSD or XAUUSD")
     
     if asset_enum not in market_structure_engine.last_analysis:
         return {
@@ -2149,7 +2190,7 @@ async def send_test_notification(device_id: Optional[str] = None):
                 logger.warning(f"⚠️ Device not found or inactive: {device_id[:20]}...")
                 raise HTTPException(status_code=404, detail="Device not found")
             tokens = [device.push_token]
-            logger.info(f"📬 Sending test to 1 device")
+            logger.info("📬 Sending test to 1 device")
         else:
             tokens = await device_storage.get_active_tokens()
             logger.info(f"📬 Sending test to {len(tokens)} devices")
