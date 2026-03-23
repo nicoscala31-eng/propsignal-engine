@@ -3115,6 +3115,31 @@ async def get_signal_delivery_audit():
     }
 
 
+@api_router.get("/audit/tracking-debug")
+async def get_tracking_debug():
+    """Debug endpoint to check tracking system status"""
+    from services.candidate_audit_service import candidate_audit_service
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    from services.rejected_trade_tracker import rejected_trade_tracker
+    
+    return {
+        "candidate_audit": candidate_audit_service.get_tracking_debug(),
+        "signal_tracker": {
+            "is_running": signal_outcome_tracker.is_running,
+            "active_signals": len(signal_outcome_tracker.active_signals),
+            "completed_signals": len(signal_outcome_tracker.completed_signals),
+            "tp_hits": signal_outcome_tracker.stats.get("tp_hits", 0),
+            "sl_hits": signal_outcome_tracker.stats.get("sl_hits", 0)
+        },
+        "rejected_tracker": {
+            "is_running": rejected_trade_tracker.is_running if hasattr(rejected_trade_tracker, 'is_running') else "unknown",
+            "active_simulations": len(rejected_trade_tracker.active_simulations) if hasattr(rejected_trade_tracker, 'active_simulations') else 0,
+            "completed_simulations": len(rejected_trade_tracker.completed_simulations) if hasattr(rejected_trade_tracker, 'completed_simulations') else 0,
+            "stats": rejected_trade_tracker.stats if hasattr(rejected_trade_tracker, 'stats') else {}
+        }
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
@@ -3169,4 +3194,3 @@ async def debug_register_device_manual():
         }
     except Exception as e:
         return {"error": str(e)}
-# Force redeploy 1774258797

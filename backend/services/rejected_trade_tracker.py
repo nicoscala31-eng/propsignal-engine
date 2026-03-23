@@ -542,7 +542,7 @@ class RejectedTradeOutcomeTracker:
                 audit_outcome = "win" if outcome == SimulationStatus.TP_HIT.value else "loss" if outcome == SimulationStatus.SL_HIT.value else "expired"
                 
                 # Try to find and update matching rejected candidate in audit
-                candidate_audit_service.update_rejected_outcome(
+                updated = candidate_audit_service.update_rejected_outcome(
                     symbol=candidate.symbol,
                     direction=candidate.direction,
                     rejection_reason=candidate.rejection_reason,
@@ -554,8 +554,10 @@ class RejectedTradeOutcomeTracker:
                     peak_r=candidate.peak_r,
                     time_to_outcome=candidate.time_to_outcome_seconds / 60 if candidate.time_to_outcome_seconds else 0
                 )
+                if updated:
+                    logger.info(f"📊 Updated audit: {candidate.symbol} {candidate.direction} [{candidate.rejection_reason}] -> {audit_outcome}")
             except Exception as e:
-                logger.debug(f"Could not update candidate audit with rejected simulation: {e}")
+                logger.warning(f"Could not update candidate audit: {e}")
             
         except Exception as e:
             logger.error(f"Simulation error for {candidate.candidate_id}: {e}")

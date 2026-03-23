@@ -1238,6 +1238,41 @@ class CandidateAuditService:
                     )
         
         return recommendations[:7]  # Limit to top 7 recommendations
+    
+    def get_tracking_debug(self) -> Dict:
+        """Debug endpoint to check tracking status"""
+        outcomes = {}
+        for c in self.candidates:
+            outcome = c.outcome_data.outcome
+            outcomes[outcome] = outcomes.get(outcome, 0) + 1
+        
+        decisions = {}
+        for c in self.candidates:
+            decisions[c.decision] = decisions.get(c.decision, 0) + 1
+        
+        rejection_reasons = {}
+        for c in self.candidates:
+            if c.decision == "rejected":
+                reason = c.rejection_reason
+                rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+        
+        # Score distribution
+        scores = [c.score_breakdown.total_score for c in self.candidates]
+        avg_score = sum(scores) / len(scores) if scores else 0
+        
+        return {
+            "total_candidates": len(self.candidates),
+            "decisions": decisions,
+            "outcomes": outcomes,
+            "rejection_reasons": rejection_reasons,
+            "score_distribution": {
+                "avg": round(avg_score, 1),
+                "min": round(min(scores), 1) if scores else 0,
+                "max": round(max(scores), 1) if scores else 0,
+                "above_75": sum(1 for s in scores if s >= 75),
+                "below_75": sum(1 for s in scores if s < 75)
+            }
+        }
 
 
 # Global instance
