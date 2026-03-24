@@ -2253,7 +2253,7 @@ class SignalGeneratorV3:
         
         # ========== BUFFER ZONE CONSTANTS ==========
         BUFFER_MIN_SCORE = 60
-        BUFFER_MTF_MIN = 70
+        BUFFER_MTF_MIN = 60  # v5.1: Lowered from 70 to allow imperfect MTF in buffer zone
         BUFFER_H1_MIN = 60
         BUFFER_RR_MIN = 1.2
         
@@ -2281,7 +2281,7 @@ class SignalGeneratorV3:
             buffer_conditions_met = buffer_mtf_pass and buffer_h1_pass and buffer_rr_pass
             
             logger.info(f"🔶 {asset.value} {direction}: BUFFER ZONE EVALUATION (score={final_score:.0f}%)")
-            logger.info(f"   MTF={mtf_score_val:.0f}% (need >={BUFFER_MTF_MIN}): {'✅' if buffer_mtf_pass else '❌'}")
+            logger.info(f"   buffer_mtf_value={mtf_score_val:.0f}% (need >={BUFFER_MTF_MIN}): {'✅' if buffer_mtf_pass else '❌'}")
             logger.info(f"   H1={h1_score_val:.0f}% (need >={BUFFER_H1_MIN}): {'✅' if buffer_h1_pass else '❌'}")
             logger.info(f"   R:R={rr_ratio:.2f} (need >={BUFFER_RR_MIN}): {'✅' if buffer_rr_pass else '❌'}")
             
@@ -2291,7 +2291,9 @@ class SignalGeneratorV3:
                 confidence = SignalConfidence.GOOD
                 priority = "BUFFER"
                 acceptance_source = "buffer_zone"
-                logger.info(f"✅ {asset.value} {direction}: ACCEPTED via BUFFER ZONE (score={final_score:.0f}%, MTF={mtf_score_val:.0f}%, H1={h1_score_val:.0f}%, R:R={rr_ratio:.2f})")
+                buffer_pass_reason = f"MTF={mtf_score_val:.0f}%>=60, H1={h1_score_val:.0f}%>=60, RR={rr_ratio:.2f}>=1.2"
+                logger.info(f"✅ {asset.value} {direction}: ACCEPTED via BUFFER ZONE")
+                logger.info(f"   buffer_pass_reason: {buffer_pass_reason}")
             else:
                 # Buffer conditions NOT met - reject
                 self.buffer_zone_failed += 1  # Track buffer zone failures
