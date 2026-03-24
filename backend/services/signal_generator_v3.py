@@ -467,6 +467,9 @@ class GeneratedSignal:
     fta_blocked_trade: bool = False
     fta_obstacles_count: int = 0
     
+    # Acceptance source (v3.3 Buffer Zone tracking)
+    acceptance_source: str = "main_threshold"  # "main_threshold_strong", "main_threshold_good", "buffer_zone"
+    
     def to_notification_dict(self) -> Dict:
         """
         Format for push notification
@@ -710,6 +713,15 @@ class SignalGeneratorV3:
         self.invalid_tokens_removed = 0
         self.start_time: Optional[datetime] = None
         
+        # ========== BUFFER ZONE MONITORING (v3.3) ==========
+        self.candidates_evaluated = 0
+        self.candidates_score_gte_65 = 0  # Main threshold (>=65)
+        self.candidates_score_60_64 = 0   # Buffer zone range (60-64)
+        self.candidates_score_lt_60 = 0   # Below buffer zone (<60)
+        self.accepted_main_threshold = 0  # Accepted via main threshold
+        self.accepted_buffer_zone = 0     # Accepted via buffer zone
+        self.buffer_zone_failed = 0       # Buffer zone evaluated but failed conditions
+        
         # ========== SELF-HEALING: Heartbeat & Watchdog ==========
         self.last_scan_timestamp: Optional[datetime] = None
         self.last_successful_scan: Optional[datetime] = None
@@ -908,7 +920,8 @@ class SignalGeneratorV3:
         risk_reward: float = 0.0,
         news_penalty: float = 0.0,
         spread_penalty: float = 0.0,
-        setup_penalty: float = 0.0
+        setup_penalty: float = 0.0,
+        buffer_zone_data: Dict = None  # v3.3: Buffer zone tracking data
     ):
         """
         Log candidate trade with FULL THRESHOLD BREAKDOWN.
@@ -2234,18 +2247,122 @@ class SignalGeneratorV3:
         # Ensure score stays in bounds after MTF penalty
         final_score = max(0, min(100, final_score))
         
-        # ========== CONFIDENCE CLASSIFICATION (v3.2 - DATA-DRIVEN) ==========
-        # Raised threshold from 60 to 75 based on performance data
+        # ========== BUFFER ZONE MONITORING: Track candidate ==========
+        self.candidates_evaluated += 1
+        
+        # ========== CONFIDENCE CLASSIFICATION (v3.3 - BUFFER ZONE) ==========
+        # Main threshold: 65 (data-driven)
+        # Buffer Zone: 60-64 accepted IF MTF>=70, H1>=60, R:R>=1.2
+        
+        # ========== BUFFER ZONE CONSTANTS ==========
+        BUFFER_MIN_SCORE = 60
+        BUFFER_MTF_MIN = 70
+        BUFFER_H1_MIN = 60
+        BUFFER_RR_MIN = 1.2
+        
+        acceptance_source = None  # Track whether accepted via main or buffer
+        
         if final_score >= 80:
+            self.candidates_score_gte_65 += 1  # Track main threshold candidates
             confidence = SignalConfidence.STRONG
             priority = "HIGH"
-        elif final_score >= self.MIN_CONFIDENCE_SCORE:  # 75
+            acceptance_source = "main_threshold_strong"
+            self.accepted_main_threshold += 1
+        elif final_score >= self.MIN_CONFIDENCE_SCORE:  # >= 65
+            self.candidates_score_gte_65 += 1  # Track main threshold candidates
             confidence = SignalConfidence.GOOD
             priority = "NORMAL"
+            acceptance_source = "main_threshold_good"
+            self.accepted_main_threshold += 1
+        elif final_score >= BUFFER_MIN_SCORE:  # 60-64: BUFFER ZONE EVALUATION
+            self.candidates_score_60_64 += 1  # Track buffer zone candidates
+            # ========== BUFFER ZONE LOGIC (v3.3) ==========
+            buffer_mtf_pass = mtf_score_val >= BUFFER_MTF_MIN
+            buffer_h1_pass = h1_score_val >= BUFFER_H1_MIN
+            buffer_rr_pass = rr_ratio >= BUFFER_RR_MIN
+            
+            buffer_conditions_met = buffer_mtf_pass and buffer_h1_pass and buffer_rr_pass
+            
+            logger.info(f"🔶 {asset.value} {direction}: BUFFER ZONE EVALUATION (score={final_score:.0f}%)")
+            logger.info(f"   MTF={mtf_score_val:.0f}% (need >={BUFFER_MTF_MIN}): {'✅' if buffer_mtf_pass else '❌'}")
+            logger.info(f"   H1={h1_score_val:.0f}% (need >={BUFFER_H1_MIN}): {'✅' if buffer_h1_pass else '❌'}")
+            logger.info(f"   R:R={rr_ratio:.2f} (need >={BUFFER_RR_MIN}): {'✅' if buffer_rr_pass else '❌'}")
+            
+            if buffer_conditions_met:
+                # ========== BUFFER ZONE ACCEPTANCE ==========
+                self.accepted_buffer_zone += 1  # Track buffer zone acceptance
+                confidence = SignalConfidence.GOOD
+                priority = "BUFFER"
+                acceptance_source = "buffer_zone"
+                logger.info(f"✅ {asset.value} {direction}: ACCEPTED via BUFFER ZONE (score={final_score:.0f}%, MTF={mtf_score_val:.0f}%, H1={h1_score_val:.0f}%, R:R={rr_ratio:.2f})")
+            else:
+                # Buffer conditions NOT met - reject
+                self.buffer_zone_failed += 1  # Track buffer zone failures
+                confidence = SignalConfidence.REJECTED
+                self._record_rejection("buffer_zone_failed")
+                failed_conditions = []
+                if not buffer_mtf_pass:
+                    failed_conditions.append(f"MTF {mtf_score_val:.0f}% < {BUFFER_MTF_MIN}")
+                if not buffer_h1_pass:
+                    failed_conditions.append(f"H1 {h1_score_val:.0f}% < {BUFFER_H1_MIN}")
+                if not buffer_rr_pass:
+                    failed_conditions.append(f"R:R {rr_ratio:.2f} < {BUFFER_RR_MIN}")
+                
+                rejection_detail = f"Buffer zone failed: {', '.join(failed_conditions)}"
+                logger.info(f"❌ {asset.value} {direction}: REJECTED (buffer zone) - {rejection_detail}")
+                self._log_score_breakdown(asset, direction, components, final_score)
+                
+                # Record for simulation
+                self._record_rejected_candidate_for_simulation(
+                    reason="buffer_zone_failed",
+                    asset=asset,
+                    direction=direction,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    confidence_score=final_score,
+                    mtf_score=mtf_score_val,
+                    session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    risk_reward=rr_ratio,
+                    rejection_details=rejection_detail,
+                    score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
+                )
+                
+                # Log candidate audit with FULL BREAKDOWN
+                self._log_candidate_audit(
+                    symbol=asset.value,
+                    direction=direction,
+                    session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    decision="rejected",
+                    rejection_reason="buffer_zone_failed",
+                    rejection_details=rejection_detail,
+                    components=components,
+                    final_score=final_score,
+                    threshold=self.MIN_CONFIDENCE_SCORE,
+                    mtf_score=mtf_score_val,
+                    fta=fta,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit_1,
+                    risk_reward=rr_ratio,
+                    buffer_zone_data={
+                        "mtf_score": mtf_score_val,
+                        "h1_score": h1_score_val,
+                        "rr_ratio": rr_ratio,
+                        "mtf_pass": buffer_mtf_pass,
+                        "h1_pass": buffer_h1_pass,
+                        "rr_pass": buffer_rr_pass
+                    }
+                )
+                return None
         else:
+            # Score < 60: HARD REJECT
+            self.candidates_score_lt_60 += 1  # Track below buffer zone candidates
             confidence = SignalConfidence.REJECTED
             self._record_rejection("low_confidence")
-            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}% - Rejected (DATA-DRIVEN)")
+            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% - Rejected (below buffer zone)")
             self._log_score_breakdown(asset, direction, components, final_score)
             
             # Record for simulation
@@ -2261,7 +2378,7 @@ class SignalGeneratorV3:
                 session=session_name,
                 setup_type=self._determine_setup_type(components, sl_type, tp_type),
                 risk_reward=rr_ratio,
-                rejection_details=f"Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}%",
+                rejection_details=f"Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% (below buffer zone)",
                 score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
             )
             
@@ -2273,7 +2390,7 @@ class SignalGeneratorV3:
                 setup_type=self._determine_setup_type(components, sl_type, tp_type),
                 decision="rejected",
                 rejection_reason="low_confidence",
-                rejection_details=f"Score {final_score:.0f}% < {self.MIN_CONFIDENCE_SCORE}% (DATA-DRIVEN)",
+                rejection_details=f"Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% (below buffer zone)",
                 components=components,
                 final_score=final_score,
                 threshold=self.MIN_CONFIDENCE_SCORE,
@@ -2436,7 +2553,9 @@ class SignalGeneratorV3:
             clean_space_ratio=fta.clean_space_ratio,
             fta_penalty=fta.fta_penalty,
             fta_blocked_trade=fta.fta_blocked_trade,
-            fta_obstacles_count=fta.obstacles_count
+            fta_obstacles_count=fta.obstacles_count,
+            # Buffer zone tracking
+            acceptance_source=acceptance_source
         )
         
         # ========== DIRECTION QUALITY AUDIT ==========
@@ -2550,7 +2669,8 @@ class SignalGeneratorV3:
         logger.info("=" * 60)
         logger.info(f"{emoji} SIGNAL GENERATED: {signal.asset.value} {signal.direction}")
         logger.info(f"   Confidence: {signal.confidence_score:.0f}% ({signal.confidence_level.value})")
-        logger.info(f"   Priority: {'HIGH' if signal.confidence_score >= 80 else 'NORMAL'}")
+        logger.info(f"   Priority: {'HIGH' if signal.confidence_score >= 80 else 'BUFFER' if signal.acceptance_source == 'buffer_zone' else 'NORMAL'}")
+        logger.info(f"   Acceptance: {signal.acceptance_source.upper()}")
         logger.info(f"   Setup: {signal.setup_type}")
         
         if signal.asset == Asset.EURUSD:
@@ -3292,8 +3412,24 @@ class SignalGeneratorV3:
             },
             "classification": {
                 "strong": "80-100 (0.75% risk, HIGH priority)",
-                "good": "75-79 (0.65% risk, NORMAL priority)",
-                "rejected": "<75 (DATA-DRIVEN FILTER)"
+                "good": "65-79 (0.65% risk, NORMAL priority)",
+                "buffer_zone": "60-64 (if MTF>=70, H1>=60, R:R>=1.2)",
+                "rejected": "<60 (below buffer zone)"
+            },
+            # ========== BUFFER ZONE MONITORING (v3.3) ==========
+            "buffer_zone_metrics": {
+                "candidates_evaluated": self.candidates_evaluated,
+                "score_gte_65": self.candidates_score_gte_65,
+                "score_60_64": self.candidates_score_60_64,
+                "score_lt_60": self.candidates_score_lt_60,
+                "pct_gte_65": round((self.candidates_score_gte_65 / max(1, self.candidates_evaluated)) * 100, 1),
+                "pct_60_64": round((self.candidates_score_60_64 / max(1, self.candidates_evaluated)) * 100, 1),
+                "pct_lt_60": round((self.candidates_score_lt_60 / max(1, self.candidates_evaluated)) * 100, 1),
+                "accepted_main_threshold": self.accepted_main_threshold,
+                "accepted_buffer_zone": self.accepted_buffer_zone,
+                "buffer_zone_failed": self.buffer_zone_failed,
+                "total_accepted": self.accepted_main_threshold + self.accepted_buffer_zone,
+                "acceptance_rate": round(((self.accepted_main_threshold + self.accepted_buffer_zone) / max(1, self.candidates_evaluated)) * 100, 2)
             },
             "prop_config": {
                 "account_size": PROP_CONFIG.account_size,

@@ -1490,6 +1490,9 @@ async def get_signal_generator_v3_status():
         "duplicate_window_minutes": stats["duplicate_window_minutes"],
         "recent_signals_count": stats["recent_signals"],
         
+        # ========== BUFFER ZONE MONITORING (v3.3) ==========
+        "buffer_zone_metrics": stats.get("buffer_zone_metrics", {}),
+        
         # Prop firm configuration and risk status
         "prop_config": stats.get("prop_config", {}),
         "daily_risk_status": stats.get("daily_risk_status", {}),
