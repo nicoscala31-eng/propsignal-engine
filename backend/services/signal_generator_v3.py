@@ -636,9 +636,9 @@ class SignalGeneratorV3:
     # ========== MTF FILTER (v5) - MORE LENIENT ==========
     # Data: Strong MTF (>=80) = +35R, Weak MTF (<80) = -3R
     # BUT: We need trades to measure edge, so lower hard block threshold
-    MIN_MTF_SCORE = 60  # Lowered from 80 to allow more trades (hard block only below 60)
-    MTF_SOFT_THRESHOLD = 80  # Above this = no penalty
-    MTF_PENALTY_PER_POINT = 0.3  # Each point below 80 = -0.3 score (reduced from 0.5)
+    MIN_MTF_SCORE = 60  # Hard block only below 60
+    MTF_SOFT_THRESHOLD = 75  # Penalty only below 75 (not 80)
+    MTF_PENALTY_PER_POINT = 0.15  # Reduced from 0.3 - each point below 75 = -0.15 score
     
     # ALLOWED ASSETS - RE-ENABLED XAUUSD (top performer)
     # Data: XAUUSD = +33.53R (66% WR), EURUSD = -2.03R (39% WR)
@@ -1689,14 +1689,14 @@ class SignalGeneratorV3:
         # This makes FTA a score modifier, NOT a gatekeeper
         if fta_distance_in_r < 0.3 and fta.clean_space_ratio < 0.10:
             fta.fta_blocked_trade = True
-            fta.fta_penalty = 15  # Max penalty
+            fta.fta_penalty = 10  # Max penalty (reduced from 15)
         else:
             fta.fta_blocked_trade = False
             # Apply graduated penalty based on clean_space_ratio
             if fta.clean_space_ratio < 0.20:
-                fta.fta_penalty = 12  # Significant penalty but NOT blocking
+                fta.fta_penalty = 8  # Significant penalty but NOT blocking (reduced from 12)
             elif fta.clean_space_ratio < 0.35:
-                fta.fta_penalty = 8   # Moderate penalty
+                fta.fta_penalty = 5   # Moderate penalty (reduced from 8)
             elif fta.clean_space_ratio < 0.50:
                 fta.fta_penalty = 5   # Small penalty
         
