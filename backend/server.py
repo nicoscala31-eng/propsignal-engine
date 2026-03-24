@@ -1493,6 +1493,9 @@ async def get_signal_generator_v3_status():
         # ========== BUFFER ZONE MONITORING (v3.3) ==========
         "buffer_zone_metrics": stats.get("buffer_zone_metrics", {}),
         
+        # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
+        "buffer_fail_diagnostics": stats.get("buffer_fail_diagnostics", {}),
+        
         # Prop firm configuration and risk status
         "prop_config": stats.get("prop_config", {}),
         "daily_risk_status": stats.get("daily_risk_status", {}),

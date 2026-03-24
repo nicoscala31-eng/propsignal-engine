@@ -722,6 +722,17 @@ class SignalGeneratorV3:
         self.accepted_buffer_zone = 0     # Accepted via buffer zone
         self.buffer_zone_failed = 0       # Buffer zone evaluated but failed conditions
         
+        # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
+        self.buffer_fail_by_reason: Dict[str, int] = {
+            "mtf_low": 0,        # MTF < 60
+            "h1_low": 0,         # H1 < 60
+            "rr_low": 0,         # R:R < 1.2
+            "mtf_h1": 0,         # MTF + H1 both failed
+            "mtf_rr": 0,         # MTF + R:R both failed
+            "h1_rr": 0,          # H1 + R:R both failed
+            "all_failed": 0      # All three failed
+        }
+        
         # ========== SELF-HEALING: Heartbeat & Watchdog ==========
         self.last_scan_timestamp: Optional[datetime] = None
         self.last_successful_scan: Optional[datetime] = None
@@ -2299,7 +2310,38 @@ class SignalGeneratorV3:
                 self.buffer_zone_failed += 1  # Track buffer zone failures
                 confidence = SignalConfidence.REJECTED
                 self._record_rejection("buffer_zone_failed")
+                
+                # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
                 failed_conditions = []
+                buffer_fail_reason = ""
+                
+                # Determine specific failure reason
+                mtf_failed = not buffer_mtf_pass
+                h1_failed = not buffer_h1_pass
+                rr_failed = not buffer_rr_pass
+                
+                if mtf_failed and h1_failed and rr_failed:
+                    buffer_fail_reason = "all_failed"
+                    self.buffer_fail_by_reason["all_failed"] += 1
+                elif mtf_failed and h1_failed:
+                    buffer_fail_reason = "mtf_h1"
+                    self.buffer_fail_by_reason["mtf_h1"] += 1
+                elif mtf_failed and rr_failed:
+                    buffer_fail_reason = "mtf_rr"
+                    self.buffer_fail_by_reason["mtf_rr"] += 1
+                elif h1_failed and rr_failed:
+                    buffer_fail_reason = "h1_rr"
+                    self.buffer_fail_by_reason["h1_rr"] += 1
+                elif mtf_failed:
+                    buffer_fail_reason = "mtf_low"
+                    self.buffer_fail_by_reason["mtf_low"] += 1
+                elif h1_failed:
+                    buffer_fail_reason = "h1_low"
+                    self.buffer_fail_by_reason["h1_low"] += 1
+                elif rr_failed:
+                    buffer_fail_reason = "rr_low"
+                    self.buffer_fail_by_reason["rr_low"] += 1
+                
                 if not buffer_mtf_pass:
                     failed_conditions.append(f"MTF {mtf_score_val:.0f}% < {BUFFER_MTF_MIN}")
                 if not buffer_h1_pass:
@@ -2308,7 +2350,10 @@ class SignalGeneratorV3:
                     failed_conditions.append(f"R:R {rr_ratio:.2f} < {BUFFER_RR_MIN}")
                 
                 rejection_detail = f"Buffer zone failed: {', '.join(failed_conditions)}"
-                logger.info(f"❌ {asset.value} {direction}: REJECTED (buffer zone) - {rejection_detail}")
+                logger.info(f"❌ {asset.value} {direction}: REJECTED (buffer zone)")
+                logger.info(f"   buffer_fail_reason: {buffer_fail_reason}")
+                logger.info(f"   buffer_fail_detail: {rejection_detail}")
+                logger.info(f"   buffer_values: MTF={mtf_score_val:.0f}%, H1={h1_score_val:.0f}%, RR={rr_ratio:.2f}")
                 self._log_score_breakdown(asset, direction, components, final_score)
                 
                 # Record for simulation
@@ -3362,6 +3407,41 @@ class SignalGeneratorV3:
             logger.info(f"   • {c.name}: {c.score:.0f}% × {c.weight}% = {c.weighted_score:.1f}")
         logger.info(f"   TOTAL: {final_score:.1f}%")
     
+    def _get_buffer_fail_diagnostics(self) -> Dict:
+        """Get buffer zone failure diagnostics with percentages"""
+        total_fails = sum(self.buffer_fail_by_reason.values())
+        
+        # Calculate percentages
+        pct_by_reason = {}
+        for reason, count in self.buffer_fail_by_reason.items():
+            pct_by_reason[reason] = round((count / max(1, total_fails)) * 100, 1)
+        
+        # Find most common fail reason
+        most_common = "none"
+        most_common_count = 0
+        for reason, count in self.buffer_fail_by_reason.items():
+            if count > most_common_count:
+                most_common = reason
+                most_common_count = count
+        
+        return {
+            "total_buffer_fails": total_fails,
+            "fail_count_by_reason": self.buffer_fail_by_reason,
+            "pct_fail_by_reason": pct_by_reason,
+            "most_common_fail_reason": most_common,
+            "most_common_fail_count": most_common_count,
+            "most_common_fail_pct": pct_by_reason.get(most_common, 0),
+            "reason_descriptions": {
+                "mtf_low": "MTF < 60% (single bottleneck)",
+                "h1_low": "H1 < 60% (single bottleneck)",
+                "rr_low": "R:R < 1.2 (single bottleneck)",
+                "mtf_h1": "MTF + H1 both failed",
+                "mtf_rr": "MTF + R:R both failed",
+                "h1_rr": "H1 + R:R both failed",
+                "all_failed": "All three conditions failed"
+            }
+        }
+    
     # ==================== STATUS & STATS ====================
     
     def get_stats(self) -> Dict:
@@ -3430,6 +3510,8 @@ class SignalGeneratorV3:
                 "total_accepted": self.accepted_main_threshold + self.accepted_buffer_zone,
                 "acceptance_rate": round(((self.accepted_main_threshold + self.accepted_buffer_zone) / max(1, self.candidates_evaluated)) * 100, 2)
             },
+            # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
+            "buffer_fail_diagnostics": self._get_buffer_fail_diagnostics(),
             "prop_config": {
                 "account_size": PROP_CONFIG.account_size,
                 "max_daily_loss": PROP_CONFIG.max_daily_loss,
