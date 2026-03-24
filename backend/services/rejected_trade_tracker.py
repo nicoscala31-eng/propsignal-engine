@@ -143,7 +143,7 @@ class RejectedTradeOutcomeTracker:
     
     # Configuration
     STORAGE_PATH = "/app/backend/data/rejected_trade_audit.json"
-    EXPIRY_HOURS = 48
+    EXPIRY_HOURS = 6  # Max 6 hours for simulation - then mark as expired/no_hit
     SIMULATION_INTERVAL = 60  # Seconds between simulation batches
     MAX_BATCH_SIZE = 10       # Candidates to simulate per batch
     SAME_CANDLE_TIE_RULE = "sl_wins"  # Conservative: if both touched in same candle, SL wins

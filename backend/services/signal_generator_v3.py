@@ -625,11 +625,20 @@ class SignalGeneratorV3:
     
     # MINIMUM SCORE - Keep high edge threshold
     # Data: Score 75+ = +46R combined, Score <75 = -15R
-    MIN_CONFIDENCE_SCORE = 75
+    # ========== SCORE THRESHOLD (v5 - DATA COLLECTION MODE) ==========
+    # Previous: 75 (edge preservation mode)
+    # Current: 65 (aggressive data collection - to generate accepted trades)
+    # Will be re-evaluated after collecting 50+ real trades
+    # NOTE: This is TEMPORARILY low to unblock the engine
+    MIN_CONFIDENCE_SCORE = 65
     
     # MTF ALIGNMENT - Keep strong alignment requirement
+    # ========== MTF FILTER (v5) - MORE LENIENT ==========
     # Data: Strong MTF (>=80) = +35R, Weak MTF (<80) = -3R
-    MIN_MTF_SCORE = 80
+    # BUT: We need trades to measure edge, so lower hard block threshold
+    MIN_MTF_SCORE = 60  # Lowered from 80 to allow more trades (hard block only below 60)
+    MTF_SOFT_THRESHOLD = 80  # Above this = no penalty
+    MTF_PENALTY_PER_POINT = 0.3  # Each point below 80 = -0.3 score (reduced from 0.5)
     
     # ALLOWED ASSETS - RE-ENABLED XAUUSD (top performer)
     # Data: XAUUSD = +33.53R (66% WR), EURUSD = -2.03R (39% WR)
@@ -1675,13 +1684,21 @@ class SignalGeneratorV3:
             fta.fta_quality = "weak"
             fta.fta_penalty = 5  # Small penalty (NOT blocking)
         
-        # Hard block ONLY if FTA is extremely close (< 0.5R from entry)
-        # This is the ONLY case where FTA blocks
-        if fta_distance_in_r < 0.5 and fta.clean_space_ratio < 0.20:
+        # ========== FTA SOFT FILTER (v5) - ALMOST NEVER BLOCK ==========
+        # Hard block ONLY if FTA is EXTREMELY close (< 0.3R from entry AND < 10% space)
+        # This makes FTA a score modifier, NOT a gatekeeper
+        if fta_distance_in_r < 0.3 and fta.clean_space_ratio < 0.10:
             fta.fta_blocked_trade = True
             fta.fta_penalty = 15  # Max penalty
         else:
             fta.fta_blocked_trade = False
+            # Apply graduated penalty based on clean_space_ratio
+            if fta.clean_space_ratio < 0.20:
+                fta.fta_penalty = 12  # Significant penalty but NOT blocking
+            elif fta.clean_space_ratio < 0.35:
+                fta.fta_penalty = 8   # Moderate penalty
+            elif fta.clean_space_ratio < 0.50:
+                fta.fta_penalty = 5   # Small penalty
         
         # Special case: if FTA nearly coincides with target (>90%), bonus
         if fta.clean_space_ratio >= 0.90:
@@ -2160,11 +2177,15 @@ class SignalGeneratorV3:
         
         final_score = max(0, min(100, final_score))
         
-        # ========== MTF ALIGNMENT FILTER (DATA-DRIVEN) ==========
-        # Data: Strong MTF (>=80) = +6.91R, Weak MTF (<80) = -18.36R
-        if mtf_score_val < self.MIN_MTF_SCORE:
+        # ========== MTF ALIGNMENT FILTER (v5 - SOFT FILTER) ==========
+        # Hard block only if MTF < 65 (very weak alignment)
+        # Between 65-79: apply graduated penalty
+        # Above 80: no penalty
+        
+        mtf_penalty = 0
+        if mtf_score_val < self.MIN_MTF_SCORE:  # < 65
             self._record_rejection("weak_mtf")
-            logger.info(f"🚫 {asset.value} {direction}: MTF score {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (DATA-DRIVEN FILTER)")
+            logger.info(f"🚫 {asset.value} {direction}: MTF score {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (HARD BLOCK)")
             self._log_score_breakdown(asset, direction, components, final_score)
             
             # Record for simulation
@@ -2192,7 +2213,7 @@ class SignalGeneratorV3:
                 setup_type=self._determine_setup_type(components, sl_type, tp_type),
                 decision="rejected",
                 rejection_reason="weak_mtf",
-                rejection_details=f"MTF {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (DATA-DRIVEN FILTER)",
+                rejection_details=f"MTF {mtf_score_val:.0f}% < {self.MIN_MTF_SCORE}% (HARD BLOCK)",
                 components=components,
                 final_score=final_score,
                 threshold=self.MIN_CONFIDENCE_SCORE,
@@ -2204,6 +2225,14 @@ class SignalGeneratorV3:
                 risk_reward=rr_ratio
             )
             return None
+        elif mtf_score_val < self.MTF_SOFT_THRESHOLD:  # 65-79: soft penalty
+            # Apply graduated penalty: each point below 80 = -0.5 score
+            mtf_penalty = (self.MTF_SOFT_THRESHOLD - mtf_score_val) * self.MTF_PENALTY_PER_POINT
+            final_score -= mtf_penalty
+            logger.info(f"📉 {asset.value} {direction}: MTF soft penalty -{mtf_penalty:.1f} (MTF={mtf_score_val:.0f}%)")
+        
+        # Ensure score stays in bounds after MTF penalty
+        final_score = max(0, min(100, final_score))
         
         # ========== CONFIDENCE CLASSIFICATION (v3.2 - DATA-DRIVEN) ==========
         # Raised threshold from 60 to 75 based on performance data
