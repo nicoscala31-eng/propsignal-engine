@@ -1680,47 +1680,43 @@ class SignalGeneratorV3:
         # TARGET: 
         # - Acceptance rate 3-8% (was ~1%)
         # - FTA should NOT be 100% of rejections
-        # - Hard block ONLY if FTA distance < 0.5R
+        # - v5: NO HARD BLOCK - penalty only based on fta_distance_r
         
         # Calculate FTA distance in R (Risk units)
         risk = abs(target_price - entry_price) / max(1, fta.target_distance) if fta.target_distance > 0 else 0
         fta_distance_in_r = fta.fta_distance / abs(target_price - entry_price) if abs(target_price - entry_price) > 0 else 0
         
-        # FTA Quality Classification
-        if fta.clean_space_ratio >= 0.65:
-            fta.fta_quality = "clean"
-            fta.fta_penalty = -5  # BONUS for clean space
-        elif fta.clean_space_ratio >= 0.35:
+        # ========== FTA PENALTY SYSTEM v5 (NO HARD BLOCK) ==========
+        # Penalty based on fta_distance_r:
+        # - < 0.2R → -15
+        # - 0.2-0.35R → -8
+        # - 0.35-0.5R → -4
+        # - > 0.5R → 0
+        
+        if fta_distance_in_r >= 0.5:
+            fta.fta_quality = "clear"
+            fta.fta_penalty = 0
+        elif fta_distance_in_r >= 0.35:
             fta.fta_quality = "moderate"
-            fta.fta_penalty = 0  # Neutral
+            fta.fta_penalty = 4
+        elif fta_distance_in_r >= 0.2:
+            fta.fta_quality = "close"
+            fta.fta_penalty = 8
         else:
-            fta.fta_quality = "weak"
-            fta.fta_penalty = 5  # Small penalty (NOT blocking)
+            fta.fta_quality = "very_close"
+            fta.fta_penalty = 15
         
-        # ========== FTA SOFT FILTER (v5) - ALMOST NEVER BLOCK ==========
-        # Hard block ONLY if FTA is EXTREMELY close (< 0.3R from entry AND < 10% space)
-        # This makes FTA a score modifier, NOT a gatekeeper
-        if fta_distance_in_r < 0.3 and fta.clean_space_ratio < 0.10:
-            fta.fta_blocked_trade = True
-            fta.fta_penalty = 10  # Max penalty (reduced from 15)
-        else:
-            fta.fta_blocked_trade = False
-            # Apply graduated penalty based on clean_space_ratio
-            if fta.clean_space_ratio < 0.20:
-                fta.fta_penalty = 8  # Significant penalty but NOT blocking (reduced from 12)
-            elif fta.clean_space_ratio < 0.35:
-                fta.fta_penalty = 5   # Moderate penalty (reduced from 8)
-            elif fta.clean_space_ratio < 0.50:
-                fta.fta_penalty = 5   # Small penalty
+        # v5: NEVER set fta_blocked_trade to True
+        fta.fta_blocked_trade = False
         
-        # Special case: if FTA nearly coincides with target (>90%), bonus
+        # Special case: if FTA nearly coincides with target (>90% clean space), bonus
         if fta.clean_space_ratio >= 0.90:
             fta.fta_penalty = -5  # Bonus
-            fta.fta_quality = "clean"
+            fta.fta_quality = "excellent"
         
         # Special case: M15 confirmed swing target - reduce concern
         if tp_type == "swing_target" and fta.clean_space_ratio >= 0.25:
-            fta.fta_penalty = min(0, fta.fta_penalty - 2)
+            fta.fta_penalty = max(0, fta.fta_penalty - 2)
         
         # Store for logging
         fta.fta_distance_in_r = fta_distance_in_r
@@ -1739,36 +1735,37 @@ class SignalGeneratorV3:
         preliminary_score: float
     ) -> Tuple[bool, bool, str]:
         """
-        FTA SOFT FILTER EVALUATION (v4)
+        FTA SOFT FILTER EVALUATION (v5 - NO HARD BLOCK)
         
-        NEW APPROACH:
-        - FTA is primarily a SCORE MODIFIER, not a blocker
-        - Hard block ONLY if FTA distance < 0.5R (extremely close)
-        - Otherwise, apply score penalty/bonus and let confidence threshold decide
+        NEW APPROACH (v5):
+        - FTA is PURELY a score modifier - NEVER blocks
+        - Penalty based on fta_distance_r:
+          * < 0.2R → -15
+          * 0.2-0.35R → -8
+          * 0.35-0.5R → -4
+          * > 0.5R → 0
         
         Returns:
             Tuple[should_block, override_applied, reason]
+            should_block is ALWAYS False in v5
         """
         ratio = fta.clean_space_ratio
         fta_distance_r = getattr(fta, 'fta_distance_in_r', 1.0)
         
-        # ========== HARD BLOCK: ONLY if FTA < 0.5R ==========
-        if fta.fta_blocked_trade and fta_distance_r < 0.5:
-            block_reason = f"hard_block: FTA distance {fta_distance_r:.2f}R < 0.5R (too close)"
-            return True, False, block_reason
-        
-        # ========== SOFT FILTER: All other cases pass with score adjustment ==========
-        # FTA penalty is already applied to score, let confidence threshold filter
+        # ========== v5: NO HARD BLOCK - ONLY PENALTIES ==========
+        # FTA penalty is applied to score, let confidence threshold filter
         
         # Log FTA quality for analysis
-        if ratio >= 0.65:
-            reason = f"fta_clean: ratio={ratio:.2f}, +5 score bonus"
-        elif ratio >= 0.35:
-            reason = f"fta_moderate: ratio={ratio:.2f}, neutral"
+        if fta_distance_r >= 0.5:
+            reason = f"fta_clear: distance={fta_distance_r:.2f}R (>=0.5R), penalty=0"
+        elif fta_distance_r >= 0.35:
+            reason = f"fta_moderate: distance={fta_distance_r:.2f}R (0.35-0.5R), penalty=-4"
+        elif fta_distance_r >= 0.2:
+            reason = f"fta_close: distance={fta_distance_r:.2f}R (0.2-0.35R), penalty=-8"
         else:
-            reason = f"fta_weak: ratio={ratio:.2f}, -5 score penalty (soft)"
+            reason = f"fta_very_close: distance={fta_distance_r:.2f}R (<0.2R), penalty=-15"
         
-        # Never block - let score threshold decide
+        # NEVER block - let score threshold decide
         return False, False, reason
     
     # ==================== ENTRY VALIDATION ====================
