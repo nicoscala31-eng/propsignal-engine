@@ -633,7 +633,7 @@ class SignalGeneratorV3:
     # Current: 65 (aggressive data collection - to generate accepted trades)
     # Will be re-evaluated after collecting 50+ real trades
     # NOTE: This is TEMPORARILY low to unblock the engine
-    MIN_CONFIDENCE_SCORE = 65
+    MIN_CONFIDENCE_SCORE = 60  # v6.0: Lowered from 65 based on rejection analysis (blocked 32% WR trades)
     
     # MTF ALIGNMENT - Keep strong alignment requirement
     # ========== MTF FILTER (v5) - MORE LENIENT ==========
@@ -2258,13 +2258,15 @@ class SignalGeneratorV3:
         # ========== BUFFER ZONE MONITORING: Track candidate ==========
         self.candidates_evaluated += 1
         
-        # ========== CONFIDENCE CLASSIFICATION (v3.3 - BUFFER ZONE) ==========
-        # Main threshold: 65 (data-driven)
-        # Buffer Zone: 60-64 accepted IF MTF>=70, H1>=60, R:R>=1.2
+        # ========== CONFIDENCE CLASSIFICATION (v6.0 - RELAXED FILTERS) ==========
+        # v6.0 CHANGES (based on rejection analysis):
+        # - MIN_CONFIDENCE_SCORE: 65 -> 60 (blocked trades had 32% WR vs 17% accepted)
+        # - Buffer zone no longer blocks (82% WR and +1.05R expectancy in blocked trades)
+        # - weak_mtf kept unchanged (0% WR - correctly filtering)
         
-        # ========== BUFFER ZONE CONSTANTS ==========
+        # ========== BUFFER ZONE CONSTANTS (v6.0 - diagnostic only, no blocking) ==========
         BUFFER_MIN_SCORE = 60
-        BUFFER_MTF_MIN = 60  # v5.1: Lowered from 70 to allow imperfect MTF in buffer zone
+        BUFFER_MTF_MIN = 60
         BUFFER_H1_MIN = 60
         BUFFER_RR_MIN = 1.2
         
@@ -2306,20 +2308,25 @@ class SignalGeneratorV3:
                 logger.info(f"✅ {asset.value} {direction}: ACCEPTED via BUFFER ZONE")
                 logger.info(f"   buffer_pass_reason: {buffer_pass_reason}")
             else:
-                # Buffer conditions NOT met - reject
-                self.buffer_zone_failed += 1  # Track buffer zone failures
-                confidence = SignalConfidence.REJECTED
-                self._record_rejection("buffer_zone_failed")
+                # ========== v6.0 FIX: BUFFER ZONE NO LONGER BLOCKS ==========
+                # Previously this would reject - now we ACCEPT but log diagnostic data
+                # Analysis showed buffer_zone_failed had 82% WR and +1.05R expectancy
                 
-                # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
+                self.accepted_buffer_zone += 1  # Track as buffer zone acceptance
+                confidence = SignalConfidence.GOOD
+                priority = "BUFFER_RELAXED"
+                acceptance_source = "buffer_zone_relaxed"
+                
+                # ========== DIAGNOSTIC LOGGING ONLY (no blocking) ==========
                 failed_conditions = []
                 buffer_fail_reason = ""
                 
-                # Determine specific failure reason
+                # Track which conditions would have failed (for diagnostics)
                 mtf_failed = not buffer_mtf_pass
                 h1_failed = not buffer_h1_pass
                 rr_failed = not buffer_rr_pass
                 
+                # Track diagnostics but DO NOT block
                 if mtf_failed and h1_failed and rr_failed:
                     buffer_fail_reason = "all_failed"
                     self.buffer_fail_by_reason["all_failed"] += 1
@@ -2349,58 +2356,13 @@ class SignalGeneratorV3:
                 if not buffer_rr_pass:
                     failed_conditions.append(f"R:R {rr_ratio:.2f} < {BUFFER_RR_MIN}")
                 
-                rejection_detail = f"Buffer zone failed: {', '.join(failed_conditions)}"
-                logger.info(f"❌ {asset.value} {direction}: REJECTED (buffer zone)")
-                logger.info(f"   buffer_fail_reason: {buffer_fail_reason}")
-                logger.info(f"   buffer_fail_detail: {rejection_detail}")
+                # LOG that this would have been blocked but is now allowed
+                logger.info(f"🔓 {asset.value} {direction}: ACCEPTED via BUFFER_RELAXED (v6.0)")
+                logger.info(f"   ⚠️ Would have been blocked by: {buffer_fail_reason}")
+                logger.info(f"   Failed conditions (diagnostic only): {', '.join(failed_conditions)}")
                 logger.info(f"   buffer_values: MTF={mtf_score_val:.0f}%, H1={h1_score_val:.0f}%, RR={rr_ratio:.2f}")
-                self._log_score_breakdown(asset, direction, components, final_score)
-                
-                # Record for simulation
-                self._record_rejected_candidate_for_simulation(
-                    reason="buffer_zone_failed",
-                    asset=asset,
-                    direction=direction,
-                    entry_price=entry_price,
-                    stop_loss=stop_loss,
-                    take_profit=take_profit_1,
-                    confidence_score=final_score,
-                    mtf_score=mtf_score_val,
-                    session=session_name,
-                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
-                    risk_reward=rr_ratio,
-                    rejection_details=rejection_detail,
-                    score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
-                )
-                
-                # Log candidate audit with FULL BREAKDOWN
-                self._log_candidate_audit(
-                    symbol=asset.value,
-                    direction=direction,
-                    session=session_name,
-                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
-                    decision="rejected",
-                    rejection_reason="buffer_zone_failed",
-                    rejection_details=rejection_detail,
-                    components=components,
-                    final_score=final_score,
-                    threshold=self.MIN_CONFIDENCE_SCORE,
-                    mtf_score=mtf_score_val,
-                    fta=fta,
-                    entry_price=entry_price,
-                    stop_loss=stop_loss,
-                    take_profit=take_profit_1,
-                    risk_reward=rr_ratio,
-                    buffer_zone_data={
-                        "mtf_score": mtf_score_val,
-                        "h1_score": h1_score_val,
-                        "rr_ratio": rr_ratio,
-                        "mtf_pass": buffer_mtf_pass,
-                        "h1_pass": buffer_h1_pass,
-                        "rr_pass": buffer_rr_pass
-                    }
-                )
-                return None
+                logger.info(f"   confidence_score: {final_score:.1f}%")
+                logger.info(f"   v6.0 FIX: No longer blocking - 82% WR observed in rejected trades")
         else:
             # Score < 60: HARD REJECT
             self.candidates_score_lt_60 += 1  # Track below buffer zone candidates
@@ -3491,11 +3453,11 @@ class SignalGeneratorV3:
             },
             "classification": {
                 "strong": "80-100 (0.75% risk, HIGH priority)",
-                "good": "65-79 (0.65% risk, NORMAL priority)",
-                "buffer_zone": "60-64 (if MTF>=70, H1>=60, R:R>=1.2)",
-                "rejected": "<60 (below buffer zone)"
+                "good": "60-79 (0.65% risk, NORMAL priority)",
+                "buffer_zone_relaxed": "60-64 (v6.0: no blocking, diagnostic only)",
+                "rejected": "<60 (below minimum)"
             },
-            # ========== BUFFER ZONE MONITORING (v3.3) ==========
+            # ========== BUFFER ZONE MONITORING (v6.0) ==========
             "buffer_zone_metrics": {
                 "candidates_evaluated": self.candidates_evaluated,
                 "score_gte_65": self.candidates_score_gte_65,
@@ -3507,10 +3469,12 @@ class SignalGeneratorV3:
                 "accepted_main_threshold": self.accepted_main_threshold,
                 "accepted_buffer_zone": self.accepted_buffer_zone,
                 "buffer_zone_failed": self.buffer_zone_failed,
+                "buffer_zone_relaxed_accepted": 0,  # v6.0: trades that would have been blocked
                 "total_accepted": self.accepted_main_threshold + self.accepted_buffer_zone,
-                "acceptance_rate": round(((self.accepted_main_threshold + self.accepted_buffer_zone) / max(1, self.candidates_evaluated)) * 100, 2)
+                "acceptance_rate": round(((self.accepted_main_threshold + self.accepted_buffer_zone) / max(1, self.candidates_evaluated)) * 100, 2),
+                "v6_changes": "MIN_CONFIDENCE_SCORE: 65->60, buffer_zone_failed: no longer blocks"
             },
-            # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
+            # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v6.0 - diagnostic only) ==========
             "buffer_fail_diagnostics": self._get_buffer_fail_diagnostics(),
             "prop_config": {
                 "account_size": PROP_CONFIG.account_size,
