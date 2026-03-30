@@ -212,6 +212,10 @@ class SignalOutcomeTracker:
             
             logger.info(f"📊 Tracking signal: {tracked.signal_id} ({tracked.asset} {tracked.direction})")
             
+            # Save immediately when new signal is added
+            await self._save_data()
+            logger.info(f"📊 Saved tracking data (active: {len(self.active_signals)})")
+            
         except Exception as e:
             logger.error(f"❌ Error tracking signal: {e}")
     
