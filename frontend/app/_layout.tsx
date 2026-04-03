@@ -13,29 +13,29 @@ export default function RootLayout() {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          animation: 'slide_from_right',
         }}
       >
+        {/* Main screen - Signal Feed (no header, self-contained) */}
         <Stack.Screen 
           name="index" 
           options={{ 
             headerShown: false,
-            title: 'PropSignal Engine'
+            title: 'Signal Feed'
           }} 
         />
-        <Stack.Screen 
-          name="signals" 
-          options={{ 
-            title: 'Signal Feed',
-            presentation: 'card'
-          }} 
-        />
+        
+        {/* Signal detail screen */}
         <Stack.Screen 
           name="signal-snapshot" 
           options={{ 
             title: 'Signal Details',
-            presentation: 'card'
+            presentation: 'card',
+            headerBackTitle: 'Back'
           }} 
         />
+        
+        {/* Legacy screens - kept for backwards compatibility */}
         <Stack.Screen 
           name="signal-detail" 
           options={{ 
@@ -54,6 +54,22 @@ export default function RootLayout() {
           name="prop-profiles" 
           options={{ 
             title: 'Prop Profiles',
+            presentation: 'card'
+          }} 
+        />
+        <Stack.Screen 
+          name="signals" 
+          options={{ 
+            title: 'Signal Feed',
+            presentation: 'card'
+          }} 
+        />
+        
+        {/* Old home moved - not in navigation stack */}
+        <Stack.Screen 
+          name="old-home" 
+          options={{ 
+            title: 'Dashboard',
             presentation: 'card'
           }} 
         />

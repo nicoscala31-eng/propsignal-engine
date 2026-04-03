@@ -252,6 +252,16 @@ async def startup_event():
             await rejected_trade_tracker.start()
             logger.info("📊 Rejected Trade Outcome Tracker started (audit/analysis only)")
             
+            # ========== START SIGNAL SNAPSHOT SERVICE ==========
+            from services.signal_snapshot_service import signal_snapshot_service
+            await signal_snapshot_service.initialize()
+            logger.info("📸 Signal Snapshot Service initialized")
+            
+            # ========== START SIGNAL CLEANUP SERVICE (Daily) ==========
+            from services.signal_cleanup_service import signal_cleanup_service, scheduled_cleanup_task
+            asyncio.create_task(scheduled_cleanup_task())
+            logger.info("🧹 Signal Cleanup Service scheduled (14-day retention)")
+            
             logger.info("=" * 60)
             logger.info("🛡️ PRODUCTION SAFETY ACTIVE")
             logger.info("   ✅ Signal Generator v3: RUNNING (authorized)")
@@ -259,6 +269,8 @@ async def startup_event():
             logger.info("   🚫 Advanced Scanner v2: BLOCKED")
             logger.info("   📊 Missed Opportunity Analyzer: RUNNING (audit only)")
             logger.info("   📊 Rejected Trade Tracker: RUNNING (audit only)")
+            logger.info("   📸 Signal Snapshot Service: RUNNING")
+            logger.info("   🧹 Cleanup Service: SCHEDULED (14-day retention)")
             logger.info("=" * 60)
         else:
             logger.warning("⚠️ Scanner/Tracker disabled - no database")
@@ -870,6 +882,32 @@ async def get_signal_feed_stats():
     await signal_snapshot_service.initialize()
     
     return signal_snapshot_service.get_stats()
+
+
+@api_router.post("/signals/cleanup")
+async def trigger_signal_cleanup():
+    """
+    Manually trigger cleanup of old signal data.
+    
+    Removes signals older than retention period (14 days).
+    Returns cleanup statistics.
+    """
+    from services.signal_cleanup_service import signal_cleanup_service
+    
+    result = await signal_cleanup_service.run_cleanup()
+    return result
+
+
+@api_router.get("/signals/cleanup/stats")
+async def get_cleanup_stats():
+    """
+    Get cleanup service statistics.
+    
+    Returns info about last cleanup, retention period, etc.
+    """
+    from services.signal_cleanup_service import signal_cleanup_service
+    
+    return signal_cleanup_service.get_stats()
 
 
 @api_router.get("/signals/snapshot/{signal_id}")
