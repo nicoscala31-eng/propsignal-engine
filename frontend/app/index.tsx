@@ -903,6 +903,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
+            onPress={() => router.push('/signals')}
+          >
+            <Text style={styles.actionButtonText}>Signal Feed</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => router.push('/analytics')}
           >
             <Text style={styles.actionButtonText}>Analytics</Text>

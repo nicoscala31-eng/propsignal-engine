@@ -24,13 +24,12 @@ export const getBackendUrl = (): string => {
     const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
     const configUrl = Constants.expoConfig?.extra?.backendUrl;
     
-    // Only use dev URLs if they're NOT Emergent/ngrok URLs
-    // This prevents accidentally using dev URLs in production
-    if (envUrl && !envUrl.includes('emergentagent.com') && !envUrl.includes('ngrok')) {
+    // Use env URL if available
+    if (envUrl) {
       console.log('🔧 Using env backend URL:', envUrl);
       return envUrl;
     }
-    if (configUrl && !configUrl.includes('emergentagent.com') && !configUrl.includes('ngrok')) {
+    if (configUrl) {
       console.log('🔧 Using config backend URL:', configUrl);
       return configUrl;
     }

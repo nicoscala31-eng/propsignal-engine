@@ -23,6 +23,20 @@ export default function RootLayout() {
           }} 
         />
         <Stack.Screen 
+          name="signals" 
+          options={{ 
+            title: 'Signal Feed',
+            presentation: 'card'
+          }} 
+        />
+        <Stack.Screen 
+          name="signal-snapshot" 
+          options={{ 
+            title: 'Signal Details',
+            presentation: 'card'
+          }} 
+        />
+        <Stack.Screen 
           name="signal-detail" 
           options={{ 
             title: 'Signal Details',

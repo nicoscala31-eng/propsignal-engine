@@ -815,6 +815,91 @@ async def get_global_resolved_signals(limit: int = 50):
     ]
 
 
+# ==================== SIGNAL SNAPSHOT FEED (NEW - must be before /{signal_id}) ====================
+
+@api_router.get("/signals/feed")
+async def get_signal_feed(
+    symbol: Optional[str] = None,
+    direction: Optional[str] = None,
+    status: Optional[str] = None,  # all / accepted / rejected / active / closed
+    limit: int = 100,
+    offset: int = 0
+):
+    """
+    Get signal feed with complete snapshot data.
+    
+    Query params:
+    - symbol: EURUSD or XAUUSD
+    - direction: BUY or SELL
+    - status: all / accepted / rejected / active / closed
+    - limit: max items (default 100)
+    - offset: pagination offset
+    
+    Returns list of signal snapshots with metadata, scores, and short reasons.
+    """
+    from services.signal_snapshot_service import signal_snapshot_service
+    
+    # Initialize if needed
+    await signal_snapshot_service.initialize()
+    
+    feed = signal_snapshot_service.get_feed(
+        symbol=symbol,
+        direction=direction,
+        status_filter=status,
+        limit=limit,
+        offset=offset
+    )
+    
+    return {
+        "count": len(feed),
+        "offset": offset,
+        "limit": limit,
+        "signals": feed
+    }
+
+
+@api_router.get("/signals/feed/stats")
+async def get_signal_feed_stats():
+    """
+    Get statistics about signal snapshots.
+    
+    Returns counts by status, symbol, etc.
+    """
+    from services.signal_snapshot_service import signal_snapshot_service
+    
+    await signal_snapshot_service.initialize()
+    
+    return signal_snapshot_service.get_stats()
+
+
+@api_router.get("/signals/snapshot/{signal_id}")
+async def get_signal_snapshot(signal_id: str):
+    """
+    Get complete signal snapshot with full diagnostic breakdown.
+    
+    Returns:
+    - Metadata (symbol, direction, timestamp)
+    - Trade levels (entry, SL, TP, RR)
+    - Decision (accepted/rejected, reason)
+    - Score breakdown (pre/post penalty, final)
+    - Factor contributions (all components with scores)
+    - Penalties applied (FTA, news, spread, setup)
+    - Filters checked (passed/failed)
+    - Reasoning (short/full summary)
+    - Outcome (if trade completed)
+    """
+    from services.signal_snapshot_service import signal_snapshot_service
+    
+    await signal_snapshot_service.initialize()
+    
+    detail = signal_snapshot_service.get_detail(signal_id)
+    
+    if not detail:
+        raise HTTPException(status_code=404, detail="Signal snapshot not found")
+    
+    return detail
+
+
 @api_router.get("/signals/{signal_id}", response_model=Signal)
 async def get_signal(signal_id: str):
     """Get a specific signal by ID"""

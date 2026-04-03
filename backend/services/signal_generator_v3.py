@@ -70,6 +70,7 @@ from services.direction_quality_audit import (
 )
 from services.missed_opportunity_analyzer import missed_opportunity_analyzer
 from services.candidate_audit_service import candidate_audit_service
+from services.signal_snapshot_service import signal_snapshot_service, SignalSnapshot, create_snapshot_from_signal_data
 
 logger = logging.getLogger(__name__)
 
@@ -1014,6 +1015,156 @@ class SignalGeneratorV3:
                 trade_levels=trade_levels,
                 components=components_list
             )
+            
+            # ========== SIGNAL SNAPSHOT (NEW) ==========
+            # Create comprehensive snapshot for UI display
+            try:
+                # Generate signal_id for snapshots
+                timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+                snapshot_signal_id = f"{symbol}_{direction}_{timestamp_str}"
+                
+                # Build factor contributions list
+                factor_contributions = []
+                total_factor_score = 0
+                if components:
+                    for comp in components:
+                        normalized = comp.score
+                        contribution = comp.weighted_score
+                        total_factor_score += contribution
+                        
+                        # Determine status
+                        if normalized >= 70:
+                            status = "pass"
+                        elif normalized >= 50:
+                            status = "neutral"
+                        else:
+                            status = "fail"
+                        
+                        factor_contributions.append({
+                            "factor_key": comp.name.lower().replace(' ', '_').replace('/', '_'),
+                            "factor_name": comp.name,
+                            "raw_value": comp.score,
+                            "normalized_value": normalized,
+                            "weight_pct": comp.weight,
+                            "score_contribution": round(contribution, 2),
+                            "status": status,
+                            "reason": comp.reason
+                        })
+                
+                # Build penalties list
+                penalties_list = []
+                total_penalties = 0
+                
+                if fta and fta.fta_penalty != 0:
+                    penalties_list.append({
+                        "penalty_key": "fta_penalty",
+                        "penalty_name": "FTA Distance Penalty",
+                        "penalty_value": fta.fta_penalty,
+                        "trigger_condition": f"FTA at {fta.clean_space_ratio:.2f}R ratio",
+                        "raw_measurement": fta.fta_distance_in_r,
+                        "reason": f"{fta.fta_type} at {fta.fta_price}, distance {fta.fta_distance_in_r:.2f}R"
+                    })
+                    total_penalties += abs(fta.fta_penalty)
+                
+                if news_penalty > 0:
+                    penalties_list.append({
+                        "penalty_key": "news_penalty",
+                        "penalty_name": "News Impact Penalty",
+                        "penalty_value": -news_penalty,
+                        "trigger_condition": "High-impact news event nearby",
+                        "raw_measurement": news_penalty,
+                        "reason": f"Score reduced by {news_penalty} points"
+                    })
+                    total_penalties += news_penalty
+                
+                if spread_penalty > 0:
+                    penalties_list.append({
+                        "penalty_key": "spread_penalty",
+                        "penalty_name": "Spread Quality Penalty",
+                        "penalty_value": -spread_penalty,
+                        "trigger_condition": "High spread detected",
+                        "raw_measurement": spread_penalty,
+                        "reason": f"Spread penalty: {spread_penalty} points"
+                    })
+                    total_penalties += spread_penalty
+                
+                if setup_penalty > 0:
+                    penalties_list.append({
+                        "penalty_key": "setup_penalty",
+                        "penalty_name": "Setup Type Penalty",
+                        "penalty_value": -setup_penalty,
+                        "trigger_condition": f"Setup type: {setup_type}",
+                        "raw_measurement": setup_penalty,
+                        "reason": f"Setup penalty: {setup_penalty} points"
+                    })
+                    total_penalties += setup_penalty
+                
+                # Build filters list
+                filters_list = []
+                blocking_filter = ""
+                
+                for filter_name, passed in filter_flags.items():
+                    filter_threshold = 0
+                    actual_value = 0
+                    blocks_trade = False
+                    
+                    if filter_name == "score_passed":
+                        filter_threshold = threshold
+                        actual_value = final_score
+                        blocks_trade = not passed and "low_confidence" in rejection_reason.lower()
+                    elif filter_name == "mtf_passed":
+                        filter_threshold = self.MIN_MTF_SCORE
+                        actual_value = mtf_score
+                        blocks_trade = not passed and "weak_mtf" in rejection_reason.lower()
+                    elif filter_name == "rr_passed":
+                        filter_threshold = self.MIN_RR_HARD_REJECT
+                        actual_value = risk_reward
+                        blocks_trade = not passed
+                    elif filter_name == "duplicate_blocked":
+                        blocks_trade = not passed if "duplicate" in filter_name else False
+                    
+                    if blocks_trade and not blocking_filter:
+                        blocking_filter = filter_name
+                    
+                    filters_list.append({
+                        "filter_name": filter_name,
+                        "threshold": filter_threshold,
+                        "actual_value": actual_value,
+                        "passed": passed,
+                        "blocks_trade": blocks_trade,
+                        "reason": f"{'PASSED' if passed else 'BLOCKED'}: {filter_name}"
+                    })
+                
+                # Create score breakdown for snapshot
+                score_breakdown_snap = {
+                    "total_score": final_score,
+                    "factors": factor_contributions
+                }
+                
+                # Create snapshot
+                snapshot = create_snapshot_from_signal_data(
+                    signal_id=snapshot_signal_id,
+                    symbol=symbol,
+                    direction=direction,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    session=session,
+                    setup_type=setup_type,
+                    score_breakdown=score_breakdown_snap,
+                    penalties=penalties_list,
+                    filters=filters_list,
+                    status=decision,
+                    acceptance_source=buffer_zone_data.get('acceptance_source', '') if buffer_zone_data else '',
+                    rejection_reason=rejection_reason,
+                    blocking_filter=blocking_filter
+                )
+                
+                # Save snapshot asynchronously
+                asyncio.create_task(signal_snapshot_service.save_snapshot(snapshot))
+                
+            except Exception as snap_err:
+                logger.debug(f"Snapshot creation error (non-blocking): {snap_err}")
             
         except Exception as e:
             # Never let audit logging crash the scanner
