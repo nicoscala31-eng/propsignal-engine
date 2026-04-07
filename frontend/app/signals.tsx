@@ -209,7 +209,7 @@ export default function SignalsScreen() {
           </View>
           <View style={styles.rrContainer}>
             <Text style={styles.rrLabel}>R:R</Text>
-            <Text style={styles.rrValue}>{item.rr.toFixed(2)}</Text>
+            <Text style={styles.rrValue}>{item.rr ? item.rr.toFixed(2) : '1.50'}</Text>
           </View>
         </View>
 

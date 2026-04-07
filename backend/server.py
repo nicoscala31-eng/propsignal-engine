@@ -876,17 +876,25 @@ async def get_signal_feed(
                 ts = tracked.timestamp
                 if hasattr(ts, 'isoformat'):
                     ts = ts.isoformat()
+                
                 feed.append({
                     'signal_id': sig_id,
                     'symbol': tracked.asset,
                     'direction': tracked.direction,
                     'status': 'active',
-                    'score': tracked.confidence_score,
+                    'score': tracked.confidence_score or 0,
                     'entry': tracked.entry_price,
                     'sl': tracked.stop_loss,
                     'tp': tracked.take_profit_1,
+                    'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
+                    'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
+                    'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
+                    'short_reason': f"Score {tracked.confidence_score or 0:.1f} | Tracked",
+                    'rejection_reason': '',
+                    'blocking_filter': '',
+                    'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
                     'timestamp': ts,
-                    'outcome': None,
+                    'outcome': getattr(tracked, 'final_outcome', None),
                     'final_r': 0,
                     'from_tracker': True  # Flag to indicate source
                 })
@@ -899,18 +907,26 @@ async def get_signal_feed(
                     ts = tracked.timestamp
                     if hasattr(ts, 'isoformat'):
                         ts = ts.isoformat()
+                    
                     feed.append({
                         'signal_id': sig_id,
                         'symbol': tracked.asset,
                         'direction': tracked.direction,
                         'status': 'closed',
-                        'score': tracked.confidence_score,
+                        'score': tracked.confidence_score or 0,
                         'entry': tracked.entry_price,
                         'sl': tracked.stop_loss,
                         'tp': tracked.take_profit_1,
+                        'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
+                        'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
+                        'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
+                        'short_reason': f"Score {tracked.confidence_score or 0:.1f} | {getattr(tracked, 'final_outcome', 'closed') or 'closed'}",
+                        'rejection_reason': '',
+                        'blocking_filter': '',
+                        'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
                         'timestamp': ts,
-                        'outcome': tracked.final_outcome,
-                        'final_r': tracked.final_r,
+                        'outcome': getattr(tracked, 'final_outcome', None),
+                        'final_r': 0,
                         'from_tracker': True
                     })
     
