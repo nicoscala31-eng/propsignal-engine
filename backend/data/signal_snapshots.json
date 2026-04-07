@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-04-07T16:33:37.491769",
-  "total_count": 3,
+  "updated_at": "2026-04-07T16:34:38.652614",
+  "total_count": 14,
   "snapshots": [
     {
       "signal_id": "XAUUSD_BUY_20260407_163327",
@@ -762,6 +762,2910 @@
           "filter_name": "rr_passed",
           "threshold": 1.1,
           "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163342",
+      "timestamp": "2026-04-07T16:33:42.593050",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163347",
+      "timestamp": "2026-04-07T16:33:47.689288",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163352",
+      "timestamp": "2026-04-07T16:33:52.790231",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163357",
+      "timestamp": "2026-04-07T16:33:57.918782",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163403",
+      "timestamp": "2026-04-07T16:34:03.020672",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163408",
+      "timestamp": "2026-04-07T16:34:08.150938",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163413",
+      "timestamp": "2026-04-07T16:34:13.256273",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163418",
+      "timestamp": "2026-04-07T16:34:18.352557",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163423",
+      "timestamp": "2026-04-07T16:34:23.452911",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.62,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4710.3054840178565,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.05883479378335282,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163433",
+      "timestamp": "2026-04-07T16:34:33.551837",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.4,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4709.755484017856,
+      "rr_ratio": 1.5000000000000135,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.06358930040002753,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000000135,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 50.8 | Blocked by score_passed",
+      "summary_full": "Rejected with score 50.8. Reason: low_confidence. Blocking filter: score_passed. Pre-penalty score: 67.3, penalty: 15.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_163438",
+      "timestamp": "2026-04-07T16:34:38.652483",
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "session": "London/NY Overlap",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4659.4,
+      "stop_loss": 4625.829677321429,
+      "take_profit": 4709.755484017856,
+      "rr_ratio": 1.5000000000000135,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "low_confidence",
+      "blocking_filter": "score_passed",
+      "score_pre_penalty": 67.30000000000001,
+      "score_post_penalty": 50.80000000000001,
+      "final_score": 50.80000000000001,
+      "confidence_bucket": "<60",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 25,
+          "normalized_value": 25,
+          "weight_pct": 14.0,
+          "score_contribution": 3.5,
+          "status": "fail",
+          "reason": "H1 bearish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 65,
+          "normalized_value": 65,
+          "weight_pct": 10.0,
+          "score_contribution": 6.5,
+          "status": "neutral",
+          "reason": "Partial alignment"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 55,
+          "normalized_value": 55,
+          "weight_pct": 9.0,
+          "score_contribution": 4.95,
+          "status": "neutral",
+          "reason": "Weak bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 5.0,
+          "score_contribution": 5.0,
+          "status": "pass",
+          "reason": "London/NY overlap"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 4.0,
+          "score_contribution": 2.8,
+          "status": "pass",
+          "reason": "Normal regime"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 2.0,
+          "score_contribution": 1.5,
+          "status": "pass",
+          "reason": "Normal spread (25.0p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 15,
+          "trigger_condition": "FTA at 0.06R ratio",
+          "raw_measurement": 0.06358930040002753,
+          "reason": "swing_high at 4662.60207, distance 0.06R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 50.80000000000001,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 65,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000000135,
           "passed": true,
           "blocks_trade": false,
           "reason": "PASSED: rr_passed"
