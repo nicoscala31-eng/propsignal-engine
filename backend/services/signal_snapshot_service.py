@@ -193,11 +193,23 @@ class SignalSnapshotService:
         self.snapshots.append(snapshot)
         self.snapshots_by_id[snapshot.signal_id] = snapshot
         
-        # Trim if too many
-        if len(self.snapshots) > self.max_snapshots:
-            old_snap = self.snapshots.pop(0)
-            if old_snap.signal_id in self.snapshots_by_id:
-                del self.snapshots_by_id[old_snap.signal_id]
+        # Trim if too many - BUT NEVER DELETE ACTIVE/ACCEPTED TRADES
+        while len(self.snapshots) > self.max_snapshots:
+            # Find the oldest REJECTED or CLOSED snapshot to remove
+            removed = False
+            for i, old_snap in enumerate(self.snapshots):
+                # Only remove rejected, closed (tp_hit/sl_hit), or expired signals
+                if old_snap.status in ['rejected', 'tp_hit', 'sl_hit', 'expired', 'closed']:
+                    removed_snap = self.snapshots.pop(i)
+                    if removed_snap.signal_id in self.snapshots_by_id:
+                        del self.snapshots_by_id[removed_snap.signal_id]
+                    removed = True
+                    break
+            
+            # If no rejected/closed found, we must keep all (active trades)
+            if not removed:
+                logger.warning(f"⚠️ Cannot trim snapshots - all {len(self.snapshots)} are active trades")
+                break
         
         await self._save_snapshots()
         logger.info(f"📸 Saved snapshot: {snapshot.signal_id} ({snapshot.status})")

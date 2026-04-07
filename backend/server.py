@@ -850,10 +850,12 @@ async def get_signal_feed(
     Returns list of signal snapshots with metadata, scores, and short reasons.
     """
     from services.signal_snapshot_service import signal_snapshot_service
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
     # Initialize if needed
     await signal_snapshot_service.initialize()
     
+    # Get feed from snapshot service
     feed = signal_snapshot_service.get_feed(
         symbol=symbol,
         direction=direction,
@@ -861,6 +863,62 @@ async def get_signal_feed(
         limit=limit,
         offset=offset
     )
+    
+    # CRITICAL FIX: Merge with active signals from outcome tracker
+    # This ensures active trades are never lost even if snapshots were trimmed
+    if status in [None, 'all', 'active', 'accepted']:
+        snapshot_ids = {s.get('signal_id') for s in feed}
+        
+        # Get active signals from tracker
+        for sig_id, tracked in signal_outcome_tracker.active_signals.items():
+            if sig_id not in snapshot_ids:
+                # This signal was lost from snapshots but tracker still has it
+                ts = tracked.timestamp
+                if hasattr(ts, 'isoformat'):
+                    ts = ts.isoformat()
+                feed.append({
+                    'signal_id': sig_id,
+                    'symbol': tracked.asset,
+                    'direction': tracked.direction,
+                    'status': 'active',
+                    'score': tracked.confidence_score,
+                    'entry': tracked.entry_price,
+                    'sl': tracked.stop_loss,
+                    'tp': tracked.take_profit_1,
+                    'timestamp': ts,
+                    'outcome': None,
+                    'final_r': 0,
+                    'from_tracker': True  # Flag to indicate source
+                })
+        
+        # Get closed signals from tracker
+        if status in [None, 'all', 'closed']:
+            for tracked in signal_outcome_tracker.completed_signals:
+                sig_id = tracked.signal_id
+                if sig_id not in snapshot_ids:
+                    ts = tracked.timestamp
+                    if hasattr(ts, 'isoformat'):
+                        ts = ts.isoformat()
+                    feed.append({
+                        'signal_id': sig_id,
+                        'symbol': tracked.asset,
+                        'direction': tracked.direction,
+                        'status': 'closed',
+                        'score': tracked.confidence_score,
+                        'entry': tracked.entry_price,
+                        'sl': tracked.stop_loss,
+                        'tp': tracked.take_profit_1,
+                        'timestamp': ts,
+                        'outcome': tracked.final_outcome,
+                        'final_r': tracked.final_r,
+                        'from_tracker': True
+                    })
+    
+    # Sort by timestamp (newest first)
+    feed.sort(key=lambda x: x.get('timestamp', '') or '', reverse=True)
+    
+    # Apply limit after merge
+    feed = feed[offset:offset + limit]
     
     return {
         "count": len(feed),
@@ -878,10 +936,29 @@ async def get_signal_feed_stats():
     Returns counts by status, symbol, etc.
     """
     from services.signal_snapshot_service import signal_snapshot_service
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
     await signal_snapshot_service.initialize()
     
-    return signal_snapshot_service.get_stats()
+    # Get base stats from snapshots
+    stats = signal_snapshot_service.get_stats()
+    
+    # CRITICAL FIX: Merge with tracker data for accurate active/closed counts
+    # Active signals from tracker
+    tracker_active = len(signal_outcome_tracker.active_signals)
+    tracker_closed = len(signal_outcome_tracker.completed_signals)
+    
+    # Count outcomes from tracker
+    tracker_wins = sum(1 for s in signal_outcome_tracker.completed_signals if s.final_outcome == 'tp_hit')
+    tracker_losses = sum(1 for s in signal_outcome_tracker.completed_signals if s.final_outcome == 'sl_hit')
+    
+    # Use tracker numbers as they are more accurate for active/closed
+    stats['active'] = tracker_active
+    stats['closed'] = tracker_closed
+    stats['tracker_wins'] = tracker_wins
+    stats['tracker_losses'] = tracker_losses
+    
+    return stats
 
 
 @api_router.post("/signals/cleanup")
