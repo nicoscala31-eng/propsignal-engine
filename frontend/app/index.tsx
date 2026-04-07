@@ -183,72 +183,51 @@ export default function HomeScreen() {
   const fetchRecentSignals = useCallback(async () => {
     try {
       setSignalsError(null);
-      
-      // Try new feed endpoint first, fallback to tracked signals
       let signals: SignalItem[] = [];
       
-      // Try /api/signals/feed (new endpoint)
-      try {
-        const feedResponse = await fetch(`${API_BASE}/api/signals/feed?limit=20`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        
-        if (feedResponse.ok) {
-          const feedData = await feedResponse.json();
-          if (feedData.signals && feedData.signals.length > 0) {
-            signals = feedData.signals.map((s: any) => ({
-              id: s.signal_id || s.id,
-              signal_id: s.signal_id || s.id,
-              asset: s.symbol || s.asset,
-              symbol: s.symbol || s.asset,
-              direction: s.direction || s.signal_type,
-              signal_type: s.direction || s.signal_type,
-              entry_price: s.entry || s.entry_price,
-              stop_loss: s.sl || s.stop_loss,
-              take_profit: s.tp || s.take_profit || s.take_profit_1,
-              confidence_score: s.score || s.confidence_score,
-              score: s.score || s.confidence_score,
-              status: s.status,
-              timestamp: s.timestamp || s.created_at,
-              outcome: s.outcome || s.final_outcome,
-            }));
-            setRecentSignals(signals);
-            return;
-          }
-        }
-      } catch (feedErr) {
-        console.log('Feed endpoint not available, trying fallback');
-      }
+      // Try multiple endpoints in order of preference
+      const endpoints = [
+        { url: `${API_BASE}/api/signals/feed?limit=20`, name: 'feed' },
+        { url: `${API_BASE}/api/signals/active`, name: 'active' },
+        { url: `${API_BASE}/api/tracker/signals?limit=20`, name: 'tracker' },
+      ];
       
-      // Fallback: Try tracked signals endpoint
-      try {
-        const trackedResponse = await fetch(`${API_BASE}/api/signals/active`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        
-        if (trackedResponse.ok) {
-          const trackedData = await trackedResponse.json();
-          if (Array.isArray(trackedData)) {
-            signals = trackedData.map((s: any) => ({
-              id: s.signal_id || s.id,
-              signal_id: s.signal_id || s.id,
-              asset: s.asset || s.symbol,
-              symbol: s.asset || s.symbol,
-              direction: s.direction || s.signal_type,
-              signal_type: s.direction || s.signal_type,
-              entry_price: s.entry_price || s.entry,
-              stop_loss: s.stop_loss || s.sl,
-              take_profit: s.take_profit_1 || s.take_profit || s.tp,
-              confidence_score: s.confidence_score || s.score,
-              score: s.confidence_score || s.score,
-              status: s.status || 'active',
-              timestamp: s.timestamp || s.created_at,
-              outcome: s.final_outcome || s.outcome,
-            }));
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`📡 Trying ${endpoint.name} endpoint...`);
+          const response = await fetch(endpoint.url, {
+            headers: { 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(8000), // 8 second timeout
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const rawSignals = data.signals || data.active_signals || (Array.isArray(data) ? data : []);
+            
+            if (rawSignals.length > 0) {
+              signals = rawSignals.map((s: any) => ({
+                id: s.signal_id || s.id,
+                signal_id: s.signal_id || s.id,
+                asset: s.symbol || s.asset,
+                symbol: s.symbol || s.asset,
+                direction: s.direction || s.signal_type,
+                signal_type: s.direction || s.signal_type,
+                entry_price: s.entry || s.entry_price,
+                stop_loss: s.sl || s.stop_loss,
+                take_profit: s.tp || s.take_profit || s.take_profit_1,
+                confidence_score: s.score || s.confidence_score,
+                score: s.score || s.confidence_score,
+                status: s.status || 'unknown',
+                timestamp: s.timestamp || s.created_at,
+                outcome: s.outcome || s.final_outcome,
+              }));
+              console.log(`✅ Loaded ${signals.length} signals from ${endpoint.name}`);
+              break;
+            }
           }
+        } catch (err) {
+          console.log(`⚠️ ${endpoint.name} endpoint failed, trying next...`);
         }
-      } catch (trackedErr) {
-        console.log('Tracked signals also failed');
       }
       
       setRecentSignals(signals);
@@ -290,17 +269,18 @@ export default function HomeScreen() {
       console.log('📱 Push token:', token);
       setPushToken(token);
       
-      // Register with backend
-      const response = await fetch(`${API_BASE}/api/users/register-push`, {
+      // Register with backend - CORRECT ENDPOINT
+      const response = await fetch(`${API_BASE}/api/register-device`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          user_id: DEVICE_ID,
+          device_id: DEVICE_ID,
           push_token: token,
           platform: Platform.OS,
+          app_version: '1.1.2',
         }),
       });
       
