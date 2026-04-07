@@ -128,24 +128,33 @@ export default function HomeScreen() {
       setPriceError(null);
       const response = await fetch(`${API_BASE}/api/provider/live-prices`, {
         headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(10000),
       });
       
       if (response.ok) {
         const data = await response.json();
-        if (data.EURUSD) {
+        // API returns prices inside data.prices object
+        const prices = data.prices || data;
+        
+        const eurusd = prices.EURUSD || prices.eurusd;
+        if (eurusd) {
           setEurusdPrice({
-            bid: data.EURUSD.bid || data.EURUSD.live_bid || 0,
-            ask: data.EURUSD.ask || data.EURUSD.live_ask || 0,
-            spread_pips: data.EURUSD.spread_pips || data.EURUSD.live_spread_pips || 0,
+            bid: eurusd.bid || eurusd.live_bid || 0,
+            ask: eurusd.ask || eurusd.live_ask || 0,
+            spread_pips: eurusd.spread_pips || eurusd.live_spread_pips || 0,
           });
         }
-        if (data.XAUUSD) {
+        
+        const xauusd = prices.XAUUSD || prices.xauusd;
+        if (xauusd) {
           setXauusdPrice({
-            bid: data.XAUUSD.bid || data.XAUUSD.live_bid || 0,
-            ask: data.XAUUSD.ask || data.XAUUSD.live_ask || 0,
-            spread_pips: data.XAUUSD.spread_pips || data.XAUUSD.live_spread_pips || 0,
+            bid: xauusd.bid || xauusd.live_bid || 0,
+            ask: xauusd.ask || xauusd.live_ask || 0,
+            spread_pips: xauusd.spread_pips || xauusd.live_spread_pips || 0,
           });
         }
+        
+        console.log('✅ Prices loaded:', { eurusd: !!eurusd, xauusd: !!xauusd });
       } else {
         setPriceError('Price data unavailable');
       }
