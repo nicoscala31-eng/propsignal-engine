@@ -126,41 +126,57 @@ export default function HomeScreen() {
   const fetchLivePrices = useCallback(async () => {
     try {
       setPriceError(null);
+      console.log('🔄 Fetching prices from:', `${API_BASE}/api/provider/live-prices`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const response = await fetch(`${API_BASE}/api/provider/live-prices`, {
         headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(10000),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
+      console.log('📡 Price response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Price data keys:', Object.keys(data));
+        
         // API returns prices inside data.prices object
         const prices = data.prices || data;
+        console.log('📊 Prices keys:', Object.keys(prices));
         
         const eurusd = prices.EURUSD || prices.eurusd;
         if (eurusd) {
+          console.log('✅ EURUSD found:', eurusd.bid, eurusd.ask);
           setEurusdPrice({
             bid: eurusd.bid || eurusd.live_bid || 0,
             ask: eurusd.ask || eurusd.live_ask || 0,
             spread_pips: eurusd.spread_pips || eurusd.live_spread_pips || 0,
           });
+        } else {
+          console.log('❌ EURUSD not found in prices');
         }
         
         const xauusd = prices.XAUUSD || prices.xauusd;
         if (xauusd) {
+          console.log('✅ XAUUSD found:', xauusd.bid, xauusd.ask);
           setXauusdPrice({
             bid: xauusd.bid || xauusd.live_bid || 0,
             ask: xauusd.ask || xauusd.live_ask || 0,
             spread_pips: xauusd.spread_pips || xauusd.live_spread_pips || 0,
           });
+        } else {
+          console.log('❌ XAUUSD not found in prices');
         }
-        
-        console.log('✅ Prices loaded:', { eurusd: !!eurusd, xauusd: !!xauusd });
       } else {
+        console.log('❌ Price response not OK:', response.status);
         setPriceError('Price data unavailable');
       }
-    } catch (err) {
-      console.log('Price fetch error:', err);
-      setPriceError('Offline');
+    } catch (err: any) {
+      console.log('❌ Price fetch error:', err.message || err);
+      setPriceError('Connection error');
     }
   }, []);
 
