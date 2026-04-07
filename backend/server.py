@@ -872,85 +872,112 @@ async def get_signal_feed(
     # Initialize if needed
     await signal_snapshot_service.initialize()
     
-    # Get feed from snapshot service
-    feed = signal_snapshot_service.get_feed(
+    # STEP 1: Get ALL signals from tracker first (they have priority)
+    tracker_signals = []
+    snapshot_ids_from_tracker = set()
+    
+    # Add ACTIVE signals from tracker
+    if status in [None, 'all', 'active', 'accepted']:
+        for sig_id, tracked in signal_outcome_tracker.active_signals.items():
+            ts = tracked.timestamp
+            if hasattr(ts, 'isoformat'):
+                ts = ts.isoformat()
+            
+            tracker_signals.append({
+                'signal_id': sig_id,
+                'symbol': tracked.asset,
+                'direction': tracked.direction,
+                'status': 'active',
+                'score': tracked.confidence_score or 0,
+                'entry': tracked.entry_price,
+                'sl': tracked.stop_loss,
+                'tp': tracked.take_profit_1,
+                'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
+                'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
+                'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
+                'short_reason': f"Score {tracked.confidence_score or 0:.1f} | Active",
+                'rejection_reason': '',
+                'blocking_filter': '',
+                'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
+                'timestamp': ts,
+                'outcome': None,
+                'final_r': 0,
+                'from_tracker': True
+            })
+            snapshot_ids_from_tracker.add(sig_id)
+    
+    # Add CLOSED signals from tracker
+    if status in [None, 'all', 'closed']:
+        for tracked in signal_outcome_tracker.completed_signals:
+            sig_id = tracked.signal_id
+            ts = tracked.timestamp
+            if hasattr(ts, 'isoformat'):
+                ts = ts.isoformat()
+            
+            tracker_signals.append({
+                'signal_id': sig_id,
+                'symbol': tracked.asset,
+                'direction': tracked.direction,
+                'status': 'closed',
+                'score': tracked.confidence_score or 0,
+                'entry': tracked.entry_price,
+                'sl': tracked.stop_loss,
+                'tp': tracked.take_profit_1,
+                'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
+                'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
+                'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
+                'short_reason': f"Score {tracked.confidence_score or 0:.1f} | {getattr(tracked, 'final_outcome', 'closed') or 'closed'}",
+                'rejection_reason': '',
+                'blocking_filter': '',
+                'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
+                'timestamp': ts,
+                'outcome': getattr(tracked, 'final_outcome', None),
+                'final_r': 0,
+                'from_tracker': True
+            })
+            snapshot_ids_from_tracker.add(sig_id)
+    
+    # STEP 2: Get snapshots (for rejected and any missed signals)
+    snapshot_feed = signal_snapshot_service.get_feed(
         symbol=symbol,
         direction=direction,
         status_filter=status,
-        limit=limit,
-        offset=offset
+        limit=1000,  # Get more, we'll filter later
+        offset=0
     )
     
-    # CRITICAL FIX: Merge with active signals from outcome tracker
-    # This ensures active trades are never lost even if snapshots were trimmed
-    if status in [None, 'all', 'active', 'accepted']:
-        snapshot_ids = {s.get('signal_id') for s in feed}
-        
-        # Get active signals from tracker
-        for sig_id, tracked in signal_outcome_tracker.active_signals.items():
-            if sig_id not in snapshot_ids:
-                # This signal was lost from snapshots but tracker still has it
-                ts = tracked.timestamp
-                if hasattr(ts, 'isoformat'):
-                    ts = ts.isoformat()
-                
-                feed.append({
-                    'signal_id': sig_id,
-                    'symbol': tracked.asset,
-                    'direction': tracked.direction,
-                    'status': 'active',
-                    'score': tracked.confidence_score or 0,
-                    'entry': tracked.entry_price,
-                    'sl': tracked.stop_loss,
-                    'tp': tracked.take_profit_1,
-                    'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
-                    'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
-                    'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
-                    'short_reason': f"Score {tracked.confidence_score or 0:.1f} | Tracked",
-                    'rejection_reason': '',
-                    'blocking_filter': '',
-                    'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
-                    'timestamp': ts,
-                    'outcome': getattr(tracked, 'final_outcome', None),
-                    'final_r': 0,
-                    'from_tracker': True  # Flag to indicate source
-                })
-        
-        # Get closed signals from tracker
-        if status in [None, 'all', 'closed']:
-            for tracked in signal_outcome_tracker.completed_signals:
-                sig_id = tracked.signal_id
-                if sig_id not in snapshot_ids:
-                    ts = tracked.timestamp
-                    if hasattr(ts, 'isoformat'):
-                        ts = ts.isoformat()
-                    
-                    feed.append({
-                        'signal_id': sig_id,
-                        'symbol': tracked.asset,
-                        'direction': tracked.direction,
-                        'status': 'closed',
-                        'score': tracked.confidence_score or 0,
-                        'entry': tracked.entry_price,
-                        'sl': tracked.stop_loss,
-                        'tp': tracked.take_profit_1,
-                        'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
-                        'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
-                        'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
-                        'short_reason': f"Score {tracked.confidence_score or 0:.1f} | {getattr(tracked, 'final_outcome', 'closed') or 'closed'}",
-                        'rejection_reason': '',
-                        'blocking_filter': '',
-                        'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
-                        'timestamp': ts,
-                        'outcome': getattr(tracked, 'final_outcome', None),
-                        'final_r': 0,
-                        'from_tracker': True
-                    })
+    # Filter out duplicates
+    for s in snapshot_feed:
+        if s.get('signal_id') not in snapshot_ids_from_tracker:
+            tracker_signals.append(s)
     
-    # Sort by timestamp (newest first)
-    feed.sort(key=lambda x: x.get('timestamp', '') or '', reverse=True)
+    # STEP 3: Sort with priority - ACTIVE first, then CLOSED, then REJECTED
+    def sort_key(s):
+        status_priority = {'active': 0, 'accepted': 0, 'closed': 1, 'tp_hit': 1, 'sl_hit': 1}
+        priority = status_priority.get(s.get('status', '').lower(), 2)
+        # Timestamp as secondary sort (newest first)
+        ts = s.get('timestamp', '') or ''
+        return (priority, ts)
     
-    # Apply limit after merge
+    tracker_signals.sort(key=lambda x: (sort_key(x)[0], -hash(sort_key(x)[1]) if sort_key(x)[1] else 0))
+    
+    # Better sort by timestamp within each priority group
+    active = [s for s in tracker_signals if s.get('status') in ['active', 'accepted']]
+    closed = [s for s in tracker_signals if s.get('status') in ['closed', 'tp_hit', 'sl_hit']]
+    others = [s for s in tracker_signals if s.get('status') not in ['active', 'accepted', 'closed', 'tp_hit', 'sl_hit']]
+    
+    # Sort each by timestamp descending
+    def ts_sort(x):
+        return x.get('timestamp', '') or ''
+    
+    active.sort(key=ts_sort, reverse=True)
+    closed.sort(key=ts_sort, reverse=True)
+    others.sort(key=ts_sort, reverse=True)
+    
+    # Combine
+    feed = active + closed + others
+    
+    # Apply offset and limit
     feed = feed[offset:offset + limit]
     
     return {
