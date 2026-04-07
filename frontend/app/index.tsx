@@ -209,86 +209,71 @@ export default function HomeScreen() {
   const fetchRecentSignals = useCallback(async () => {
     try {
       setSignalsError(null);
-      let signals: SignalItem[] = [];
       
-      // PRIORITY: First try to get ACTIVE trades (most important)
-      try {
-        console.log('📡 Fetching active trades first...');
-        const activeResponse = await fetch(`${API_BASE}/api/signals/feed?status=active&limit=10`, {
-          headers: { 'Accept': 'application/json' },
-          signal: AbortSignal.timeout(8000),
-        });
+      // Fetch all recent signals
+      const response = await fetch(`${API_BASE}/api/signals/feed?limit=50`, {
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(10000),
+      });
+      
+      if (!response.ok) {
+        setSignalsError('Cannot load signals');
+        return;
+      }
+      
+      const data = await response.json();
+      const allSignals = data.signals || [];
+      
+      // Separate by status
+      const active: SignalItem[] = [];
+      const closed: SignalItem[] = [];
+      const rejected: SignalItem[] = [];
+      
+      for (const s of allSignals) {
+        const signal: SignalItem = {
+          id: s.signal_id || s.id,
+          signal_id: s.signal_id || s.id,
+          asset: s.symbol || s.asset,
+          symbol: s.symbol || s.asset,
+          direction: s.direction || s.signal_type,
+          signal_type: s.direction || s.signal_type,
+          entry_price: s.entry || s.entry_price,
+          stop_loss: s.sl || s.stop_loss,
+          take_profit: s.tp || s.take_profit || s.take_profit_1,
+          confidence_score: s.score || s.confidence_score,
+          score: s.score || s.confidence_score,
+          status: s.status || 'unknown',
+          timestamp: s.timestamp || s.created_at,
+          outcome: s.outcome || s.final_outcome,
+        };
         
-        if (activeResponse.ok) {
-          const activeData = await activeResponse.json();
-          const activeSignals = activeData.signals || [];
-          
-          if (activeSignals.length > 0) {
-            signals = activeSignals.map((s: any) => ({
-              id: s.signal_id || s.id,
-              signal_id: s.signal_id || s.id,
-              asset: s.symbol || s.asset,
-              symbol: s.symbol || s.asset,
-              direction: s.direction || s.signal_type,
-              signal_type: s.direction || s.signal_type,
-              entry_price: s.entry || s.entry_price,
-              stop_loss: s.sl || s.stop_loss,
-              take_profit: s.tp || s.take_profit || s.take_profit_1,
-              confidence_score: s.score || s.confidence_score,
-              score: s.score || s.confidence_score,
-              status: s.status || 'active',
-              timestamp: s.timestamp || s.created_at,
-              outcome: s.outcome || s.final_outcome,
-            }));
-            console.log(`✅ Loaded ${signals.length} ACTIVE trades`);
-          }
-        }
-      } catch (err) {
-        console.log('⚠️ Active trades fetch failed');
-      }
-      
-      // If we have less than 3 active, also fetch recent accepted/closed
-      if (signals.length < 3) {
-        try {
-          const feedResponse = await fetch(`${API_BASE}/api/signals/feed?limit=10`, {
-            headers: { 'Accept': 'application/json' },
-            signal: AbortSignal.timeout(8000),
-          });
-          
-          if (feedResponse.ok) {
-            const feedData = await feedResponse.json();
-            const feedSignals = feedData.signals || [];
-            
-            // Add non-rejected signals that aren't already in the list
-            const existingIds = new Set(signals.map(s => s.signal_id));
-            const additionalSignals = feedSignals
-              .filter((s: any) => s.status !== 'rejected' && !existingIds.has(s.signal_id || s.id))
-              .map((s: any) => ({
-                id: s.signal_id || s.id,
-                signal_id: s.signal_id || s.id,
-                asset: s.symbol || s.asset,
-                symbol: s.symbol || s.asset,
-                direction: s.direction || s.signal_type,
-                signal_type: s.direction || s.signal_type,
-                entry_price: s.entry || s.entry_price,
-                stop_loss: s.sl || s.stop_loss,
-                take_profit: s.tp || s.take_profit || s.take_profit_1,
-                confidence_score: s.score || s.confidence_score,
-                score: s.score || s.confidence_score,
-                status: s.status || 'unknown',
-                timestamp: s.timestamp || s.created_at,
-                outcome: s.outcome || s.final_outcome,
-              }));
-            
-            signals = [...signals, ...additionalSignals];
-            console.log(`✅ Total signals after merge: ${signals.length}`);
-          }
-        } catch (err) {
-          console.log('⚠️ Feed fetch failed');
+        const status = (s.status || '').toLowerCase();
+        if (status === 'active' || status === 'accepted') {
+          active.push(signal);
+        } else if (status === 'closed' || status === 'tp_hit' || status === 'sl_hit') {
+          closed.push(signal);
+        } else if (status === 'rejected') {
+          rejected.push(signal);
         }
       }
       
-      setRecentSignals(signals);
+      // Sort each group by timestamp (newest first)
+      const sortByTime = (a: SignalItem, b: SignalItem) => {
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
+        return timeB - timeA;
+      };
+      
+      active.sort(sortByTime);
+      closed.sort(sortByTime);
+      rejected.sort(sortByTime);
+      
+      // Combine with priority: ACTIVE first, then CLOSED, then REJECTED
+      // Take exactly 3 signals total
+      const combined = [...active, ...closed, ...rejected].slice(0, 3);
+      
+      console.log(`✅ Recent Signals: ${active.length} active, ${closed.length} closed, ${rejected.length} rejected → showing ${combined.length}`);
+      setRecentSignals(combined);
       
     } catch (err) {
       console.log('Signals fetch error:', err);
