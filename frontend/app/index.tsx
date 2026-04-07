@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
 // ============================================
@@ -210,27 +211,59 @@ export default function HomeScreen() {
       setSignalsError(null);
       let signals: SignalItem[] = [];
       
-      // Try multiple endpoints in order of preference
-      const endpoints = [
-        { url: `${API_BASE}/api/signals/feed?limit=20`, name: 'feed' },
-        { url: `${API_BASE}/api/signals/active`, name: 'active' },
-        { url: `${API_BASE}/api/tracker/signals?limit=20`, name: 'tracker' },
-      ];
+      // PRIORITY: First try to get ACTIVE trades (most important)
+      try {
+        console.log('📡 Fetching active trades first...');
+        const activeResponse = await fetch(`${API_BASE}/api/signals/feed?status=active&limit=10`, {
+          headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(8000),
+        });
+        
+        if (activeResponse.ok) {
+          const activeData = await activeResponse.json();
+          const activeSignals = activeData.signals || [];
+          
+          if (activeSignals.length > 0) {
+            signals = activeSignals.map((s: any) => ({
+              id: s.signal_id || s.id,
+              signal_id: s.signal_id || s.id,
+              asset: s.symbol || s.asset,
+              symbol: s.symbol || s.asset,
+              direction: s.direction || s.signal_type,
+              signal_type: s.direction || s.signal_type,
+              entry_price: s.entry || s.entry_price,
+              stop_loss: s.sl || s.stop_loss,
+              take_profit: s.tp || s.take_profit || s.take_profit_1,
+              confidence_score: s.score || s.confidence_score,
+              score: s.score || s.confidence_score,
+              status: s.status || 'active',
+              timestamp: s.timestamp || s.created_at,
+              outcome: s.outcome || s.final_outcome,
+            }));
+            console.log(`✅ Loaded ${signals.length} ACTIVE trades`);
+          }
+        }
+      } catch (err) {
+        console.log('⚠️ Active trades fetch failed');
+      }
       
-      for (const endpoint of endpoints) {
+      // If we have less than 3 active, also fetch recent accepted/closed
+      if (signals.length < 3) {
         try {
-          console.log(`📡 Trying ${endpoint.name} endpoint...`);
-          const response = await fetch(endpoint.url, {
+          const feedResponse = await fetch(`${API_BASE}/api/signals/feed?limit=10`, {
             headers: { 'Accept': 'application/json' },
-            signal: AbortSignal.timeout(8000), // 8 second timeout
+            signal: AbortSignal.timeout(8000),
           });
           
-          if (response.ok) {
-            const data = await response.json();
-            const rawSignals = data.signals || data.active_signals || (Array.isArray(data) ? data : []);
+          if (feedResponse.ok) {
+            const feedData = await feedResponse.json();
+            const feedSignals = feedData.signals || [];
             
-            if (rawSignals.length > 0) {
-              signals = rawSignals.map((s: any) => ({
+            // Add non-rejected signals that aren't already in the list
+            const existingIds = new Set(signals.map(s => s.signal_id));
+            const additionalSignals = feedSignals
+              .filter((s: any) => s.status !== 'rejected' && !existingIds.has(s.signal_id || s.id))
+              .map((s: any) => ({
                 id: s.signal_id || s.id,
                 signal_id: s.signal_id || s.id,
                 asset: s.symbol || s.asset,
@@ -246,12 +279,12 @@ export default function HomeScreen() {
                 timestamp: s.timestamp || s.created_at,
                 outcome: s.outcome || s.final_outcome,
               }));
-              console.log(`✅ Loaded ${signals.length} signals from ${endpoint.name}`);
-              break;
-            }
+            
+            signals = [...signals, ...additionalSignals];
+            console.log(`✅ Total signals after merge: ${signals.length}`);
           }
         } catch (err) {
-          console.log(`⚠️ ${endpoint.name} endpoint failed, trying next...`);
+          console.log('⚠️ Feed fetch failed');
         }
       }
       
@@ -270,22 +303,34 @@ export default function HomeScreen() {
   const registerForPushNotifications = useCallback(async () => {
     try {
       setPushError(null);
+      console.log('🔔 Starting push registration...');
+      
+      // Check if running on a physical device (required for push)
+      if (!Device.isDevice) {
+        setPushError('Push requires physical device');
+        Alert.alert('Push Notifications', 'Push notifications only work on physical devices, not simulators.');
+        return;
+      }
       
       // Check permissions
+      console.log('🔔 Checking permissions...');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
       
       if (existingStatus !== 'granted') {
+        console.log('🔔 Requesting permissions...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
       
       if (finalStatus !== 'granted') {
         setPushError('Permission denied');
+        Alert.alert('Permission Required', 'Please enable notifications in your device settings.');
         return;
       }
       
       // Get token
+      console.log('🔔 Getting push token...');
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId || '6c7a7f87-a996-4ca6-b498-7e2bb41f32a3',
       });
@@ -295,6 +340,7 @@ export default function HomeScreen() {
       setPushToken(token);
       
       // Register with backend - CORRECT ENDPOINT
+      console.log('🔔 Registering with backend...');
       const response = await fetch(`${API_BASE}/api/register-device`, {
         method: 'POST',
         headers: {
@@ -305,23 +351,27 @@ export default function HomeScreen() {
           device_id: DEVICE_ID,
           push_token: token,
           platform: Platform.OS,
-          app_version: '1.1.2',
+          app_version: '1.1.6',
         }),
       });
       
       if (response.ok) {
         setPushRegistered(true);
         console.log('✅ Push registered successfully');
+        Alert.alert('Success!', 'Push notifications enabled. You will receive alerts for new signals.');
       } else {
         const errText = await response.text();
         console.log('Push registration response:', errText);
         // Still mark as registered if we have token
         setPushRegistered(true);
+        Alert.alert('Registered', 'Token obtained. Backend sync may be delayed.');
       }
       
     } catch (err: any) {
       console.error('Push registration error:', err);
-      setPushError(err.message || 'Registration failed');
+      const errorMsg = err.message || 'Registration failed';
+      setPushError(errorMsg);
+      Alert.alert('Registration Error', errorMsg);
     }
   }, []);
 

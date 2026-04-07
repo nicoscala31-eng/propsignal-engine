@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-07T16:47:15.222904",
+  "updated_at": "2026-04-07T16:59:09.075158",
   "total_candidates": 1000,
   "accepted_count": 134,
   "rejected_count": 866,
@@ -8971,2284 +8971,6 @@
         "risk_reward": 1.4999999999998963,
         "sl_pips": 10.700000000001264,
         "tp_pips": 16.050000000000786
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151501_956714",
-      "timestamp": "2026-04-07T15:15:01.956718",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 56.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -3.1500000000000057,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 8,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.34108527131788013,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.34108527131788013
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15687,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.154935,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.900000000000134,
-        "tp_pips": 19.3500000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_SELL_20260407_151502_058843",
-      "timestamp": "2026-04-07T15:15:02.058846",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.45,
-        "threshold_required": 60,
-        "score_delta": 0.45000000000000284,
-        "mtf_score": 40,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 75,
-        "entry_quality_score": 100,
-        "key_level_score": 95,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 95,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 75,
-        "m15_context_score": 70,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.05212941585707296,
-        "fta_level": 4639.43428,
-        "clean_space_r": 0.05212941585707296
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4641.02,
-        "stop_loss": 4661.299273214286,
-        "take_profit_1": 4610.601090178572,
-        "take_profit_2": 0,
-        "risk_reward": 1.5000000000000224,
-        "sl_pips": 2027.927321428524,
-        "tp_pips": 3041.8909821428315
-      },
-      "outcome_data": {
-        "outcome": "loss",
-        "is_simulated": true,
-        "total_r": -1.0,
-        "mfe_r": 1.2681258324815172,
-        "mae_r": 1.3056319844902866,
-        "peak_r": 1.2681258324815172,
-        "time_to_outcome_minutes": 440.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151507_154809",
-      "timestamp": "2026-04-07T15:15:07.154814",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 56.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -3.1500000000000057,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 8,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.34108527131788013,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.34108527131788013
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15687,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.154935,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.900000000000134,
-        "tp_pips": 19.3500000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_SELL_20260407_151507_255808",
-      "timestamp": "2026-04-07T15:15:07.255811",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.45,
-        "threshold_required": 60,
-        "score_delta": 0.45000000000000284,
-        "mtf_score": 40,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 75,
-        "entry_quality_score": 100,
-        "key_level_score": 95,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 95,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 75,
-        "m15_context_score": 70,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.05212941585707296,
-        "fta_level": 4639.43428,
-        "clean_space_r": 0.05212941585707296
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4641.02,
-        "stop_loss": 4661.299273214286,
-        "take_profit_1": 4610.601090178572,
-        "take_profit_2": 0,
-        "risk_reward": 1.5000000000000224,
-        "sl_pips": 2027.927321428524,
-        "tp_pips": 3041.8909821428315
-      },
-      "outcome_data": {
-        "outcome": "loss",
-        "is_simulated": true,
-        "total_r": -1.0,
-        "mfe_r": 1.2681258324815172,
-        "mae_r": 1.3056319844902866,
-        "peak_r": 1.2681258324815172,
-        "time_to_outcome_minutes": 440.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151512_351685",
-      "timestamp": "2026-04-07T15:15:12.351689",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151517_455208",
-      "timestamp": "2026-04-07T15:15:17.455212",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151524_208344",
-      "timestamp": "2026-04-07T15:15:24.208348",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151529_307399",
-      "timestamp": "2026-04-07T15:15:29.307403",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151534_410469",
-      "timestamp": "2026-04-07T15:15:34.410472",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151539_509960",
-      "timestamp": "2026-04-07T15:15:39.509964",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.4350282485874686,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.4350282485874686
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15698,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1552099999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 11.800000000001809,
-        "tp_pips": 17.700000000002714
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151544_613427",
-      "timestamp": "2026-04-07T15:15:44.613431",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151549_715875",
-      "timestamp": "2026-04-07T15:15:49.715878",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151554_818405",
-      "timestamp": "2026-04-07T15:15:54.818410",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151559_922503",
-      "timestamp": "2026-04-07T15:15:59.922508",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151605_026329",
-      "timestamp": "2026-04-07T15:16:05.026333",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151610_127299",
-      "timestamp": "2026-04-07T15:16:10.127303",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 60.849999999999994,
-        "threshold_required": 60,
-        "score_delta": 0.8499999999999943,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 4,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.3733333333332339,
-        "fta_level": 1.15621,
-        "clean_space_r": 0.3733333333332339
-      },
-      "filter_flags": {
-        "score_passed": true,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.1569099999999999,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.1550349999999996,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 12.500000000001954,
-        "tp_pips": 18.75000000000293
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151615_229500",
-      "timestamp": "2026-04-07T15:16:15.229505",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151620_332986",
-      "timestamp": "2026-04-07T15:16:20.332991",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151626_067946",
-      "timestamp": "2026-04-07T15:16:26.067950",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151631_166402",
-      "timestamp": "2026-04-07T15:16:31.166406",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151636_268336",
-      "timestamp": "2026-04-07T15:16:36.268340",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151641_371123",
-      "timestamp": "2026-04-07T15:16:41.371127",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151646_473902",
-      "timestamp": "2026-04-07T15:16:46.473906",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151651_576196",
-      "timestamp": "2026-04-07T15:16:51.576201",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151656_678704",
-      "timestamp": "2026-04-07T15:16:56.678708",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151701_781788",
-      "timestamp": "2026-04-07T15:17:01.781792",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "EURUSD_SELL_20260407_151706_885252",
-      "timestamp": "2026-04-07T15:17:06.885256",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "London/NY Overlap",
-      "setup_type": "Fib Retracement [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "weak_mtf",
-      "rejection_details": "MTF 20% < 60% (HARD BLOCK)",
-      "score_breakdown": {
-        "total_score": 49.849999999999994,
-        "threshold_required": 60,
-        "score_delta": -10.150000000000006,
-        "mtf_score": 20,
-        "structure_score": 65,
-        "momentum_score": 75,
-        "session_score": 100,
-        "pullback_score": 100,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 100,
-        "concentration_score": 100,
-        "h1_bias_score": 40,
-        "m15_context_score": 35,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.005309734513230515,
-        "fta_level": 1.157021,
-        "clean_space_r": 0.005309734513230515
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": false,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 1.15703,
-        "stop_loss": 1.15816,
-        "take_profit_1": 1.155335,
-        "take_profit_2": 0,
-        "risk_reward": 1.4999999999999019,
-        "sl_pips": 11.300000000000754,
-        "tp_pips": 16.95000000000002
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151711_991356",
-      "timestamp": "2026-04-07T15:17:11.991361",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Structure Pullback [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 53% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 52.750000000000014,
-        "threshold_required": 60,
-        "score_delta": -7.249999999999986,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 83,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.16735270741600058,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.16735270741600058
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4642.53,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4702.750418035714,
-        "take_profit_2": 0,
-        "risk_reward": 1.5,
-        "sl_pips": 4014.6945357142613,
-        "tp_pips": 6022.041803571392
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151717_094660",
-      "timestamp": "2026-04-07T15:17:17.094665",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151722_193423",
-      "timestamp": "2026-04-07T15:17:22.193427",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151727_926404",
-      "timestamp": "2026-04-07T15:17:27.926409",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151733_027886",
-      "timestamp": "2026-04-07T15:17:33.027890",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151738_130422",
-      "timestamp": "2026-04-07T15:17:38.130425",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
-      },
-      "outcome_data": {
-        "outcome": "pending",
-        "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
-      }
-    },
-    {
-      "candidate_id": "XAUUSD_BUY_20260407_151743_233335",
-      "timestamp": "2026-04-07T15:17:43.233339",
-      "symbol": "XAUUSD",
-      "direction": "BUY",
-      "session": "London/NY Overlap",
-      "setup_type": "Technical Setup [Structural SL]",
-      "decision": "rejected",
-      "rejection_reason": "low_confidence",
-      "rejection_details": "Score 50% < 60% (below buffer zone)",
-      "score_breakdown": {
-        "total_score": 49.75,
-        "threshold_required": 60,
-        "score_delta": -10.25,
-        "mtf_score": 65,
-        "structure_score": 85,
-        "momentum_score": 30,
-        "session_score": 100,
-        "pullback_score": 53,
-        "entry_quality_score": 100,
-        "key_level_score": 60,
-        "rr_score": 70,
-        "volatility_score": 90,
-        "regime_score": 85,
-        "spread_score": 75,
-        "concentration_score": 100,
-        "h1_bias_score": 25,
-        "m15_context_score": 90,
-        "fta_penalty": 15,
-        "news_penalty": 0.0,
-        "spread_penalty": 0.0,
-        "setup_penalty": 0.0,
-        "fta_distance_r": 0.07564319211416275,
-        "fta_level": 4652.60805,
-        "clean_space_r": 0.07564319211416275
-      },
-      "filter_flags": {
-        "score_passed": false,
-        "mtf_passed": true,
-        "fta_passed": true,
-        "session_passed": true,
-        "asset_passed": true,
-        "duplicate_blocked": false,
-        "news_blocked": false,
-        "rr_passed": true,
-        "spread_passed": true,
-        "daily_limit_passed": true
-      },
-      "trade_levels": {
-        "entry": 4647.49,
-        "stop_loss": 4602.383054642857,
-        "take_profit_1": 4715.150418035713,
-        "take_profit_2": 0,
-        "risk_reward": 1.49999999999999,
-        "sl_pips": 4510.694535714265,
-        "tp_pips": 6766.041803571352
       },
       "outcome_data": {
         "outcome": "pending",
@@ -28738,13 +26460,13 @@
         "tp_pips": 3577.2933482142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -28872,13 +26594,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29006,13 +26728,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29140,13 +26862,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29274,13 +26996,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29408,13 +27130,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.48182558657546576,
+        "mae_r": 1.0697399179578004,
+        "peak_r": 0.48182558657546576,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29542,13 +27264,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.48182558657546576,
+        "mae_r": 1.0697399179578004,
+        "peak_r": 0.48182558657546576,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29676,13 +27398,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.48182558657546576,
+        "mae_r": 1.0697399179578004,
+        "peak_r": 0.48182558657546576,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29810,13 +27532,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.48182558657546576,
+        "mae_r": 1.0697399179578004,
+        "peak_r": 0.48182558657546576,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -29944,13 +27666,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.5171783882366705,
+        "mae_r": 1.071403745003147,
+        "peak_r": 0.5171783882366705,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -30078,13 +27800,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.44731638675326624,
+        "mae_r": 1.0681157937786847,
+        "peak_r": 0.44731638675326624,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -30212,13 +27934,13 @@
         "tp_pips": 3511.293348214258
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
-        "mfe_r": 0.0,
-        "mae_r": 0.0,
-        "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "total_r": -1.0,
+        "mfe_r": 0.44731638675326624,
+        "mae_r": 1.0681157937786847,
+        "peak_r": 0.44731638675326624,
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -30346,13 +28068,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -30480,13 +28202,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -30614,13 +28336,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -30748,13 +28470,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -30882,13 +28604,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -31016,13 +28738,13 @@
         "tp_pips": 3446.7933482143053
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.56570338623111,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -31150,13 +28872,13 @@
         "tp_pips": 3382.2933482142616
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -31284,13 +29006,13 @@
         "tp_pips": 3382.2933482142616
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46225,13 +43947,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46292,13 +44014,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46359,13 +44081,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46426,13 +44148,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46493,13 +44215,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5728668235775582,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46560,13 +44282,13 @@
         "tp_pips": 4600.9441607142435
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46627,13 +44349,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46694,13 +44416,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46761,13 +44483,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46828,13 +44550,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46895,13 +44617,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -46962,13 +44684,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47029,13 +44751,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47096,13 +44818,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47163,13 +44885,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47230,13 +44952,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47297,13 +45019,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5798759582659507,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47364,13 +45086,13 @@
         "tp_pips": 4470.444160714214
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47431,13 +45153,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47498,13 +45220,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47565,13 +45287,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47632,13 +45354,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47699,13 +45421,13 @@
         "tp_pips": 4503.444160714298
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5522070612967305,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47766,13 +45488,13 @@
         "tp_pips": 4513.44527678566
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47833,13 +45555,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47900,13 +45622,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -47967,13 +45689,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48034,13 +45756,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48101,13 +45823,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5802582079381406,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48168,13 +45890,13 @@
         "tp_pips": 4772.945276785595
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48235,13 +45957,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48302,13 +46024,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48369,13 +46091,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48436,13 +46158,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48503,13 +46225,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.534000678458909,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48570,13 +46292,13 @@
         "tp_pips": 4610.9452767856965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48637,13 +46359,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48704,13 +46426,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48771,13 +46493,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48838,13 +46560,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48905,13 +46627,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5162838456215664,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -48972,13 +46694,13 @@
         "tp_pips": 5261.945276785718
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49039,13 +46761,13 @@
         "tp_pips": 4903.445276785806
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49106,13 +46828,13 @@
         "tp_pips": 4903.445276785806
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49173,13 +46895,13 @@
         "tp_pips": 4903.445276785806
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49240,13 +46962,13 @@
         "tp_pips": 4903.445276785806
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49307,13 +47029,13 @@
         "tp_pips": 4903.445276785806
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.5051956974494678,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 15.0
       }
     },
     {
@@ -49374,13 +47096,13 @@
         "tp_pips": 4919.057544642965
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -49441,13 +47163,13 @@
         "tp_pips": 17.54999999999729
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -49508,13 +47230,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -49575,13 +47297,13 @@
         "tp_pips": 17.54999999999729
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -49642,13 +47364,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -49709,13 +47431,13 @@
         "tp_pips": 17.54999999999729
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -49776,13 +47498,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -49843,13 +47565,13 @@
         "tp_pips": 17.54999999999729
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -49910,13 +47632,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -49977,13 +47699,13 @@
         "tp_pips": 17.54999999999729
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50044,13 +47766,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4716579094370512,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50111,13 +47833,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.6391752577317065,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50178,13 +47900,13 @@
         "tp_pips": 5897.057544642848
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4487590327482616,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50245,13 +47967,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.485981308411021,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50312,13 +48034,13 @@
         "tp_pips": 5864.057544642856
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4487590327482616,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50379,13 +48101,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.485981308411021,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50446,13 +48168,13 @@
         "tp_pips": 5864.057544642856
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4487590327482616,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50513,13 +48235,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.485981308411021,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50580,13 +48302,13 @@
         "tp_pips": 5864.057544642856
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4487590327482616,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50647,13 +48369,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.485981308411021,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50714,13 +48436,13 @@
         "tp_pips": 5864.057544642856
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4487590327482616,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50781,13 +48503,13 @@
         "tp_pips": 17.249999999999766
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.485981308411021,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50848,13 +48570,13 @@
         "tp_pips": 5864.057544642856
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -50915,13 +48637,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.514285714285382,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -50982,13 +48704,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51049,13 +48771,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -51116,13 +48838,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51183,13 +48905,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -51250,13 +48972,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51317,13 +49039,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -51384,13 +49106,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51451,13 +49173,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -51518,13 +49240,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51585,13 +49307,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -51652,13 +49374,13 @@
         "tp_pips": 5766.55754464291
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.4763407732657452,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51786,13 +49508,13 @@
         "tp_pips": 5472.55754464295
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.46684980009798,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -51920,13 +49642,13 @@
         "tp_pips": 5472.55754464295
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 1.46684980009798,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 10.0
       }
     },
     {
@@ -52523,13 +50245,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.445454545454395,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -52657,13 +50379,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.5588235294117134,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -52791,13 +50513,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.5588235294117134,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -52925,13 +50647,13 @@
         "tp_pips": 17.100000000001003
       },
       "outcome_data": {
-        "outcome": "pending",
+        "outcome": "loss",
         "is_simulated": true,
-        "total_r": 0.0,
+        "total_r": -1.0,
         "mfe_r": 0.0,
-        "mae_r": 0.0,
+        "mae_r": 2.5588235294117134,
         "peak_r": 0.0,
-        "time_to_outcome_minutes": 0.0
+        "time_to_outcome_minutes": 5.0
       }
     },
     {
@@ -66993,6 +64715,2284 @@
         "risk_reward": 1.500000000000056,
         "sl_pips": 813.345874999959,
         "tp_pips": 1220.018812499984
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165617_636705",
+      "timestamp": "2026-04-07T16:56:17.636710",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165622_735696",
+      "timestamp": "2026-04-07T16:56:22.735700",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165627_836690",
+      "timestamp": "2026-04-07T16:56:27.836694",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165634_547362",
+      "timestamp": "2026-04-07T16:56:34.547366",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165639_644806",
+      "timestamp": "2026-04-07T16:56:39.644809",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165644_746321",
+      "timestamp": "2026-04-07T16:56:44.746325",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165649_843655",
+      "timestamp": "2026-04-07T16:56:49.843660",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165654_944204",
+      "timestamp": "2026-04-07T16:56:54.944208",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165700_043287",
+      "timestamp": "2026-04-07T16:57:00.043290",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165705_145411",
+      "timestamp": "2026-04-07T16:57:05.145415",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165710_242207",
+      "timestamp": "2026-04-07T16:57:10.242211",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165715_344327",
+      "timestamp": "2026-04-07T16:57:15.344331",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 58.25,
+        "threshold_required": 60,
+        "score_delta": -1.75,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 100,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.2925490196077777,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.2925490196077777
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15719,
+        "stop_loss": 1.15804,
+        "take_profit_1": 1.1559149999999998,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165720_442587",
+      "timestamp": "2026-04-07T16:57:20.442592",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165725_545523",
+      "timestamp": "2026-04-07T16:57:25.545527",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165730_642319",
+      "timestamp": "2026-04-07T16:57:30.642323",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165736_512441",
+      "timestamp": "2026-04-07T16:57:36.512446",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165741_609179",
+      "timestamp": "2026-04-07T16:57:41.609183",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165746_707054",
+      "timestamp": "2026-04-07T16:57:46.707059",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22980392156850601,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22980392156850601
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571099999999999,
+        "stop_loss": 1.1579599999999999,
+        "take_profit_1": 1.1558349999999997,
+        "take_profit_2": 0,
+        "risk_reward": 1.5000000000001306,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.750000000001371
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165751_804058",
+      "timestamp": "2026-04-07T16:57:51.804064",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165756_901914",
+      "timestamp": "2026-04-07T16:57:56.901918",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165802_004256",
+      "timestamp": "2026-04-07T16:58:02.004260",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165807_106560",
+      "timestamp": "2026-04-07T16:58:07.106563",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165812_208844",
+      "timestamp": "2026-04-07T16:58:12.208848",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165817_307096",
+      "timestamp": "2026-04-07T16:58:17.307100",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 56.55,
+        "threshold_required": 60,
+        "score_delta": -3.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 8,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.22196078431376634,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.22196078431376634
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.1571,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155825,
+        "take_profit_2": 0,
+        "risk_reward": 1.4999999999998694,
+        "sl_pips": 8.500000000000174,
+        "tp_pips": 12.749999999999151
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165822_404060",
+      "timestamp": "2026-04-07T16:58:22.404065",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165827_500555",
+      "timestamp": "2026-04-07T16:58:27.500559",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165832_603160",
+      "timestamp": "2026-04-07T16:58:32.603165",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165838_466499",
+      "timestamp": "2026-04-07T16:58:38.466503",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165843_563281",
+      "timestamp": "2026-04-07T16:58:43.563284",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165848_667366",
+      "timestamp": "2026-04-07T16:58:48.667370",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.19166666666671292,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.19166666666671292
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15707,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.15575,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.799999999999919,
+        "tp_pips": 13.199999999999878
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165853_769556",
+      "timestamp": "2026-04-07T16:58:53.769560",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.18202247191009555,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.18202247191009555
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15706,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155725,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.900000000000574,
+        "tp_pips": 13.350000000000861
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165858_871345",
+      "timestamp": "2026-04-07T16:58:58.871349",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.18202247191009555,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.18202247191009555
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15706,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155725,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.900000000000574,
+        "tp_pips": 13.350000000000861
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165903_972732",
+      "timestamp": "2026-04-07T16:59:03.972736",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.18202247191009555,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.18202247191009555
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15706,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155725,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.900000000000574,
+        "tp_pips": 13.350000000000861
+      },
+      "outcome_data": {
+        "outcome": "pending",
+        "is_simulated": true,
+        "total_r": 0.0,
+        "mfe_r": 0.0,
+        "mae_r": 0.0,
+        "peak_r": 0.0,
+        "time_to_outcome_minutes": 0.0
+      }
+    },
+    {
+      "candidate_id": "EURUSD_SELL_20260407_165909_074983",
+      "timestamp": "2026-04-07T16:59:09.074986",
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "session": "London/NY Overlap",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "decision": "rejected",
+      "rejection_reason": "weak_mtf",
+      "rejection_details": "MTF 40% < 60% (HARD BLOCK)",
+      "score_breakdown": {
+        "total_score": 49.55,
+        "threshold_required": 60,
+        "score_delta": -10.450000000000003,
+        "mtf_score": 40,
+        "structure_score": 45,
+        "momentum_score": 75,
+        "session_score": 100,
+        "pullback_score": 83,
+        "entry_quality_score": 100,
+        "key_level_score": 60,
+        "rr_score": 70,
+        "volatility_score": 90,
+        "regime_score": 70,
+        "spread_score": 100,
+        "concentration_score": 100,
+        "h1_bias_score": 40,
+        "m15_context_score": 55,
+        "fta_penalty": 15,
+        "news_penalty": 0.0,
+        "spread_penalty": 0.0,
+        "setup_penalty": 0.0,
+        "fta_distance_r": 0.18202247191009555,
+        "fta_level": 1.156817,
+        "clean_space_r": 0.18202247191009555
+      },
+      "filter_flags": {
+        "score_passed": false,
+        "mtf_passed": false,
+        "fta_passed": true,
+        "session_passed": true,
+        "asset_passed": true,
+        "duplicate_blocked": false,
+        "news_blocked": false,
+        "rr_passed": true,
+        "spread_passed": true,
+        "daily_limit_passed": true
+      },
+      "trade_levels": {
+        "entry": 1.15706,
+        "stop_loss": 1.15795,
+        "take_profit_1": 1.155725,
+        "take_profit_2": 0,
+        "risk_reward": 1.5,
+        "sl_pips": 8.900000000000574,
+        "tp_pips": 13.350000000000861
       },
       "outcome_data": {
         "outcome": "pending",
