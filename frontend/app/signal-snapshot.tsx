@@ -166,7 +166,12 @@ export default function SignalSnapshotScreen() {
   };
 
   const formatTimestamp = (ts: string) => {
-    return new Date(ts).toLocaleString('en-US', {
+    // Ensure timestamp is treated as UTC if no timezone specified
+    let timestamp = ts;
+    if (!ts.endsWith('Z') && !ts.includes('+') && !ts.includes('-', 10)) {
+      timestamp = ts + 'Z';
+    }
+    return new Date(timestamp).toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

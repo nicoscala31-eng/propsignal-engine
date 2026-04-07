@@ -135,7 +135,12 @@ export default function SignalsScreen() {
   };
 
   const formatTimestamp = (ts: string) => {
-    const date = new Date(ts);
+    // Ensure timestamp is treated as UTC if no timezone specified
+    let timestamp = ts;
+    if (!ts.endsWith('Z') && !ts.includes('+') && !ts.includes('-', 10)) {
+      timestamp = ts + 'Z';
+    }
+    const date = new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     

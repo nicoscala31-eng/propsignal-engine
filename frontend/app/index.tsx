@@ -373,7 +373,12 @@ export default function HomeScreen() {
 
   const formatTime = (date: Date | string | null): string => {
     if (!date) return '-';
-    const d = typeof date === 'string' ? new Date(date) : date;
+    // Ensure timestamp is treated as UTC if no timezone specified
+    let timestamp = typeof date === 'string' ? date : date.toISOString();
+    if (typeof date === 'string' && !date.endsWith('Z') && !date.includes('+') && !date.includes('-', 10)) {
+      timestamp = date + 'Z';
+    }
+    const d = new Date(timestamp);
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
