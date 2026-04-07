@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-04-07T08:58:20.357331",
-  "total_count": 464,
+  "updated_at": "2026-04-07T08:58:25.762112",
+  "total_count": 465,
   "snapshots": [
     {
       "signal_id": "EURUSD_BUY_20260407_082756",
@@ -119807,6 +119807,261 @@
     {
       "signal_id": "EURUSD_BUY_20260407_085820",
       "timestamp": "2026-04-07T08:58:20.355024",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "London",
+      "setup_type": "HTF Trend Continuation [Structural SL]",
+      "entry_price": 1.15697,
+      "stop_loss": 1.15342,
+      "take_profit": 1.1622950000000003,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "duplicate",
+      "blocking_filter": "",
+      "score_pre_penalty": 78.10000000000001,
+      "score_post_penalty": 78.10000000000001,
+      "final_score": 78.10000000000001,
+      "confidence_bucket": "75+",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_directional_bias",
+          "factor_name": "H1 Directional Bias",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 14.0,
+          "score_contribution": 8.4,
+          "status": "neutral",
+          "reason": "Weak H1 bullish"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15 Context",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 11.0,
+          "score_contribution": 9.9,
+          "status": "pass",
+          "reason": "M15 trend + momentum aligned"
+        },
+        {
+          "factor_key": "mtf_alignment",
+          "factor_name": "MTF Alignment",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 10.0,
+          "score_contribution": 10.0,
+          "status": "pass",
+          "reason": "All timeframes aligned"
+        },
+        {
+          "factor_key": "market_structure",
+          "factor_name": "Market Structure",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 11.0,
+          "score_contribution": 9.35,
+          "status": "pass",
+          "reason": "Higher lows"
+        },
+        {
+          "factor_key": "momentum",
+          "factor_name": "Momentum",
+          "raw_value": 75,
+          "normalized_value": 75,
+          "weight_pct": 9.0,
+          "score_contribution": 6.75,
+          "status": "pass",
+          "reason": "Moderate bullish"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "Pullback Quality",
+          "raw_value": 53,
+          "normalized_value": 53,
+          "weight_pct": 10.0,
+          "score_contribution": 5.3,
+          "status": "neutral",
+          "reason": "Shallow pullback + resuming"
+        },
+        {
+          "factor_key": "entry_quality",
+          "factor_name": "Entry Quality",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 6.0,
+          "score_contribution": 6.0,
+          "status": "pass",
+          "reason": "Optimal entry zone"
+        },
+        {
+          "factor_key": "key_level_reaction",
+          "factor_name": "Key Level Reaction",
+          "raw_value": 60,
+          "normalized_value": 60,
+          "weight_pct": 7.0,
+          "score_contribution": 4.2,
+          "status": "neutral",
+          "reason": "Near round number"
+        },
+        {
+          "factor_key": "session_quality",
+          "factor_name": "Session Quality",
+          "raw_value": 90,
+          "normalized_value": 90,
+          "weight_pct": 5.0,
+          "score_contribution": 4.5,
+          "status": "pass",
+          "reason": "London session"
+        },
+        {
+          "factor_key": "risk_reward",
+          "factor_name": "Risk/Reward",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 6.0,
+          "score_contribution": 4.2,
+          "status": "pass",
+          "reason": "Acceptable R:R (1.50)"
+        },
+        {
+          "factor_key": "volatility",
+          "factor_name": "Volatility",
+          "raw_value": 70,
+          "normalized_value": 70,
+          "weight_pct": 3.0,
+          "score_contribution": 2.1,
+          "status": "pass",
+          "reason": "Acceptable volatility"
+        },
+        {
+          "factor_key": "market_regime",
+          "factor_name": "Market Regime",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 4.0,
+          "score_contribution": 3.4,
+          "status": "pass",
+          "reason": "Healthy trend"
+        },
+        {
+          "factor_key": "spread",
+          "factor_name": "Spread",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "Tight spread (0.8p)"
+        },
+        {
+          "factor_key": "concentration",
+          "factor_name": "Concentration",
+          "raw_value": 100,
+          "normalized_value": 100,
+          "weight_pct": 2.0,
+          "score_contribution": 2.0,
+          "status": "pass",
+          "reason": "No concentration issue"
+        }
+      ],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 78.10000000000001,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 100,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 78.1 | Blocked by duplicate",
+      "summary_full": "Rejected with score 78.1. Reason: duplicate. Blocking filter: . Pre-penalty score: 78.1, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260407_085825",
+      "timestamp": "2026-04-07T08:58:25.759812",
       "symbol": "EURUSD",
       "direction": "BUY",
       "session": "London",
