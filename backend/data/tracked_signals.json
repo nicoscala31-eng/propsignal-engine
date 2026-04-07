@@ -14341,7 +14341,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1380.0,
-      "time_in_drawdown_seconds": 5910.0,
+      "time_in_drawdown_seconds": 6870.0,
       "peak_r_before_reversal": 0.14453084912193945
     },
     {
@@ -14483,7 +14483,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 2850.0,
-      "time_in_drawdown_seconds": 4380.0,
+      "time_in_drawdown_seconds": 5340.0,
       "peak_r_before_reversal": 0.21705823567018573
     },
     {
@@ -14625,7 +14625,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 3930.0,
-      "time_in_drawdown_seconds": 3210.0,
+      "time_in_drawdown_seconds": 4170.0,
       "peak_r_before_reversal": 0.28026074304755616
     },
     {
@@ -14767,7 +14767,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 3660.0,
-      "time_in_drawdown_seconds": 2550.0,
+      "time_in_drawdown_seconds": 3510.0,
       "peak_r_before_reversal": 0.27848101265822073
     },
     {
@@ -14909,7 +14909,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1260.0,
-      "time_in_drawdown_seconds": 3870.0,
+      "time_in_drawdown_seconds": 4830.0,
       "peak_r_before_reversal": 0.14948778408592478
     },
     {
@@ -15051,7 +15051,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1530.0,
-      "time_in_drawdown_seconds": 3420.0,
+      "time_in_drawdown_seconds": 4380.0,
       "peak_r_before_reversal": 0.21715714095361557
     },
     {
@@ -15193,7 +15193,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 870.0,
-      "time_in_drawdown_seconds": 3690.0,
+      "time_in_drawdown_seconds": 4650.0,
       "peak_r_before_reversal": 0.08942281689158374
     },
     {
@@ -15335,7 +15335,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 450.0,
-      "time_in_drawdown_seconds": 3750.0,
+      "time_in_drawdown_seconds": 4710.0,
       "peak_r_before_reversal": 0.0346742381593218
     },
     {
@@ -15477,7 +15477,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 30.0,
-      "time_in_drawdown_seconds": 3150.0,
+      "time_in_drawdown_seconds": 4110.0,
       "peak_r_before_reversal": 0.014228082850985629
     },
     {
@@ -15618,8 +15618,8 @@
       "breakeven_possible": true,
       "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 90.0,
-      "time_in_drawdown_seconds": 120.0,
+      "time_in_profit_seconds": 990.0,
+      "time_in_drawdown_seconds": 180.0,
       "peak_r_before_reversal": 1.916802766183049
     },
     {
@@ -15745,10 +15745,152 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4665.27,
-      "lowest_price_seen": 4665.27,
+      "max_favorable_excursion": 4.569999999999709,
+      "max_adverse_excursion": 4.350000000000364,
+      "highest_price_seen": 4669.84,
+      "lowest_price_seen": 4660.92,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 600.0,
+      "time_in_drawdown_seconds": 360.0,
+      "peak_r_before_reversal": 0.6519986502464892
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_103121",
+      "timestamp": "2026-04-07T10:31:21.115926",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4667.88,
+      "stop_loss": 4658.260783035714,
+      "take_profit_1": 4678.7844000000005,
+      "take_profit_2": 4684.2366,
+      "confidence_score": 64.85,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Below 4658.26",
+      "risk_reward": 1.13,
+      "score_breakdown": {
+        "final_score": 64.8,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 35,
+            "contribution": 3.8,
+            "reason": "M15 not aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 80,
+            "contribution": 8.0,
+            "reason": "H1 + M15 aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 30,
+            "contribution": 2.7,
+            "reason": "Bearish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 35,
+            "contribution": 3.5,
+            "reason": "Deep pullback"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 90,
+            "contribution": 4.5,
+            "reason": "London session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 50,
+            "contribution": 3.0,
+            "reason": "Minimum R:R (1.13)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 70,
+            "contribution": 2.8,
+            "reason": "Normal regime"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 1.9600000000000364,
+      "max_adverse_excursion": 6.960000000000036,
+      "highest_price_seen": 4669.84,
+      "lowest_price_seen": 4660.92,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -15760,10 +15902,10 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 0.0,
-      "peak_r_before_reversal": 0.0
+      "time_in_profit_seconds": 330.0,
+      "time_in_drawdown_seconds": 600.0,
+      "peak_r_before_reversal": 0.203758789023785
     }
   ],
-  "saved_at": "2026-04-07T10:30:49.114223"
+  "saved_at": "2026-04-07T10:46:52.538236"
 }
