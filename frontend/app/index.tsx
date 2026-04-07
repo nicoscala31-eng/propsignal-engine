@@ -210,19 +210,27 @@ export default function HomeScreen() {
     try {
       setSignalsError(null);
       
-      // Fetch all recent signals
+      // Fetch all recent signals with manual timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const response = await fetch(`${API_BASE}/api/signals/feed?limit=50`, {
         headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(10000),
+        signal: controller.signal,
       });
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
+        console.log('❌ Feed response not ok:', response.status);
         setSignalsError('Cannot load signals');
         return;
       }
       
       const data = await response.json();
       const allSignals = data.signals || [];
+      
+      console.log(`📊 Received ${allSignals.length} signals from feed`);
       
       if (allSignals.length === 0) {
         setRecentSignals([]);

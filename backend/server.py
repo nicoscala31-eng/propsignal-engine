@@ -794,6 +794,40 @@ async def get_tracker_debug():
     }
 
 
+@api_router.post("/tracker/force-close/{signal_id}")
+async def force_close_signal(signal_id: str, outcome: str = "sl_hit"):
+    """Force close a signal for testing purposes"""
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    
+    if signal_id not in signal_outcome_tracker.active_signals:
+        return {"error": f"Signal {signal_id} not found in active signals"}
+    
+    tracked = signal_outcome_tracker.active_signals[signal_id]
+    tracked.final_outcome = outcome
+    tracked.status = "closed"
+    
+    # Move to completed
+    signal_outcome_tracker.completed_signals.append(tracked)
+    del signal_outcome_tracker.active_signals[signal_id]
+    
+    # Update stats
+    if outcome == "tp_hit":
+        signal_outcome_tracker.stats["tp_hits"] += 1
+    else:
+        signal_outcome_tracker.stats["sl_hits"] += 1
+    
+    # Save
+    await signal_outcome_tracker._save_data()
+    
+    return {
+        "status": "closed",
+        "signal_id": signal_id,
+        "outcome": outcome,
+        "active_remaining": len(signal_outcome_tracker.active_signals),
+        "completed_total": len(signal_outcome_tracker.completed_signals)
+    }
+
+
 @api_router.get("/signals/active")
 async def get_global_active_signals():
     """Get all active (unresolved) signals from tracker"""
