@@ -1,574 +1,6 @@
 {
   "completed": [
     {
-      "signal_id": "XAUUSD_BUY_20260324_113440",
-      "timestamp": "2026-03-24T11:34:40.258917",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4423.04,
-      "stop_loss": 4379.798494285715,
-      "take_profit_1": 4487.902258571428,
-      "take_profit_2": 4518.171312571428,
-      "confidence_score": 63.8,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London",
-      "invalidation": "Below 4379.80",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 63.8,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 35,
-            "contribution": 3.8,
-            "reason": "M15 not aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 83,
-            "contribution": 8.3,
-            "reason": "Good pullback zone + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 95,
-            "contribution": 6.6,
-            "reason": "Rejection at round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 90,
-            "contribution": 4.5,
-            "reason": "London session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "tp_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-03-25T07:17:45.255925",
-      "max_favorable_excursion": 135.25,
-      "max_adverse_excursion": 33.840000000000146,
-      "highest_price_seen": 4558.29,
-      "lowest_price_seen": 4389.2,
-      "final_outcome": "win",
-      "pips_gained": 64.86225857142836,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 70984.997008,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": true,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 690.0,
-      "time_in_drawdown_seconds": 3090.0,
-      "peak_r_before_reversal": 3.1277819253948596
-    },
-    {
-      "signal_id": "XAUUSD_BUY_20260324_113637",
-      "timestamp": "2026-03-24T11:36:37.711161",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4426.08,
-      "stop_loss": 4379.8498875000005,
-      "take_profit_1": 4495.425168749999,
-      "take_profit_2": 4527.786247499998,
-      "confidence_score": 60.8,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London",
-      "invalidation": "Below 4379.85",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 60.8,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 35,
-            "contribution": 3.8,
-            "reason": "M15 not aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 53,
-            "contribution": 5.3,
-            "reason": "Shallow pullback + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 95,
-            "contribution": 6.6,
-            "reason": "Rejection at round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 90,
-            "contribution": 4.5,
-            "reason": "London session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "tp_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-03-25T07:17:45.361814",
-      "max_favorable_excursion": 132.21000000000004,
-      "max_adverse_excursion": 36.88000000000011,
-      "highest_price_seen": 4558.29,
-      "lowest_price_seen": 4389.2,
-      "final_outcome": "win",
-      "pips_gained": 69.34516874999917,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 70867.650653,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": true,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 210.0,
-      "time_in_drawdown_seconds": 3450.0,
-      "peak_r_before_reversal": 2.8598243190518216
-    },
-    {
-      "signal_id": "XAUUSD_BUY_20260324_115353",
-      "timestamp": "2026-03-24T11:53:53.449626",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4411.38,
-      "stop_loss": 4379.790035357143,
-      "take_profit_1": 4458.764946964286,
-      "take_profit_2": 4480.877922214286,
-      "confidence_score": 62.15000000000002,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London",
-      "invalidation": "Below 4379.79",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 62.2,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 35,
-            "contribution": 3.8,
-            "reason": "M15 not aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 95,
-            "contribution": 9.5,
-            "reason": "Excellent Fib pullback (38-62%)"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 90,
-            "contribution": 4.5,
-            "reason": "London session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 85,
-            "contribution": 3.4,
-            "reason": "Healthy trend"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 50,
-            "contribution": 1.0,
-            "reason": "Concentration penalty: 5/5 signals on XAUUSD"
-          }
-        ]
-      },
-      "status": "tp_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-03-25T07:17:45.467673",
-      "max_favorable_excursion": 146.90999999999985,
-      "max_adverse_excursion": 22.18000000000029,
-      "highest_price_seen": 4558.29,
-      "lowest_price_seen": 4389.2,
-      "final_outcome": "win",
-      "pips_gained": 47.38494696428552,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 69832.018047,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": true,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 270.0,
-      "time_in_drawdown_seconds": 2370.0,
-      "peak_r_before_reversal": 4.650527522297133
-    },
-    {
-      "signal_id": "XAUUSD_BUY_20260324_115419",
-      "timestamp": "2026-03-24T11:54:19.031355",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4402.58,
-      "stop_loss": 4379.790035357143,
-      "take_profit_1": 4436.764946964286,
-      "take_profit_2": 4452.717922214285,
-      "confidence_score": 68.15000000000002,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London",
-      "invalidation": "Below 4379.79",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 68.2,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 35,
-            "contribution": 3.8,
-            "reason": "M15 not aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 75,
-            "contribution": 7.5,
-            "reason": "Good pullback zone"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 90,
-            "contribution": 4.5,
-            "reason": "London session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 85,
-            "contribution": 3.4,
-            "reason": "Healthy trend"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "tp_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-03-25T07:17:45.573681",
-      "max_favorable_excursion": 155.71000000000004,
-      "max_adverse_excursion": 13.38000000000011,
-      "highest_price_seen": 4558.29,
-      "lowest_price_seen": 4389.2,
-      "final_outcome": "win",
-      "pips_gained": 34.1849469642857,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 69806.542326,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": true,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 1170.0,
-      "time_in_drawdown_seconds": 1440.0,
-      "peak_r_before_reversal": 6.832393223953727
-    },
-    {
       "signal_id": "XAUUSD_BUY_20260325_073851",
       "timestamp": "2026-03-25T07:38:51.526026",
       "asset": "XAUUSD",
@@ -14199,6 +13631,574 @@
       "time_in_profit_seconds": 10650.0,
       "time_in_drawdown_seconds": 1710.0,
       "peak_r_before_reversal": 1.5294117647058567
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_175040",
+      "timestamp": "2026-04-07T17:50:40.624382",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4675.96,
+      "stop_loss": 4653.368818035715,
+      "take_profit_1": 4709.846772946428,
+      "take_profit_2": 4725.660600321427,
+      "confidence_score": 65.25,
+      "confidence_level": "GOOD",
+      "setup_type": "Momentum Breakout [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4653.37",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 65.2,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 25,
+            "contribution": 3.5,
+            "reason": "H1 bearish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 75,
+            "contribution": 6.8,
+            "reason": "Moderate bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 83,
+            "contribution": 8.3,
+            "reason": "Good pullback zone + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 60,
+            "contribution": 4.2,
+            "reason": "Near round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 70,
+            "contribution": 2.8,
+            "reason": "Normal regime"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-07T19:48:14.081638",
+      "max_favorable_excursion": 34.13000000000011,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 4710.09,
+      "lowest_price_seen": 4675.96,
+      "final_outcome": "win",
+      "pips_gained": 33.88677294642821,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 7053.457256,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 2700.0,
+      "time_in_drawdown_seconds": 90.0,
+      "peak_r_before_reversal": 1.51076645984955
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260407_160523",
+      "timestamp": "2026-04-07T16:05:23.974533",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.15762,
+      "stop_loss": 1.15655,
+      "take_profit_1": 1.1592250000000002,
+      "take_profit_2": 1.1599740000000003,
+      "confidence_score": 64.65,
+      "confidence_level": "GOOD",
+      "setup_type": "HTF Trend Continuation [Structural SL]",
+      "session": "London/NY Overlap",
+      "invalidation": "Below 1.15655",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 64.7,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 60,
+            "contribution": 8.4,
+            "reason": "Weak H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 55,
+            "contribution": 6.1,
+            "reason": "M15 momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 85,
+            "contribution": 9.3,
+            "reason": "Higher lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 30,
+            "contribution": 2.7,
+            "reason": "Bearish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 83,
+            "contribution": 8.3,
+            "reason": "Good pullback zone + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 45,
+            "contribution": 3.1,
+            "reason": "No key level"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 100,
+            "contribution": 5.0,
+            "reason": "London/NY overlap"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 70,
+            "contribution": 2.8,
+            "reason": "Normal regime"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "Tight spread (0.8p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-07T19:48:44.238035",
+      "max_favorable_excursion": 0.0017700000000000493,
+      "max_adverse_excursion": 0.0008799999999999919,
+      "highest_price_seen": 1.1593900000000001,
+      "lowest_price_seen": 1.15674,
+      "final_outcome": "win",
+      "pips_gained": 0.0016050000000000786,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 13400.263502,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3900.0,
+      "time_in_drawdown_seconds": 3990.0,
+      "peak_r_before_reversal": 1.6542056074764862
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260407_152715",
+      "timestamp": "2026-04-07T15:27:15.196906",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.15727,
+      "stop_loss": 1.15549,
+      "take_profit_1": 1.1599400000000002,
+      "take_profit_2": 1.1611860000000003,
+      "confidence_score": 61.20000000000002,
+      "confidence_level": "GOOD",
+      "setup_type": "HTF Trend Continuation [Structural SL]",
+      "session": "London/NY Overlap",
+      "invalidation": "Below 1.15549",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 61.2,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 60,
+            "contribution": 8.4,
+            "reason": "Weak H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 70,
+            "contribution": 7.7,
+            "reason": "M15 trend aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 80,
+            "contribution": 8.0,
+            "reason": "H1 + M15 aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 85,
+            "contribution": 9.3,
+            "reason": "Higher lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 55,
+            "contribution": 5.0,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 83,
+            "contribution": 8.3,
+            "reason": "Good pullback zone + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 60,
+            "contribution": 4.2,
+            "reason": "Near round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 100,
+            "contribution": 5.0,
+            "reason": "London/NY overlap"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 85,
+            "contribution": 3.4,
+            "reason": "Healthy trend"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "Tight spread (0.8p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-07T19:50:44.468857",
+      "max_favorable_excursion": 0.0026999999999999247,
+      "max_adverse_excursion": 0.0005299999999999194,
+      "highest_price_seen": 1.15997,
+      "lowest_price_seen": 1.15674,
+      "final_outcome": "win",
+      "pips_gained": 0.0026700000000001722,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 15809.271951,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 7350.0,
+      "time_in_drawdown_seconds": 2880.0,
+      "peak_r_before_reversal": 1.5168539325841295
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260407_181539",
+      "timestamp": "2026-04-07T18:15:39.012406",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.1579,
+      "stop_loss": 1.15655,
+      "take_profit_1": 1.1599249999999999,
+      "take_profit_2": 1.1608699999999998,
+      "confidence_score": 61.3,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 1.15655",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 61.3,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 60,
+            "contribution": 8.4,
+            "reason": "Weak H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 55,
+            "contribution": 5.0,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 53,
+            "contribution": 5.3,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 70,
+            "contribution": 2.8,
+            "reason": "Normal regime"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "Tight spread (0.8p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-07T19:50:44.593173",
+      "max_favorable_excursion": 0.0020700000000000163,
+      "max_adverse_excursion": 1.999999999990898e-05,
+      "highest_price_seen": 1.15997,
+      "lowest_price_seen": 1.15788,
+      "final_outcome": "win",
+      "pips_gained": 0.0020249999999999435,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5705.580767,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 1440.0,
+      "time_in_drawdown_seconds": 60.0,
+      "peak_r_before_reversal": 1.533333333333388
     }
   ],
   "active": [
@@ -14325,9 +14325,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0019100000000000783,
+      "max_favorable_excursion": 0.003390000000000004,
       "max_adverse_excursion": 0.0016599999999999948,
-      "highest_price_seen": 1.15849,
+      "highest_price_seen": 1.15997,
       "lowest_price_seen": 1.15492,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -14335,298 +14335,14 @@
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
       "reached_half_r": true,
-      "reached_one_r": false,
+      "reached_one_r": true,
       "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 14760.0,
+      "time_in_profit_seconds": 16020.0,
       "time_in_drawdown_seconds": 8850.0,
-      "peak_r_before_reversal": 0.6044303797468503
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260407_152715",
-      "timestamp": "2026-04-07T15:27:15.196906",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.15727,
-      "stop_loss": 1.15549,
-      "take_profit_1": 1.1599400000000002,
-      "take_profit_2": 1.1611860000000003,
-      "confidence_score": 61.20000000000002,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London/NY Overlap",
-      "invalidation": "Below 1.15549",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 61.2,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 60,
-            "contribution": 8.4,
-            "reason": "Weak H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 70,
-            "contribution": 7.7,
-            "reason": "M15 trend aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 83,
-            "contribution": 8.3,
-            "reason": "Good pullback zone + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 100,
-            "contribution": 5.0,
-            "reason": "London/NY overlap"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 85,
-            "contribution": 3.4,
-            "reason": "Healthy trend"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Tight spread (0.8p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0012199999999999989,
-      "max_adverse_excursion": 0.0005299999999999194,
-      "highest_price_seen": 1.15849,
-      "lowest_price_seen": 1.15674,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 6480.0,
-      "time_in_drawdown_seconds": 2880.0,
-      "peak_r_before_reversal": 0.6853932584269214
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260407_160523",
-      "timestamp": "2026-04-07T16:05:23.974533",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.15762,
-      "stop_loss": 1.15655,
-      "take_profit_1": 1.1592250000000002,
-      "take_profit_2": 1.1599740000000003,
-      "confidence_score": 64.65,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London/NY Overlap",
-      "invalidation": "Below 1.15655",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 64.7,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 60,
-            "contribution": 8.4,
-            "reason": "Weak H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 55,
-            "contribution": 6.1,
-            "reason": "M15 momentum aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "All timeframes aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 30,
-            "contribution": 2.7,
-            "reason": "Bearish momentum"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 83,
-            "contribution": 8.3,
-            "reason": "Good pullback zone + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 45,
-            "contribution": 3.1,
-            "reason": "No key level"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 100,
-            "contribution": 5.0,
-            "reason": "London/NY overlap"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Tight spread (0.8p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0008699999999999264,
-      "max_adverse_excursion": 0.0008799999999999919,
-      "highest_price_seen": 1.15849,
-      "lowest_price_seen": 1.15674,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 3150.0,
-      "time_in_drawdown_seconds": 3990.0,
-      "peak_r_before_reversal": 0.8130841121493678
+      "peak_r_before_reversal": 1.072784810126566
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_170729",
@@ -14751,9 +14467,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 21.450000000000728,
+      "max_favorable_excursion": 45.539999999999964,
       "max_adverse_excursion": 12.159999999999854,
-      "highest_price_seen": 4688.89,
+      "highest_price_seen": 4712.98,
       "lowest_price_seen": 4655.28,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -14761,14 +14477,14 @@
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
       "reached_half_r": true,
-      "reached_one_r": false,
+      "reached_one_r": true,
       "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 3150.0,
+      "time_in_profit_seconds": 4410.0,
       "time_in_drawdown_seconds": 1350.0,
-      "peak_r_before_reversal": 0.5171909412121032
+      "peak_r_before_reversal": 1.0980361521118118
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_170831",
@@ -14893,24 +14609,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 19.270000000000437,
+      "max_favorable_excursion": 43.35999999999967,
       "max_adverse_excursion": 14.340000000000146,
-      "highest_price_seen": 4688.89,
+      "highest_price_seen": 4712.98,
       "lowest_price_seen": 4655.28,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 3030.0,
+      "time_in_profit_seconds": 4290.0,
       "time_in_drawdown_seconds": 1410.0,
-      "peak_r_before_reversal": 0.44152141310322424
+      "peak_r_before_reversal": 0.9934804604128294
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_173756",
@@ -15035,24 +14751,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 10.530000000000655,
+      "max_favorable_excursion": 34.61999999999989,
       "max_adverse_excursion": 5.6799999999993815,
-      "highest_price_seen": 4688.89,
+      "highest_price_seen": 4712.98,
       "lowest_price_seen": 4672.68,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1530.0,
+      "time_in_profit_seconds": 2790.0,
       "time_in_drawdown_seconds": 1290.0,
-      "peak_r_before_reversal": 0.20006166668136435
+      "peak_r_before_reversal": 0.6577526021375482
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_173927",
@@ -15177,152 +14893,10 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 7.460000000000036,
+      "max_favorable_excursion": 31.549999999999272,
       "max_adverse_excursion": 8.75,
-      "highest_price_seen": 4688.89,
+      "highest_price_seen": 4712.98,
       "lowest_price_seen": 4672.68,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 810.0,
-      "time_in_drawdown_seconds": 1920.0,
-      "peak_r_before_reversal": 0.133875737729789
-    },
-    {
-      "signal_id": "XAUUSD_BUY_20260407_175040",
-      "timestamp": "2026-04-07T17:50:40.624382",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4675.96,
-      "stop_loss": 4653.368818035715,
-      "take_profit_1": 4709.846772946428,
-      "take_profit_2": 4725.660600321427,
-      "confidence_score": 65.25,
-      "confidence_level": "GOOD",
-      "setup_type": "Momentum Breakout [Structural SL]",
-      "session": "New York",
-      "invalidation": "Below 4653.37",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 65.2,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 25,
-            "contribution": 3.5,
-            "reason": "H1 bearish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 90,
-            "contribution": 9.9,
-            "reason": "M15 trend + momentum aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "All timeframes aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 65,
-            "contribution": 7.2,
-            "reason": "Equal lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 75,
-            "contribution": 6.8,
-            "reason": "Moderate bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 83,
-            "contribution": 8.3,
-            "reason": "Good pullback zone + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 85,
-            "contribution": 4.2,
-            "reason": "NY session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 12.930000000000291,
-      "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4688.89,
-      "lowest_price_seen": 4675.96,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -15334,151 +14908,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1980.0,
-      "time_in_drawdown_seconds": 90.0,
-      "peak_r_before_reversal": 0.5723472114226504
-    },
-    {
-      "signal_id": "EURUSD_BUY_20260407_181539",
-      "timestamp": "2026-04-07T18:15:39.012406",
-      "asset": "EURUSD",
-      "direction": "BUY",
-      "entry_price": 1.1579,
-      "stop_loss": 1.15655,
-      "take_profit_1": 1.1599249999999999,
-      "take_profit_2": 1.1608699999999998,
-      "confidence_score": 61.3,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "New York",
-      "invalidation": "Below 1.15655",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 61.3,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 60,
-            "contribution": 8.4,
-            "reason": "Weak H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 90,
-            "contribution": 9.9,
-            "reason": "M15 trend + momentum aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "All timeframes aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 65,
-            "contribution": 7.2,
-            "reason": "Equal lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 53,
-            "contribution": 5.3,
-            "reason": "Shallow pullback + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 95,
-            "contribution": 6.6,
-            "reason": "Rejection at round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 85,
-            "contribution": 4.2,
-            "reason": "NY session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Tight spread (0.8p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.0005900000000000905,
-      "max_adverse_excursion": 1.999999999990898e-05,
-      "highest_price_seen": 1.15849,
-      "lowest_price_seen": 1.15788,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 570.0,
-      "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.4370370370371162
+      "time_in_profit_seconds": 2070.0,
+      "time_in_drawdown_seconds": 1920.0,
+      "peak_r_before_reversal": 0.5661902849027781
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_192801",
@@ -15603,24 +15035,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.5100000000002183,
-      "highest_price_seen": 4688.89,
-      "lowest_price_seen": 4685.38,
+      "max_favorable_excursion": 24.089999999999236,
+      "max_adverse_excursion": 4.170000000000073,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4684.72,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 510.0,
-      "peak_r_before_reversal": 0.0
+      "time_in_profit_seconds": 660.0,
+      "time_in_drawdown_seconds": 1110.0,
+      "peak_r_before_reversal": 0.7383456471030952
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_193209",
@@ -15745,24 +15177,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.4400000000005093,
-      "max_adverse_excursion": 1.3099999999994907,
-      "highest_price_seen": 4687.13,
-      "lowest_price_seen": 4685.38,
+      "max_favorable_excursion": 26.289999999999964,
+      "max_adverse_excursion": 1.9699999999993452,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4684.72,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 90.0,
-      "time_in_drawdown_seconds": 210.0,
-      "peak_r_before_reversal": 0.014519755606602184
+      "time_in_profit_seconds": 930.0,
+      "time_in_drawdown_seconds": 630.0,
+      "peak_r_before_reversal": 0.8675553974934751
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_193535",
@@ -15887,24 +15319,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.22000000000025466,
-      "highest_price_seen": 4686.91,
-      "lowest_price_seen": 4686.69,
+      "max_favorable_excursion": 26.06999999999971,
+      "max_adverse_excursion": 2.1899999999996,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4684.72,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.0
+      "time_in_profit_seconds": 840.0,
+      "time_in_drawdown_seconds": 480.0,
+      "peak_r_before_reversal": 0.8531325471305516
     },
     {
       "signal_id": "XAUUSD_BUY_20260407_193543",
@@ -16029,10 +15461,862 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
+      "max_favorable_excursion": 26.289999999999964,
+      "max_adverse_excursion": 1.9699999999993452,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4684.72,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 840.0,
+      "time_in_drawdown_seconds": 450.0,
+      "peak_r_before_reversal": 0.8665707943557847
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_193918",
+      "timestamp": "2026-04-07T19:39:18.349494",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4689.33,
+      "stop_loss": 4656.331090357143,
+      "take_profit_1": 4738.828364464285,
+      "take_profit_2": 4761.9276012142855,
+      "confidence_score": 62.30000000000001,
+      "confidence_level": "GOOD",
+      "setup_type": "Momentum Breakout [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4656.33",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 62.3,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 70,
+            "contribution": 7.7,
+            "reason": "M15 trend aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 75,
+            "contribution": 6.8,
+            "reason": "Moderate bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Shallow pullback"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 85,
+            "contribution": 3.4,
+            "reason": "Healthy trend"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 23.649999999999636,
+      "max_adverse_excursion": 4.390000000000327,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4684.94,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 600.0,
+      "time_in_drawdown_seconds": 480.0,
+      "peak_r_before_reversal": 0.7166903469223824
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260407_194147",
+      "timestamp": "2026-04-07T19:41:47.941663",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.15849,
+      "stop_loss": 1.1569999999999998,
+      "take_profit_1": 1.1607250000000002,
+      "take_profit_2": 1.1617680000000006,
+      "confidence_score": 60.45000000000002,
+      "confidence_level": "GOOD",
+      "setup_type": "HTF Trend Continuation [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 1.15700",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 60.5,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 60,
+            "contribution": 8.4,
+            "reason": "Weak H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 85,
+            "contribution": 9.3,
+            "reason": "Higher lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 30,
+            "contribution": 2.7,
+            "reason": "Bearish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 53,
+            "contribution": 5.3,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 75,
+            "contribution": 5.2,
+            "reason": "Price rejection"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 85,
+            "contribution": 3.4,
+            "reason": "Healthy trend"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "Tight spread (0.8p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0014799999999999258,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4686.69,
-      "lowest_price_seen": 4686.69,
+      "highest_price_seen": 1.15997,
+      "lowest_price_seen": 1.15849,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 900.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.9932885906038348
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_194725",
+      "timestamp": "2026-04-07T19:47:25.195162",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4707.43,
+      "stop_loss": 4656.286345,
+      "take_profit_1": 4784.1454825,
+      "take_profit_2": 4819.946041,
+      "confidence_score": 75.50000000000001,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4656.29",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 75.5,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 70,
+            "contribution": 7.7,
+            "reason": "M15 trend aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 55,
+            "contribution": 5.0,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Shallow pullback"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 85,
+            "contribution": 3.4,
+            "reason": "Healthy trend"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 5.549999999999272,
+      "max_adverse_excursion": 9.289999999999964,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4698.14,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 390.0,
+      "time_in_drawdown_seconds": 210.0,
+      "peak_r_before_reversal": 0.1085178601333692
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_194756",
+      "timestamp": "2026-04-07T19:47:56.705695",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4710.09,
+      "stop_loss": 4655.885708035715,
+      "take_profit_1": 4791.396437946429,
+      "take_profit_2": 4829.339442321428,
+      "confidence_score": 78.89999999999999,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4655.89",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 78.9,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 55,
+            "contribution": 5.0,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 53,
+            "contribution": 5.3,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 95,
+            "contribution": 3.8,
+            "reason": "Strong trending"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 2.889999999999418,
+      "max_adverse_excursion": 11.949999999999818,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4698.14,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 210.0,
+      "time_in_drawdown_seconds": 360.0,
+      "peak_r_before_reversal": 0.053316811183579456
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_194925",
+      "timestamp": "2026-04-07T19:49:25.348681",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4712.31,
+      "stop_loss": 4655.885708035715,
+      "take_profit_1": 4796.946437946429,
+      "take_profit_2": 4836.443442321429,
+      "confidence_score": 77.89999999999999,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4655.89",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 77.9,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 55,
+            "contribution": 5.0,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 53,
+            "contribution": 5.3,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 95,
+            "contribution": 6.6,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 95,
+            "contribution": 3.8,
+            "reason": "Strong trending"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 50,
+            "contribution": 1.0,
+            "reason": "Concentration penalty: 4/5 signals on XAUUSD"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.6699999999991633,
+      "max_adverse_excursion": 14.170000000000073,
+      "highest_price_seen": 4712.98,
+      "lowest_price_seen": 4698.14,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 60.0,
+      "time_in_drawdown_seconds": 420.0,
+      "peak_r_before_reversal": 0.011874318253266639
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_195428",
+      "timestamp": "2026-04-07T19:54:28.758050",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4701.9,
+      "stop_loss": 4655.769365,
+      "take_profit_1": 4771.095952499999,
+      "take_profit_2": 4803.387396999999,
+      "confidence_score": 71.00000000000001,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4655.77",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 45,
+            "contribution": 5.0,
+            "reason": "No clear structure"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 30,
+            "contribution": 2.7,
+            "reason": "Bearish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 53,
+            "contribution": 5.3,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 60,
+            "contribution": 4.2,
+            "reason": "Near round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 95,
+            "contribution": 3.8,
+            "reason": "Strong trending"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 50,
+            "contribution": 1.0,
+            "reason": "Concentration penalty: 4/5 signals on XAUUSD"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 3.759999999999309,
+      "highest_price_seen": 4701.9,
+      "lowest_price_seen": 4698.14,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -16045,9 +16329,151 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 30.0,
+      "time_in_drawdown_seconds": 180.0,
       "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260407_195500",
+      "timestamp": "2026-04-07T19:55:00.398630",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4698.59,
+      "stop_loss": 4655.769365,
+      "take_profit_1": 4762.8209525,
+      "take_profit_2": 4792.795397,
+      "confidence_score": 64.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Fib Retracement [Structural SL]",
+      "session": "New York",
+      "invalidation": "Below 4655.77",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 64.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 75,
+            "contribution": 10.5,
+            "reason": "Moderate H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 90,
+            "contribution": 9.9,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 45,
+            "contribution": 5.0,
+            "reason": "No clear structure"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 30,
+            "contribution": 2.7,
+            "reason": "Bearish momentum"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 83,
+            "contribution": 8.3,
+            "reason": "Good pullback zone + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 60,
+            "contribution": 4.2,
+            "reason": "Near round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "NY session"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 95,
+            "contribution": 3.8,
+            "reason": "Strong trending"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 50,
+            "contribution": 1.0,
+            "reason": "Concentration penalty: 4/5 signals on XAUUSD"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 1.0999999999994543,
+      "max_adverse_excursion": 0.4499999999998181,
+      "highest_price_seen": 4699.69,
+      "lowest_price_seen": 4698.14,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 60.0,
+      "time_in_drawdown_seconds": 90.0,
+      "peak_r_before_reversal": 0.02568854945750929
     }
   ],
-  "saved_at": "2026-04-07T19:36:13.455542"
+  "saved_at": "2026-04-07T19:57:28.839425"
 }
