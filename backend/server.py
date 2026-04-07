@@ -777,30 +777,47 @@ async def get_signal_history(user_id: str, limit: int = 50):
 
 # ==================== GLOBAL SIGNAL QUERIES (must be before /{signal_id}) ====================
 
+@api_router.get("/tracker/debug")
+async def get_tracker_debug():
+    """Debug endpoint to check tracker internal state"""
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    
+    return {
+        "active_signals_count": len(signal_outcome_tracker.active_signals),
+        "active_signal_ids": list(signal_outcome_tracker.active_signals.keys()),
+        "completed_signals_count": len(signal_outcome_tracker.completed_signals),
+        "stats": signal_outcome_tracker.stats,
+        "is_running": signal_outcome_tracker.is_running,
+        "data_dir": str(signal_outcome_tracker.data_dir),
+        "signals_file": str(signal_outcome_tracker.signals_file),
+        "signals_file_exists": signal_outcome_tracker.signals_file.exists() if hasattr(signal_outcome_tracker, 'signals_file') else "N/A"
+    }
+
+
 @api_router.get("/signals/active")
 async def get_global_active_signals():
-    """Get all active (unresolved) signals"""
-    signals = await db.signals.find({
-        "is_active": True,
-        "is_resolved": {"$ne": True},
-        "signal_type": {"$in": ["BUY", "SELL"]}
-    }).sort("created_at", -1).to_list(100)
+    """Get all active (unresolved) signals from tracker"""
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
-    return [
-        {
-            "id": s.get("id"),
-            "asset": s.get("asset"),
-            "signal_type": s.get("signal_type"),
-            "entry_price": s.get("entry_price"),
-            "stop_loss": s.get("stop_loss"),
-            "take_profit_1": s.get("take_profit_1"),
-            "confidence": s.get("confidence_score"),
-            "lifecycle_stage": s.get("lifecycle_stage", "signal_created"),
-            "news_risk": s.get("news_risk", False),
-            "created_at": s.get("created_at").isoformat() if s.get("created_at") else None
-        }
-        for s in signals
-    ]
+    # Return active signals from tracker
+    active = []
+    for sig_id, tracked in signal_outcome_tracker.active_signals.items():
+        active.append({
+            "id": sig_id,
+            "signal_id": sig_id,
+            "asset": tracked.asset,
+            "direction": tracked.direction,
+            "signal_type": tracked.direction,
+            "entry_price": tracked.entry_price,
+            "stop_loss": tracked.stop_loss,
+            "take_profit_1": tracked.take_profit_1,
+            "confidence": tracked.confidence_score,
+            "confidence_score": tracked.confidence_score,
+            "status": tracked.status,
+            "timestamp": tracked.timestamp
+        })
+    
+    return active
 
 @api_router.get("/signals/resolved")
 async def get_global_resolved_signals(limit: int = 50):
