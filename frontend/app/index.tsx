@@ -224,6 +224,11 @@ export default function HomeScreen() {
       const data = await response.json();
       const allSignals = data.signals || [];
       
+      if (allSignals.length === 0) {
+        setRecentSignals([]);
+        return;
+      }
+      
       // Separate by status
       const active: SignalItem[] = [];
       const closed: SignalItem[] = [];
@@ -252,7 +257,7 @@ export default function HomeScreen() {
           active.push(signal);
         } else if (status === 'closed' || status === 'tp_hit' || status === 'sl_hit') {
           closed.push(signal);
-        } else if (status === 'rejected') {
+        } else {
           rejected.push(signal);
         }
       }
