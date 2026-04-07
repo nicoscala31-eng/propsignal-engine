@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,217 +8,315 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
+  Alert,
+  AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
 // ============================================
-// API CONFIGURATION - ROBUST MULTI-SOURCE
+// API CONFIGURATION
 // ============================================
 
 const PRODUCTION_URL = 'https://propsignal-engine-production-b22b.up.railway.app';
 const EMERGENT_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const getApiUrl = (): string => {
-  // In dev/preview, try Emergent URL first
   if (__DEV__ && EMERGENT_URL && !EMERGENT_URL.includes('undefined')) {
     return EMERGENT_URL;
   }
-  // Fallback to production
   return PRODUCTION_URL;
 };
 
 const API_BASE = getApiUrl();
-console.log('📡 Signal Feed API:', API_BASE);
+console.log('📡 API Base:', API_BASE);
+
+// Mock user ID for device registration
+const DEVICE_ID = Constants.installationId || 'default-device';
 
 // ============================================
 // TYPES
 // ============================================
 
-interface SignalFeedItem {
-  signal_id: string;
-  timestamp: string;
-  symbol: string;
-  direction: string;
-  status: string;
-  score: number;
-  entry: number;
-  sl: number;
-  tp: number;
-  rr: number;
-  session: string;
-  setup_type: string;
-  short_reason: string;
-  rejection_reason: string;
-  blocking_filter: string;
-  confidence_bucket: string;
-  outcome: string;
-  final_r: number;
+interface LivePrice {
+  bid: number;
+  ask: number;
+  spread_pips: number;
+  timestamp?: string;
 }
 
-interface FeedStats {
-  total: number;
-  accepted: number;
-  rejected: number;
-  active: number;
-  closed: number;
+interface ScannerStatus {
+  is_running: boolean;
+  version?: string;
+  mode?: string;
+  last_scan?: string;
+  symbols?: string[];
+}
+
+interface SignalItem {
+  id?: string;
+  signal_id?: string;
+  asset?: string;
+  symbol?: string;
+  signal_type?: string;
+  direction?: string;
+  entry_price?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  take_profit_1?: number;
+  confidence_score?: number;
+  score?: number;
+  status?: string;
+  created_at?: string;
+  timestamp?: string;
+  outcome?: string;
+  final_outcome?: string;
 }
 
 // ============================================
-// STATUS COLORS
+// NOTIFICATION SETUP
 // ============================================
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  accepted: { bg: '#00ff8820', text: '#00ff88' },
-  rejected: { bg: '#ff444420', text: '#ff4444' },
-  active: { bg: '#00aaff20', text: '#00aaff' },
-  tp_hit: { bg: '#00ff8840', text: '#00ff88' },
-  sl_hit: { bg: '#ff444440', text: '#ff4444' },
-  expired: { bg: '#88888840', text: '#888888' },
-  closed: { bg: '#88888840', text: '#888888' },
-};
-
-// Filter tabs
-const FILTER_TABS = [
-  { key: 'all', label: 'All' },
-  { key: 'accepted', label: 'Accepted' },
-  { key: 'rejected', label: 'Rejected' },
-  { key: 'active', label: 'Active' },
-  { key: 'closed', label: 'Closed' },
-];
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
-export default function SignalFeedScreen() {
+export default function HomeScreen() {
   const router = useRouter();
-  const [signals, setSignals] = useState<SignalFeedItem[]>([]);
-  const [stats, setStats] = useState<FeedStats | null>(null);
+  
+  // === STATE ===
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  
+  // Live prices
+  const [eurusdPrice, setEurusdPrice] = useState<LivePrice | null>(null);
+  const [xauusdPrice, setXauusdPrice] = useState<LivePrice | null>(null);
+  const [priceError, setPriceError] = useState<string | null>(null);
+  
+  // Scanner status
+  const [scannerStatus, setScannerStatus] = useState<ScannerStatus | null>(null);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+  
+  // Push notifications
+  const [pushToken, setPushToken] = useState<string | null>(null);
+  const [pushRegistered, setPushRegistered] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
+  
+  // Signals
+  const [recentSignals, setRecentSignals] = useState<SignalItem[]>([]);
+  const [signalsError, setSignalsError] = useState<string | null>(null);
+  
+  // Last update
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   // ============================================
-  // DATA FETCHING - ROBUST WITH FALLBACKS
+  // FETCH FUNCTIONS
   // ============================================
 
-  const fetchSignals = useCallback(async (filter: string = activeFilter) => {
+  const fetchLivePrices = useCallback(async () => {
     try {
-      setError(null);
-      setErrorDetails(null);
-      
-      const statusParam = filter !== 'all' ? `&status=${filter}` : '';
-      const url = `${API_BASE}/api/signals/feed?limit=200${statusParam}`;
-      
-      console.log('📡 Fetching signals from:', url);
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('📡 Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('📡 Error response:', errorText);
-        
-        if (response.status === 404) {
-          setError('Endpoint not found');
-          setErrorDetails('The signals API may not be deployed yet. Try refreshing.');
-        } else if (response.status >= 500) {
-          setError('Server error');
-          setErrorDetails(`Server returned ${response.status}. The backend may be restarting.`);
-        } else {
-          setError(`HTTP ${response.status}`);
-          setErrorDetails(errorText.substring(0, 200));
-        }
-        return;
-      }
-      
-      const data = await response.json();
-      console.log('📡 Response data keys:', Object.keys(data));
-      console.log('📡 Signals count:', data.signals?.length || 0);
-      
-      // Handle different response formats
-      let signalsList: SignalFeedItem[] = [];
-      
-      if (Array.isArray(data)) {
-        signalsList = data;
-      } else if (data.signals && Array.isArray(data.signals)) {
-        signalsList = data.signals;
-      } else if (data.data && Array.isArray(data.data)) {
-        signalsList = data.data;
-      } else if (data.items && Array.isArray(data.items)) {
-        signalsList = data.items;
-      }
-      
-      // Validate and sanitize signals
-      signalsList = signalsList.map(sig => ({
-        signal_id: sig.signal_id || sig.id || `unknown_${Date.now()}`,
-        timestamp: sig.timestamp || sig.created_at || new Date().toISOString(),
-        symbol: sig.symbol || sig.asset || 'UNKNOWN',
-        direction: sig.direction || sig.signal_type || 'UNKNOWN',
-        status: sig.status || 'unknown',
-        score: parseFloat(sig.score) || parseFloat(sig.total_score) || parseFloat(sig.confidence_score) || 0,
-        entry: parseFloat(sig.entry) || parseFloat(sig.entry_price) || 0,
-        sl: parseFloat(sig.sl) || parseFloat(sig.stop_loss) || 0,
-        tp: parseFloat(sig.tp) || parseFloat(sig.take_profit) || parseFloat(sig.take_profit_1) || 0,
-        rr: parseFloat(sig.rr) || parseFloat(sig.rr_ratio) || parseFloat(sig.risk_reward) || 0,
-        session: sig.session || '',
-        setup_type: sig.setup_type || '',
-        short_reason: sig.short_reason || sig.summary_short || '',
-        rejection_reason: sig.rejection_reason || '',
-        blocking_filter: sig.blocking_filter || '',
-        confidence_bucket: sig.confidence_bucket || '',
-        outcome: sig.outcome || sig.final_outcome || '',
-        final_r: parseFloat(sig.final_r) || 0,
-      }));
-      
-      setSignals(signalsList);
-      
-    } catch (err: any) {
-      console.error('📡 Fetch error:', err);
-      
-      if (err.name === 'AbortError') {
-        setError('Request timeout');
-        setErrorDetails('Server took too long to respond. Please try again.');
-      } else if (err.message?.includes('Network')) {
-        setError('Network error');
-        setErrorDetails('Cannot connect to server. Check your internet connection.');
-      } else {
-        setError('Failed to load signals');
-        setErrorDetails(err.message || 'Unknown error occurred');
-      }
-    }
-  }, [activeFilter]);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const url = `${API_BASE}/api/signals/feed/stats`;
-      const response = await fetch(url, {
+      setPriceError(null);
+      const response = await fetch(`${API_BASE}/api/provider/live-prices`, {
         headers: { 'Accept': 'application/json' },
       });
       
       if (response.ok) {
         const data = await response.json();
-        setStats(data);
+        if (data.EURUSD) {
+          setEurusdPrice({
+            bid: data.EURUSD.bid || data.EURUSD.live_bid || 0,
+            ask: data.EURUSD.ask || data.EURUSD.live_ask || 0,
+            spread_pips: data.EURUSD.spread_pips || data.EURUSD.live_spread_pips || 0,
+          });
+        }
+        if (data.XAUUSD) {
+          setXauusdPrice({
+            bid: data.XAUUSD.bid || data.XAUUSD.live_bid || 0,
+            ask: data.XAUUSD.ask || data.XAUUSD.live_ask || 0,
+            spread_pips: data.XAUUSD.spread_pips || data.XAUUSD.live_spread_pips || 0,
+          });
+        }
+      } else {
+        setPriceError('Price data unavailable');
       }
     } catch (err) {
-      console.log('📡 Stats fetch error (non-critical):', err);
-      // Non-critical, don't show error
+      console.log('Price fetch error:', err);
+      setPriceError('Offline');
+    }
+  }, []);
+
+  const fetchScannerStatus = useCallback(async () => {
+    try {
+      setScannerError(null);
+      const response = await fetch(`${API_BASE}/api/scanner/v3/status`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setScannerStatus({
+          is_running: data.is_running ?? false,
+          version: data.version || 'v3',
+          mode: data.mode || 'auto',
+          last_scan: data.last_check_time,
+          symbols: data.symbols || ['EURUSD', 'XAUUSD'],
+        });
+      } else {
+        setScannerError('Scanner offline');
+      }
+    } catch (err) {
+      console.log('Scanner status error:', err);
+      setScannerError('Cannot connect');
+    }
+  }, []);
+
+  const fetchRecentSignals = useCallback(async () => {
+    try {
+      setSignalsError(null);
+      
+      // Try new feed endpoint first, fallback to tracked signals
+      let signals: SignalItem[] = [];
+      
+      // Try /api/signals/feed (new endpoint)
+      try {
+        const feedResponse = await fetch(`${API_BASE}/api/signals/feed?limit=20`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        
+        if (feedResponse.ok) {
+          const feedData = await feedResponse.json();
+          if (feedData.signals && feedData.signals.length > 0) {
+            signals = feedData.signals.map((s: any) => ({
+              id: s.signal_id || s.id,
+              signal_id: s.signal_id || s.id,
+              asset: s.symbol || s.asset,
+              symbol: s.symbol || s.asset,
+              direction: s.direction || s.signal_type,
+              signal_type: s.direction || s.signal_type,
+              entry_price: s.entry || s.entry_price,
+              stop_loss: s.sl || s.stop_loss,
+              take_profit: s.tp || s.take_profit || s.take_profit_1,
+              confidence_score: s.score || s.confidence_score,
+              score: s.score || s.confidence_score,
+              status: s.status,
+              timestamp: s.timestamp || s.created_at,
+              outcome: s.outcome || s.final_outcome,
+            }));
+            setRecentSignals(signals);
+            return;
+          }
+        }
+      } catch (feedErr) {
+        console.log('Feed endpoint not available, trying fallback');
+      }
+      
+      // Fallback: Try tracked signals endpoint
+      try {
+        const trackedResponse = await fetch(`${API_BASE}/api/signals/active`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        
+        if (trackedResponse.ok) {
+          const trackedData = await trackedResponse.json();
+          if (Array.isArray(trackedData)) {
+            signals = trackedData.map((s: any) => ({
+              id: s.signal_id || s.id,
+              signal_id: s.signal_id || s.id,
+              asset: s.asset || s.symbol,
+              symbol: s.asset || s.symbol,
+              direction: s.direction || s.signal_type,
+              signal_type: s.direction || s.signal_type,
+              entry_price: s.entry_price || s.entry,
+              stop_loss: s.stop_loss || s.sl,
+              take_profit: s.take_profit_1 || s.take_profit || s.tp,
+              confidence_score: s.confidence_score || s.score,
+              score: s.confidence_score || s.score,
+              status: s.status || 'active',
+              timestamp: s.timestamp || s.created_at,
+              outcome: s.final_outcome || s.outcome,
+            }));
+          }
+        }
+      } catch (trackedErr) {
+        console.log('Tracked signals also failed');
+      }
+      
+      setRecentSignals(signals);
+      
+    } catch (err) {
+      console.log('Signals fetch error:', err);
+      setSignalsError('Cannot load signals');
+    }
+  }, []);
+
+  // ============================================
+  // PUSH NOTIFICATIONS
+  // ============================================
+
+  const registerForPushNotifications = useCallback(async () => {
+    try {
+      setPushError(null);
+      
+      // Check permissions
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        setPushError('Permission denied');
+        return;
+      }
+      
+      // Get token
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId || '6c7a7f87-a996-4ca6-b498-7e2bb41f32a3',
+      });
+      
+      const token = tokenData.data;
+      console.log('📱 Push token:', token);
+      setPushToken(token);
+      
+      // Register with backend
+      const response = await fetch(`${API_BASE}/api/users/register-push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: DEVICE_ID,
+          push_token: token,
+          platform: Platform.OS,
+        }),
+      });
+      
+      if (response.ok) {
+        setPushRegistered(true);
+        console.log('✅ Push registered successfully');
+      } else {
+        const errText = await response.text();
+        console.log('Push registration response:', errText);
+        // Still mark as registered if we have token
+        setPushRegistered(true);
+      }
+      
+    } catch (err: any) {
+      console.error('Push registration error:', err);
+      setPushError(err.message || 'Registration failed');
     }
   }, []);
 
@@ -226,18 +324,28 @@ export default function SignalFeedScreen() {
   // LIFECYCLE
   // ============================================
 
+  const loadAllData = useCallback(async () => {
+    console.log('📡 Loading all data...');
+    await Promise.all([
+      fetchLivePrices(),
+      fetchScannerStatus(),
+      fetchRecentSignals(),
+    ]);
+    setLastUpdate(new Date());
+  }, [fetchLivePrices, fetchScannerStatus, fetchRecentSignals]);
+
   useEffect(() => {
-    const loadData = async () => {
+    const init = async () => {
       setLoading(true);
-      await Promise.all([fetchSignals(), fetchStats()]);
+      await loadAllData();
+      await registerForPushNotifications();
       setLoading(false);
     };
-    loadData();
+    init();
     
-    // Auto-refresh every 30 seconds
+    // Refresh every 30 seconds
     const interval = setInterval(() => {
-      fetchSignals();
-      fetchStats();
+      loadAllData();
     }, 30000);
     
     return () => clearInterval(interval);
@@ -245,255 +353,248 @@ export default function SignalFeedScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([fetchSignals(), fetchStats()]);
+    await loadAllData();
     setRefreshing(false);
-  }, [fetchSignals, fetchStats]);
-
-  const handleFilterChange = useCallback((filter: string) => {
-    setActiveFilter(filter);
-    fetchSignals(filter);
-  }, [fetchSignals]);
-
-  const handleSignalPress = (signalId: string) => {
-    router.push({
-      pathname: '/signal-snapshot',
-      params: { signalId }
-    });
-  };
+  }, [loadAllData]);
 
   // ============================================
   // HELPERS
   // ============================================
 
-  const formatPrice = (price: number, symbol: string) => {
+  const formatPrice = (price: number | undefined, asset: string): string => {
     if (!price || isNaN(price)) return '-';
-    if (symbol === 'XAUUSD') {
-      return price.toFixed(2);
-    }
-    return price.toFixed(5);
+    return asset === 'EURUSD' ? price.toFixed(5) : price.toFixed(2);
   };
 
-  const formatTimestamp = (ts: string) => {
-    if (!ts) return '-';
-    try {
-      const date = new Date(ts);
-      if (isNaN(date.getTime())) return ts;
-      
-      const now = new Date();
-      const diff = now.getTime() - date.getTime();
-      
-      if (diff < 60000) return 'Just now';
-      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-      
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return ts;
-    }
+  const formatTime = (date: Date | string | null): string => {
+    if (!date) return '-';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   // ============================================
-  // RENDER SIGNAL CARD
-  // ============================================
-
-  const renderSignalCard = ({ item }: { item: SignalFeedItem }) => {
-    const statusColor = STATUS_COLORS[item.status] || STATUS_COLORS.rejected;
-    const isBuy = item.direction === 'BUY';
-    
-    return (
-      <TouchableOpacity 
-        style={styles.signalCard}
-        onPress={() => handleSignalPress(item.signal_id)}
-        activeOpacity={0.7}
-      >
-        {/* Header */}
-        <View style={styles.cardHeader}>
-          <View style={styles.symbolContainer}>
-            <Text style={styles.symbolText}>{item.symbol}</Text>
-            <View style={[
-              styles.directionBadge,
-              { backgroundColor: isBuy ? '#00ff8830' : '#ff444430' }
-            ]}>
-              <Text style={[
-                styles.directionText,
-                { color: isBuy ? '#00ff88' : '#ff4444' }
-              ]}>
-                {item.direction}
-              </Text>
-            </View>
-          </View>
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: statusColor.bg }
-          ]}>
-            <Text style={[styles.statusText, { color: statusColor.text }]}>
-              {item.status.toUpperCase().replace('_', ' ')}
-            </Text>
-          </View>
-        </View>
-
-        {/* Score & Session */}
-        <View style={styles.scoreRow}>
-          <View style={styles.scoreContainer}>
-            <Text style={styles.scoreLabel}>Score</Text>
-            <Text style={[
-              styles.scoreValue,
-              { color: item.score >= 70 ? '#00ff88' : item.score >= 60 ? '#ffaa00' : '#ff4444' }
-            ]}>
-              {item.score?.toFixed(1) || '-'}
-            </Text>
-          </View>
-          <View style={styles.sessionContainer}>
-            <Text style={styles.sessionLabel}>{item.session || '-'}</Text>
-            <Text style={styles.setupType} numberOfLines={1}>{item.setup_type || '-'}</Text>
-          </View>
-          <View style={styles.rrContainer}>
-            <Text style={styles.rrLabel}>R:R</Text>
-            <Text style={styles.rrValue}>{item.rr?.toFixed(2) || '-'}</Text>
-          </View>
-        </View>
-
-        {/* Trade Levels */}
-        <View style={styles.levelsRow}>
-          <View style={styles.levelItem}>
-            <Text style={styles.levelLabel}>Entry</Text>
-            <Text style={styles.levelValue}>{formatPrice(item.entry, item.symbol)}</Text>
-          </View>
-          <View style={styles.levelItem}>
-            <Text style={[styles.levelLabel, { color: '#ff4444' }]}>SL</Text>
-            <Text style={[styles.levelValue, { color: '#ff4444' }]}>
-              {formatPrice(item.sl, item.symbol)}
-            </Text>
-          </View>
-          <View style={styles.levelItem}>
-            <Text style={[styles.levelLabel, { color: '#00ff88' }]}>TP</Text>
-            <Text style={[styles.levelValue, { color: '#00ff88' }]}>
-              {formatPrice(item.tp, item.symbol)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Reason */}
-        <View style={styles.reasonContainer}>
-          <Text style={styles.reasonText} numberOfLines={2}>
-            {item.short_reason || item.rejection_reason || 'No details available'}
-          </Text>
-        </View>
-
-        {/* Outcome (if closed) */}
-        {item.outcome && item.outcome !== '' && (
-          <View style={[
-            styles.outcomeContainer,
-            { backgroundColor: item.outcome === 'tp_hit' ? '#00ff8820' : '#ff444420' }
-          ]}>
-            <Text style={[
-              styles.outcomeText,
-              { color: item.outcome === 'tp_hit' ? '#00ff88' : '#ff4444' }
-            ]}>
-              {item.outcome === 'tp_hit' ? '✓ TP Hit' : item.outcome === 'sl_hit' ? '✗ SL Hit' : item.outcome}
-              {item.final_r !== 0 && ` (${item.final_r > 0 ? '+' : ''}${item.final_r.toFixed(2)}R)`}
-            </Text>
-          </View>
-        )}
-
-        {/* Timestamp */}
-        <Text style={styles.timestamp}>{formatTimestamp(item.timestamp)}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  // ============================================
-  // RENDER HEADER
+  // RENDER COMPONENTS
   // ============================================
 
   const renderHeader = () => (
-    <View style={styles.headerContainer}>
+    <View style={styles.headerSection}>
       {/* Title */}
-      <Text style={styles.mainTitle}>PropSignal Feed</Text>
+      <Text style={styles.mainTitle}>PropSignal Engine</Text>
       
-      {/* Stats */}
-      {stats && (
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.total || 0}</Text>
-            <Text style={styles.statLabel}>Total</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#00ff88' }]}>{stats.accepted || 0}</Text>
-            <Text style={styles.statLabel}>Accepted</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#ff4444' }]}>{stats.rejected || 0}</Text>
-            <Text style={styles.statLabel}>Rejected</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#00aaff' }]}>{stats.active || 0}</Text>
-            <Text style={styles.statLabel}>Active</Text>
-          </View>
+      {/* Scanner Status Bar */}
+      <View style={styles.scannerBar}>
+        <View style={styles.scannerInfo}>
+          <View style={[
+            styles.scannerDot,
+            { backgroundColor: scannerStatus?.is_running ? '#00ff88' : '#ff4444' }
+          ]} />
+          <Text style={styles.scannerText}>
+            Scanner: {scannerError ? scannerError : (scannerStatus?.is_running ? 'ACTIVE' : 'STOPPED')}
+          </Text>
         </View>
-      )}
+        <Text style={styles.scannerVersion}>{scannerStatus?.version || 'v3'}</Text>
+      </View>
 
-      {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        {FILTER_TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[
-              styles.filterTab,
-              activeFilter === tab.key && styles.filterTabActive
-            ]}
-            onPress={() => handleFilterChange(tab.key)}
-          >
-            <Text style={[
-              styles.filterTabText,
-              activeFilter === tab.key && styles.filterTabTextActive
-            ]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Live Prices */}
+      <View style={styles.pricesContainer}>
+        {/* EURUSD */}
+        <View style={styles.priceCard}>
+          <Text style={styles.priceSymbol}>EURUSD</Text>
+          {priceError ? (
+            <Text style={styles.priceError}>{priceError}</Text>
+          ) : eurusdPrice ? (
+            <>
+              <View style={styles.priceRow}>
+                <View style={styles.priceItem}>
+                  <Text style={styles.priceLabel}>Bid</Text>
+                  <Text style={styles.priceValue}>{formatPrice(eurusdPrice.bid, 'EURUSD')}</Text>
+                </View>
+                <View style={styles.priceItem}>
+                  <Text style={styles.priceLabel}>Ask</Text>
+                  <Text style={styles.priceValue}>{formatPrice(eurusdPrice.ask, 'EURUSD')}</Text>
+                </View>
+              </View>
+              <Text style={styles.spreadText}>Spread: {eurusdPrice.spread_pips?.toFixed(1) || '-'} pips</Text>
+            </>
+          ) : (
+            <ActivityIndicator size="small" color="#00ff88" />
+          )}
+        </View>
+
+        {/* XAUUSD */}
+        <View style={styles.priceCard}>
+          <Text style={styles.priceSymbol}>XAUUSD</Text>
+          {priceError ? (
+            <Text style={styles.priceError}>{priceError}</Text>
+          ) : xauusdPrice ? (
+            <>
+              <View style={styles.priceRow}>
+                <View style={styles.priceItem}>
+                  <Text style={styles.priceLabel}>Bid</Text>
+                  <Text style={styles.priceValue}>{formatPrice(xauusdPrice.bid, 'XAUUSD')}</Text>
+                </View>
+                <View style={styles.priceItem}>
+                  <Text style={styles.priceLabel}>Ask</Text>
+                  <Text style={styles.priceValue}>{formatPrice(xauusdPrice.ask, 'XAUUSD')}</Text>
+                </View>
+              </View>
+              <Text style={styles.spreadText}>Spread: {xauusdPrice.spread_pips?.toFixed(1) || '-'} pips</Text>
+            </>
+          ) : (
+            <ActivityIndicator size="small" color="#00ff88" />
+          )}
+        </View>
+      </View>
+
+      {/* Device Registration */}
+      <TouchableOpacity 
+        style={[
+          styles.registerButton,
+          { backgroundColor: pushRegistered ? '#00ff8830' : '#ff444430' }
+        ]}
+        onPress={registerForPushNotifications}
+      >
+        <View style={[
+          styles.registerDot,
+          { backgroundColor: pushRegistered ? '#00ff88' : '#ff4444' }
+        ]} />
+        <Text style={[
+          styles.registerText,
+          { color: pushRegistered ? '#00ff88' : '#ff4444' }
+        ]}>
+          {pushError ? `⚠ ${pushError}` : 
+           pushRegistered ? '✓ Notifications Enabled' : 
+           'Enable Notifications'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Last Update */}
+      <Text style={styles.lastUpdate}>
+        Last update: {formatTime(lastUpdate)}
+      </Text>
+
+      {/* Signals Section Title */}
+      <View style={styles.signalsSectionHeader}>
+        <Text style={styles.signalsSectionTitle}>Recent Signals</Text>
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => router.push('/signals')}
+        >
+          <Text style={styles.viewAllText}>View All →</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 
-  // ============================================
-  // RENDER EMPTY/ERROR STATES
-  // ============================================
-
-  const renderEmptyComponent = () => {
-    if (error) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>{error}</Text>
-          {errorDetails && (
-            <Text style={styles.errorDetails}>{errorDetails}</Text>
-          )}
-          <TouchableOpacity 
-            style={styles.retryButton}
-            onPress={onRefresh}
-          >
-            <Text style={styles.retryButtonText}>Tap to Retry</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
+  const renderSignalCard = ({ item }: { item: SignalItem }) => {
+    const isBuy = (item.direction || item.signal_type) === 'BUY';
+    const asset = item.asset || item.symbol || 'UNKNOWN';
+    const direction = item.direction || item.signal_type || 'UNKNOWN';
+    const score = item.confidence_score || item.score || 0;
+    const status = item.status || 'unknown';
     
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyIcon}>📭</Text>
-        <Text style={styles.emptyText}>No signals yet</Text>
-        <Text style={styles.emptySubtext}>
-          Signals will appear here when the engine generates them
-        </Text>
-      </View>
+      <TouchableOpacity 
+        style={styles.signalCard}
+        onPress={() => {
+          const signalId = item.signal_id || item.id;
+          if (signalId) {
+            router.push({
+              pathname: '/signal-snapshot',
+              params: { signalId }
+            });
+          }
+        }}
+        activeOpacity={0.7}
+      >
+        <View style={styles.signalHeader}>
+          <View style={styles.signalSymbolRow}>
+            <Text style={styles.signalSymbol}>{asset}</Text>
+            <View style={[
+              styles.signalDirection,
+              { backgroundColor: isBuy ? '#00ff8830' : '#ff444430' }
+            ]}>
+              <Text style={[
+                styles.signalDirectionText,
+                { color: isBuy ? '#00ff88' : '#ff4444' }
+              ]}>
+                {direction}
+              </Text>
+            </View>
+          </View>
+          <View style={[
+            styles.signalStatus,
+            { backgroundColor: status === 'active' ? '#00aaff30' : 
+                              status === 'rejected' ? '#ff444430' : '#88888830' }
+          ]}>
+            <Text style={[
+              styles.signalStatusText,
+              { color: status === 'active' ? '#00aaff' : 
+                       status === 'rejected' ? '#ff4444' : '#888888' }
+            ]}>
+              {status.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.signalDetails}>
+          <View style={styles.signalScore}>
+            <Text style={styles.signalScoreLabel}>Score</Text>
+            <Text style={[
+              styles.signalScoreValue,
+              { color: score >= 70 ? '#00ff88' : score >= 60 ? '#ffaa00' : '#ff4444' }
+            ]}>
+              {score?.toFixed(1) || '-'}
+            </Text>
+          </View>
+          
+          {item.entry_price && (
+            <View style={styles.signalLevels}>
+              <Text style={styles.signalLevel}>E: {formatPrice(item.entry_price, asset)}</Text>
+              <Text style={[styles.signalLevel, { color: '#ff4444' }]}>
+                SL: {formatPrice(item.stop_loss, asset)}
+              </Text>
+              <Text style={[styles.signalLevel, { color: '#00ff88' }]}>
+                TP: {formatPrice(item.take_profit || item.take_profit_1, asset)}
+              </Text>
+            </View>
+          )}
+        </View>
+        
+        {item.outcome && (
+          <View style={[
+            styles.signalOutcome,
+            { backgroundColor: item.outcome === 'win' || item.outcome === 'tp_hit' ? '#00ff8830' : '#ff444430' }
+          ]}>
+            <Text style={[
+              styles.signalOutcomeText,
+              { color: item.outcome === 'win' || item.outcome === 'tp_hit' ? '#00ff88' : '#ff4444' }
+            ]}>
+              {item.outcome === 'win' || item.outcome === 'tp_hit' ? '✓ TP Hit' : 
+               item.outcome === 'loss' || item.outcome === 'sl_hit' ? '✗ SL Hit' : item.outcome}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
     );
   };
+
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      {signalsError ? (
+        <>
+          <Text style={styles.emptyIcon}>⚠️</Text>
+          <Text style={styles.emptyText}>{signalsError}</Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.emptyIcon}>📭</Text>
+          <Text style={styles.emptyText}>No signals yet</Text>
+          <Text style={styles.emptySubtext}>Signals will appear when the scanner finds setups</Text>
+        </>
+      )}
+    </View>
+  );
 
   // ============================================
   // LOADING STATE
@@ -504,7 +605,7 @@ export default function SignalFeedScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#00ff88" />
-          <Text style={styles.loadingText}>Loading signals...</Text>
+          <Text style={styles.loadingText}>Loading PropSignal...</Text>
         </View>
       </SafeAreaView>
     );
@@ -517,11 +618,11 @@ export default function SignalFeedScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <FlatList
-        data={signals}
-        keyExtractor={(item, index) => `${item.signal_id}-${index}`}
+        data={recentSignals}
+        keyExtractor={(item, index) => `${item.signal_id || item.id || index}`}
         renderItem={renderSignalCard}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyComponent}
+        ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -556,250 +657,244 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
   },
-  headerContainer: {
+  listContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  headerSection: {
+    paddingTop: 8,
     paddingBottom: 16,
   },
   mainTitle: {
     color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 16,
     textAlign: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    paddingVertical: 16,
     marginBottom: 16,
   },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    color: '#888',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  filterContainer: {
+  
+  // Scanner Bar
+  scannerBar: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
-    padding: 4,
+    padding: 12,
+    marginBottom: 16,
   },
-  filterTab: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+  scannerInfo: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  filterTabActive: {
-    backgroundColor: '#00ff8830',
+  scannerDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
   },
-  filterTabText: {
-    color: '#888',
-    fontSize: 12,
+  scannerText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
   },
-  filterTabTextActive: {
-    color: '#00ff88',
+  scannerVersion: {
+    color: '#888',
+    fontSize: 12,
   },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+  
+  // Prices
+  pricesContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
   },
-  signalCard: {
+  priceCard: {
+    flex: 1,
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
+    padding: 12,
   },
-  cardHeader: {
+  priceSymbol: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  priceItem: {
+    alignItems: 'center',
+  },
+  priceLabel: {
+    color: '#888',
+    fontSize: 10,
+  },
+  priceValue: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  spreadText: {
+    color: '#00aaff',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  priceError: {
+    color: '#ff4444',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  
+  // Register Button
+  registerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  registerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  registerText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
+  // Last Update
+  lastUpdate: {
+    color: '#666',
+    fontSize: 11,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  
+  // Signals Section
+  signalsSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
-  symbolContainer: {
+  signalsSectionTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  viewAllButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  viewAllText: {
+    color: '#00ff88',
+    fontSize: 14,
+  },
+  
+  // Signal Card
+  signalCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  signalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  signalSymbolRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  symbolText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  directionBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  directionText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
-  },
-  scoreContainer: {
-    alignItems: 'center',
-  },
-  scoreLabel: {
-    color: '#888',
-    fontSize: 10,
-  },
-  scoreValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  sessionContainer: {
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 8,
-  },
-  sessionLabel: {
-    color: '#00aaff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  setupType: {
-    color: '#666',
-    fontSize: 10,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  rrContainer: {
-    alignItems: 'center',
-  },
-  rrLabel: {
-    color: '#888',
-    fontSize: 10,
-  },
-  rrValue: {
+  signalSymbol: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  levelsRow: {
+  signalDirection: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  signalDirectionText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  signalStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  signalStatusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  signalDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  levelItem: {
     alignItems: 'center',
-    flex: 1,
   },
-  levelLabel: {
+  signalScore: {
+    alignItems: 'center',
+  },
+  signalScoreLabel: {
     color: '#888',
     fontSize: 10,
-    marginBottom: 2,
   },
-  levelValue: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
+  signalScoreValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
-  reasonContainer: {
-    backgroundColor: '#0f0f0f',
+  signalLevels: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  signalLevel: {
+    color: '#888',
+    fontSize: 11,
+  },
+  signalOutcome: {
+    marginTop: 8,
+    paddingVertical: 6,
     borderRadius: 6,
-    padding: 10,
-    marginBottom: 8,
-  },
-  reasonText: {
-    color: '#aaa',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  outcomeContainer: {
-    borderRadius: 6,
-    padding: 8,
     alignItems: 'center',
-    marginBottom: 8,
   },
-  outcomeText: {
+  signalOutcomeText: {
     fontSize: 12,
     fontWeight: 'bold',
   },
-  timestamp: {
-    color: '#666',
-    fontSize: 10,
-    textAlign: 'right',
-  },
+  
+  // Empty State
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+    fontSize: 40,
+    marginBottom: 12,
   },
   emptyText: {
     color: '#888',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    marginBottom: 8,
   },
   emptySubtext: {
     color: '#666',
-    fontSize: 14,
+    fontSize: 13,
+    marginTop: 6,
     textAlign: 'center',
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: '#ff4444',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  errorDetails: {
-    color: '#888',
-    fontSize: 12,
-    textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  retryButton: {
-    backgroundColor: '#00ff8830',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#00ff88',
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
