@@ -25,7 +25,14 @@ const PRODUCTION_URL = 'https://propsignal-engine-production-b22b.up.railway.app
 const EMERGENT_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const getApiUrl = (): string => {
-  if (__DEV__ && EMERGENT_URL && !EMERGENT_URL.includes('undefined')) {
+  // In production builds, ALWAYS use Railway
+  if (!__DEV__) {
+    console.log('🚀 Production mode - using Railway');
+    return PRODUCTION_URL;
+  }
+  // In development, use Emergent preview if available
+  if (EMERGENT_URL && !EMERGENT_URL.includes('undefined')) {
+    console.log('🔧 Dev mode - using Emergent');
     return EMERGENT_URL;
   }
   return PRODUCTION_URL;
