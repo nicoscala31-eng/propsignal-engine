@@ -164,9 +164,64 @@ class SignalOutcomeTracker:
             return
         
         await self._load_data()
+        
+        # CRITICAL: Sync with snapshots to recover active trades after redeploy
+        await self._sync_with_snapshots()
+        
         self.is_running = True
         self.tracker_task = asyncio.create_task(self._tracking_loop())
         logger.info("📊 Signal Outcome Tracker started")
+    
+    async def _sync_with_snapshots(self):
+        """
+        Sync tracker with signal snapshots to recover active trades.
+        This ensures active trades are not lost after a Railway redeploy.
+        """
+        try:
+            from services.signal_snapshot_service import signal_snapshot_service
+            await signal_snapshot_service.initialize()
+            
+            # Get active/accepted signals from snapshots
+            active_snapshots = [
+                s for s in signal_snapshot_service.snapshots 
+                if s.status in ['active', 'accepted']
+            ]
+            
+            synced_count = 0
+            for snapshot in active_snapshots:
+                # Skip if already tracked
+                if snapshot.signal_id in self.active_signals:
+                    continue
+                
+                # Create tracking data from snapshot
+                tracking_data = {
+                    'signal_id': snapshot.signal_id,
+                    'asset': snapshot.symbol,
+                    'direction': snapshot.direction,
+                    'entry_price': snapshot.entry,
+                    'stop_loss': snapshot.sl,
+                    'take_profit_1': snapshot.tp,
+                    'take_profit_2': None,
+                    'confidence_score': snapshot.score,
+                    'risk_reward': snapshot.rr,
+                    'session': snapshot.session,
+                    'setup_type': snapshot.setup_type,
+                    'timestamp': snapshot.timestamp
+                }
+                
+                # Add to tracker
+                await self.track_signal(tracking_data)
+                synced_count += 1
+                logger.info(f"🔄 Synced from snapshot: {snapshot.signal_id}")
+            
+            if synced_count > 0:
+                logger.info(f"✅ Synced {synced_count} active trades from snapshots")
+                await self._save_data()
+            else:
+                logger.info("📊 No active trades to sync from snapshots")
+                
+        except Exception as e:
+            logger.error(f"Error syncing with snapshots: {e}")
     
     async def stop(self):
         """Stop the tracker and save data"""
