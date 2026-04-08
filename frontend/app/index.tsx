@@ -334,13 +334,33 @@ export default function HomeScreen() {
         return;
       }
       
-      // Get token
+      // Get token with retry logic
       console.log('🔔 Getting push token...');
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId || '6c7a7f87-a996-4ca6-b498-7e2bb41f32a3',
-      });
+      let token = null;
+      let attempts = 0;
+      const maxAttempts = 3;
       
-      const token = tokenData.data;
+      while (!token && attempts < maxAttempts) {
+        attempts++;
+        try {
+          const tokenData = await Notifications.getExpoPushTokenAsync({
+            projectId: Constants.expoConfig?.extra?.eas?.projectId || '6c7a7f87-a996-4ca6-b498-7e2bb41f32a3',
+          });
+          token = tokenData.data;
+        } catch (tokenErr: any) {
+          console.log(`🔔 Token attempt ${attempts} failed:`, tokenErr.message);
+          if (attempts < maxAttempts) {
+            await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds before retry
+          }
+        }
+      }
+      
+      if (!token) {
+        setPushError('Token fetch failed - try again later');
+        Alert.alert('Temporary Error', 'Could not connect to Expo servers. Please try again in a few minutes.');
+        return;
+      }
+      
       console.log('📱 Push token:', token);
       setPushToken(token);
       
@@ -356,7 +376,7 @@ export default function HomeScreen() {
           device_id: DEVICE_ID,
           push_token: token,
           platform: Platform.OS,
-          app_version: '1.1.6',
+          app_version: '1.2.1',
         }),
       });
       
@@ -376,7 +396,10 @@ export default function HomeScreen() {
       console.error('Push registration error:', err);
       const errorMsg = err.message || 'Registration failed';
       setPushError(errorMsg);
-      Alert.alert('Registration Error', errorMsg);
+      // Don't show alert for connection errors, just set error state
+      if (!errorMsg.includes('503') && !errorMsg.includes('timeout')) {
+        Alert.alert('Registration Error', errorMsg);
+      }
     }
   }, []);
 
