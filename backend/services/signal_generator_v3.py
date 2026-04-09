@@ -8,47 +8,57 @@ Signal Generator v3 - Technical Structure-Based Signal Engine
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-VERSION 7.0 - DATA-DRIVEN OPTIMIZATION (April 2026):
-Based on 100-trade performance analysis (30 Mar - 9 Apr 2026):
+VERSION 9.0 - SPLIT BUY/SELL SCORING (April 2026):
+Based on 86-trade Railway production data analysis:
 
 === CRITICAL FINDINGS ===
-- SELL trades: 0% Win Rate (23 consecutive losses) -> DISABLED
-- LONDON session: 20.6% WR vs NEW YORK 94.3% -> BLOCKED
-- M15 Context: +9.2 delta (strongest predictor) -> WEIGHT INCREASED
-- Key Level Reaction: -6.7 delta (inverse correlation!) -> WEIGHT REDUCED
+- BUY:  75.9% WR (22W/7L) = +26.0R  -> SCORING WORKS
+- SELL: 40.4% WR (23W/34L) = +0.5R  -> SCORING ANTI-PREDICTIVE
 
-=== v7.0 CHANGES ===
-1. DIRECTION: BUY ONLY - SELL completely disabled (saved +23R)
-2. SESSION: New York + London/NY Overlap ONLY - London blocked (saved +16.69R)
-3. WEIGHTS REBALANCED:
-   - M15 Context: 11% -> 15% (top predictor)
-   - Key Level Reaction: 7% -> 3% (inverse correlation)
-   - Pullback Quality: 10% -> 6% (inverse correlation)
-   - Spread XAUUSD: effectively ignored (static value)
-4. M15 CONTEXT MINIMUM: 70 required (filters weak setups)
+KEY INSIGHT: Same weights DON'T WORK for both directions!
+- M15 Context: BUY Δ=+21.2 (good), SELL Δ=-25.4 (ANTI-PREDICTIVE!)
+- Momentum: BUY Δ=+27.7 (best), SELL Δ=-4.4 (negative)
+- MTF Alignment: BUY Δ=+2.7, SELL Δ=-13.3 (anti-predictive)
+- Concentration: BUY Δ=+0.3, SELL Δ=+18.5 (BEST SELL predictor!)
 
-=== EXPECTED RESULTS (based on backtest) ===
-- BEFORE: 53.3% WR, +29.81R, +0.331R expectancy
-- AFTER:  95.3% WR, +59.50R, +1.384R expectancy
+=== v9.0 CHANGES ===
+1. COMPLETELY SEPARATE SCORING: BUY_WEIGHTS ≠ SELL_WEIGHTS
+2. SESSION RULES BY DIRECTION:
+   - BUY: All sessions allowed (London, NY, Overlap)
+   - SELL: ONLY London/NY Overlap allowed (100% WR there!)
+3. CONFIDENCE THRESHOLDS BY DIRECTION:
+   - BUY: min 64, preferred 68-85, hard cap 92
+   - SELL: min 58, preferred 58-72, hard cap 78 (HIGH SCORE = BAD!)
+4. REMOVED: spread_penalty (no discrimination)
+5. ADDED: fta_bonus (replaces fta_penalty)
+6. SESSION MULTIPLIERS FOR BUY
+
+=== SESSION DATA ===
+BUY:  London 68.4%, NY 100%, Overlap 66.7%
+SELL: London 25.0% (BLOCKED!), NY 35.3% (BLOCKED!), Overlap 100% (ONLY ALLOWED)
 
 PROP TRADING ASSUMPTIONS:
 - account_size = 100,000
 - max_daily_loss = 3,000
 - operational_warning = 1,500
 - risk_per_trade = 0.5% to 0.75% (DYNAMIC based on confidence)
-- primary instruments = EURUSD + XAUUSD (BUY ONLY)
+- primary instruments = EURUSD + XAUUSD
 
-CONFIDENCE CLASSIFICATION (UPDATED):
-- 80-100: Strong setup (high priority) -> 0.75% risk
-- 70-79: Good setup (normal priority) -> 0.65% risk
-- 60-69: Acceptable setup -> 0.5% risk
-- Below 60: REJECT
+CONFIDENCE CLASSIFICATION (UPDATED - DIRECTION SPECIFIC):
+BUY:
+- 80-92: Strong setup -> 0.75% risk
+- 68-79: Good setup -> 0.65% risk
+- 64-67: Acceptable (with extra confirmation) -> 0.5% risk
+- Below 64: REJECT
 
-MINIMUM STOP LOSS ENFORCED:
-- EURUSD: 8.5 pips minimum
+SELL:
+- 63-72: Good setup -> 0.65% risk
+- 58-62: Acceptable (with extra confirmation) -> 0.5% risk
+- Below 58: REJECT
+- Above 78: REJECT (distorted zone!)
 
 R:R HARD REJECTION:
-- R:R < 1.1 = REJECT (raised from 0.95)
+- R:R < 1.1 = REJECT
 """
 
 import asyncio
@@ -585,24 +595,101 @@ class SignalGeneratorV3:
     7. All position data properly tracked
     """
     
-    # Scoring weights (must sum to 100) - v7.0 OPTIMIZED
-    # Based on 100-trade analysis: M15 Context (+9.2 delta), Key Level (-6.7 delta inverse!)
-    WEIGHTS = {
-        'h1_bias': 14.0,           # H1 directional bias
-        'm15_context': 15.0,       # M15 alignment/context - INCREASED from 11% (top predictor!)
-        'mtf_alignment': 12.0,     # Multi-timeframe alignment - INCREASED from 10%
-        'market_structure': 11.0,  # Market structure quality
-        'momentum': 10.0,          # Momentum strength - INCREASED from 9%
-        'pullback_quality': 6.0,   # Pullback evaluation - REDUCED from 10% (inverse correlation!)
-        'entry_quality': 6.0,      # Entry timing quality
-        'key_level': 3.0,          # Reaction at key level - REDUCED from 7% (inverse correlation!)
-        'session': 5.0,            # Session quality
-        'rr_ratio': 6.0,           # Risk/Reward (DYNAMIC)
-        'volatility': 3.0,         # Volatility conditions
-        'regime_quality': 5.0,     # Market regime - INCREASED from 4%
-        'spread': 2.0,             # Spread penalty
-        'concentration': 2.0,      # Asset concentration penalty
+    # ==================== v9.1: OPTIMIZED BUY/SELL WEIGHTS ====================
+    # PRODUCTION-READY: Based on Railway data (86 trades)
+    # 
+    # BUY:  75.9% WR (22W/7L) = +26.0R  -> FURTHER OPTIMIZED
+    # SELL: 40.4% WR (23W/34L) = +0.5R  -> MORE STRUCTURAL MODEL
+    #
+    # CRITICAL: BUY and SELL use COMPLETELY DIFFERENT scoring models!
+    
+    # ==================== BUY WEIGHTS (Total = 100%) ====================
+    # v9.1: Increased Trend + Momentum + Context, reduced noise factors
+    WEIGHTS_BUY = {
+        'h1_bias': 22.0,           # H1 Directional Bias - INCREASED
+        'm15_context': 18.0,       # M15 Context - INCREASED
+        'momentum': 16.0,          # Momentum - INCREASED (BEST predictor)
+        'concentration': 14.0,     # Concentration - INCREASED
+        'mtf_alignment': 12.0,     # MTF Alignment - unchanged
+        'session': 10.0,           # Session Quality - unchanged
+        'pullback_quality': 5.0,   # Pullback Quality - REDUCED
+        'regime_quality': 2.0,     # Market Regime - REDUCED (noise)
+        'volatility': 1.0,         # Volatility - REDUCED (noise)
+        # Kept for compatibility but at 0 weight:
+        'market_structure': 0.0,
+        'entry_quality': 0.0,
+        'key_level': 0.0,
+        'rr_ratio': 0.0,
+        'spread': 0.0,
     }
+    
+    # ==================== SELL WEIGHTS (Total = 100%) ====================
+    # v9.1: More STRUCTURAL model - H1/Concentration/Session dominate
+    # Drastically reduced unstable factors (MTF, Momentum, M15)
+    WEIGHTS_SELL = {
+        'h1_bias': 30.0,           # H1 Directional Bias - DOMINANT
+        'concentration': 22.0,     # Concentration - VERY HIGH (best SELL predictor!)
+        'session': 20.0,           # Session Quality - HIGH (OVERLAP critical!)
+        'pullback_quality': 12.0,  # Pullback Quality - structural
+        'mtf_alignment': 6.0,      # MTF Alignment - REDUCED (anti-predictive)
+        'momentum': 4.0,           # Momentum - DRASTICALLY REDUCED
+        'm15_context': 3.0,        # M15 Context - MINIMAL (anti-predictive!)
+        'regime_quality': 2.0,     # Market Regime - minimal
+        'volatility': 1.0,         # Volatility - minimal
+        # Kept for compatibility but at 0 weight:
+        'market_structure': 0.0,
+        'entry_quality': 0.0,
+        'key_level': 0.0,
+        'rr_ratio': 0.0,
+        'spread': 0.0,
+    }
+    
+    # ==================== SELL STRUCTURAL FILTER (v9.1 NEW) ====================
+    # SELL accettato SOLO se soddisfa requisiti strutturali minimi
+    SELL_MIN_H1_BIAS = 70          # H1 Directional Bias >= 70
+    SELL_MIN_CONCENTRATION = 60    # Concentration >= 60
+    SELL_MIN_PULLBACK = 55         # Pullback Quality >= 55
+    REJECTION_SELL_WEAK_STRUCTURE = "SELL weak structure"
+    
+    # SELL Low Confidence (58-62) extra requirements
+    SELL_LOW_CONF_MIN_H1 = 75      # H1 >= 75 for low confidence SELL
+    SELL_LOW_CONF_MIN_CONC = 65    # Concentration >= 65 for low confidence SELL
+    REJECTION_SELL_LOW_CONF_WEAK = "SELL low confidence weak"
+    
+    # Legacy weights for backward compatibility
+    WEIGHTS = WEIGHTS_BUY.copy()
+    
+    # ==================== BUY CONFIDENCE RULES ====================
+    BUY_MIN_CONFIDENCE = 64        # Minimum score to accept BUY
+    BUY_PREFERRED_RANGE = (68, 85) # Preferred score range
+    BUY_HARD_CAP = 92              # Clamp BUY scores above this
+    
+    # ==================== SELL CONFIDENCE RULES ====================
+    SELL_MIN_CONFIDENCE = 58       # Minimum score to accept SELL
+    SELL_PREFERRED_RANGE = (58, 72)# Preferred score range
+    SELL_HARD_CAP = 78             # REJECT SELL scores above this (distorted zone!)
+    
+    # ==================== BUY SESSION RULES ====================
+    BUY_ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap", "New York"]
+    BUY_SESSION_MULTIPLIERS = {
+        "London": 1.00,            # Allowed, no bonus
+        "London/NY Overlap": 1.12, # Best - BONUS +12%
+        "Overlap": 1.12,           # Same as above
+        "New York": 1.08,          # Good - BONUS +8%
+    }
+    
+    # ==================== SELL SESSION RULES ====================
+    # CRITICAL: SELL is ONLY allowed during Overlap (100% WR there!)
+    SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap"]
+    # No multipliers for SELL - blocked outside Overlap
+    
+    # ==================== REJECTION REASONS (v9.0) ====================
+    REJECTION_SELL_OUTSIDE_OVERLAP = "SELL blocked outside overlap"
+    REJECTION_SELL_CONFIDENCE_LOW = "SELL confidence below threshold"
+    REJECTION_SELL_CONFIDENCE_HIGH = "SELL confidence too high / distorted zone"
+    REJECTION_SELL_NO_DIRECTIONAL = "SELL missing directional confirmation"
+    REJECTION_BUY_CONFIDENCE_LOW = "BUY confidence below threshold"
+    REJECTION_BUY_NO_DIRECTIONAL = "BUY missing directional confirmation"
     
     # Hard rejection thresholds
     MAX_SPREAD_PIPS_EURUSD = 3.0
@@ -1360,12 +1447,12 @@ class SignalGeneratorV3:
                 logger.info(f"🌙 [MARKET] Forex closed ({status['day_of_week']} {status['hour_utc']}:00 UTC)")
             return
         
-        # ========== SESSION FILTER (DATA-DRIVEN) ==========
+        # ========== v9.0: SESSION FILTER REMOVED FROM SCAN LEVEL ==========
+        # Session rules are now DIRECTION-SPECIFIC:
+        # - BUY: All sessions allowed (London, NY, Overlap)
+        # - SELL: ONLY Overlap allowed
+        # The check is now done AFTER direction is determined in _analyze_asset
         current_session = self._get_session_name(session_detector.get_current_session())
-        if current_session not in self.ALLOWED_SESSIONS:
-            if self.scan_count % 60 == 0:
-                logger.info(f"🚫 [SESSION FILTER] {current_session} not in {self.ALLOWED_SESSIONS} - skipping")
-            return
         
         # ========== ASSET FILTER (DATA-DRIVEN) ==========
         # Only scan allowed assets (EURUSD only based on data)
@@ -2064,6 +2151,38 @@ class SignalGeneratorV3:
             if not direction:
                 return None
         
+        # ========== v9.0: DIRECTION-SPECIFIC SESSION RULES ==========
+        # BUY: All sessions allowed (London, NY, Overlap) with multipliers
+        # SELL: ONLY Overlap allowed (100% WR there, disaster everywhere else!)
+        
+        if direction == "SELL":
+            # SELL: STRICTLY Overlap only
+            if session_name not in self.SELL_ALLOWED_SESSIONS:
+                self._record_rejection(self.REJECTION_SELL_OUTSIDE_OVERLAP)
+                logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_OUTSIDE_OVERLAP} (session={session_name})")
+                self._log_candidate_audit(
+                    symbol=asset.value,
+                    direction=direction,
+                    session=session_name,
+                    setup_type="UNKNOWN",
+                    decision="rejected",
+                    rejection_reason=self.REJECTION_SELL_OUTSIDE_OVERLAP,
+                    rejection_details=f"SELL only allowed during Overlap, current session: {session_name}",
+                    final_score=0,
+                    threshold=self.SELL_MIN_CONFIDENCE,
+                    entry_price=current_price,
+                    stop_loss=0,
+                    take_profit=0,
+                    risk_reward=0
+                )
+                return None
+        else:  # BUY
+            # BUY: All main sessions allowed
+            if session_name not in self.BUY_ALLOWED_SESSIONS:
+                self._record_rejection("buy_session_blocked")
+                logger.info(f"🚫 {asset.value} BUY: Session {session_name} not allowed")
+                return None
+        
         # ========== ENTRY VALIDATION ==========
         
         entry_valid, entry_score, entry_reason, entry_zone_low, entry_zone_high = self._validate_entry(
@@ -2143,64 +2262,69 @@ class SignalGeneratorV3:
         # FTA blocking is now CONTEXTUAL - decided after scoring
         # This allows high-quality setups to override low FTA ratios
         
-        # ========== SCORING ==========
+        # ========== SCORING (v8.0: DIRECTION-SPECIFIC WEIGHTS) ==========
         
         components = []
         
+        # v8.0: Get direction-specific weights
+        weights = self.WEIGHTS_BUY if direction == "BUY" else self.WEIGHTS_SELL
+        
         # 1. H1 Bias
         h1_score, h1_reason = self._score_h1_bias(h1_candles, direction)
-        components.append(ScoreComponent("H1 Directional Bias", self.WEIGHTS['h1_bias'], h1_score, h1_reason))
+        components.append(ScoreComponent("H1 Directional Bias", weights['h1_bias'], h1_score, h1_reason))
         
         # 2. M15 Context
         m15_score, m15_reason = self._score_m15_context(m15_candles, direction)
-        components.append(ScoreComponent("M15 Context", self.WEIGHTS['m15_context'], m15_score, m15_reason))
+        components.append(ScoreComponent("M15 Context", weights['m15_context'], m15_score, m15_reason))
         
         # 3. MTF Alignment
         mtf_score, mtf_reason = self._score_mtf_alignment(h1_candles, m15_candles, m5_candles, direction)
-        components.append(ScoreComponent("MTF Alignment", self.WEIGHTS['mtf_alignment'], mtf_score, mtf_reason))
+        components.append(ScoreComponent("MTF Alignment", weights['mtf_alignment'], mtf_score, mtf_reason))
         
         # 4. Market Structure
         struct_score, struct_reason = self._score_market_structure(m5_candles, direction)
-        components.append(ScoreComponent("Market Structure", self.WEIGHTS['market_structure'], struct_score, struct_reason))
+        components.append(ScoreComponent("Market Structure", weights['market_structure'], struct_score, struct_reason))
         
         # 5. Momentum
         mom_score, mom_reason = self._score_momentum(m5_candles, direction)
-        components.append(ScoreComponent("Momentum", self.WEIGHTS['momentum'], mom_score, mom_reason))
+        components.append(ScoreComponent("Momentum", weights['momentum'], mom_score, mom_reason))
         
         # 6. Pullback Quality
         pb_score, pb_reason = self._score_pullback_advanced(m5_candles, direction, current_price, atr)
-        components.append(ScoreComponent("Pullback Quality", self.WEIGHTS['pullback_quality'], pb_score, pb_reason))
+        components.append(ScoreComponent("Pullback Quality", weights['pullback_quality'], pb_score, pb_reason))
         
         # 7. Entry Quality (NEW)
-        components.append(ScoreComponent("Entry Quality", self.WEIGHTS['entry_quality'], entry_score, entry_reason))
+        components.append(ScoreComponent("Entry Quality", weights['entry_quality'], entry_score, entry_reason))
         
         # 8. Key Level
         kl_score, kl_reason = self._score_key_level(m5_candles, current_price, direction)
-        components.append(ScoreComponent("Key Level Reaction", self.WEIGHTS['key_level'], kl_score, kl_reason))
+        components.append(ScoreComponent("Key Level Reaction", weights['key_level'], kl_score, kl_reason))
         
         # 9. Session
         sess_score, sess_reason = self._score_session_soft(session)
-        components.append(ScoreComponent("Session Quality", self.WEIGHTS['session'], sess_score, sess_reason))
+        components.append(ScoreComponent("Session Quality", weights['session'], sess_score, sess_reason))
         
         # 10. R:R Score (DYNAMIC)
         rr_score, rr_reason = self._score_rr_ratio_dynamic(rr_ratio)
-        components.append(ScoreComponent("Risk/Reward", self.WEIGHTS['rr_ratio'], rr_score, rr_reason))
+        components.append(ScoreComponent("Risk/Reward", weights['rr_ratio'], rr_score, rr_reason))
         
         # 11. Volatility
         vol_score, vol_reason = self._score_volatility(atr, avg_atr)
-        components.append(ScoreComponent("Volatility", self.WEIGHTS['volatility'], vol_score, vol_reason))
+        components.append(ScoreComponent("Volatility", weights['volatility'], vol_score, vol_reason))
         
         # 12. Market Regime
         regime_score, regime_reason = self._score_market_regime(m5_candles, atr, avg_atr)
-        components.append(ScoreComponent("Market Regime", self.WEIGHTS['regime_quality'], regime_score, regime_reason))
+        components.append(ScoreComponent("Market Regime", weights['regime_quality'], regime_score, regime_reason))
         
-        # 13. Spread
+        # 13. Spread - v8.0: REMOVED PENALTY for XAUUSD (always -25, no discrimination)
         spread_score, spread_reason = self._score_spread(asset, current_spread)
-        components.append(ScoreComponent("Spread", self.WEIGHTS['spread'], spread_score, spread_reason))
+        # v8.0: Set spread weight to 0 for XAUUSD (static penalty was useless)
+        spread_weight = 0.0 if asset == Asset.XAUUSD else weights['spread']
+        components.append(ScoreComponent("Spread", spread_weight, spread_score, spread_reason))
         
-        # 14. Concentration (NEW)
+        # 14. Concentration (NEW) - v8.0: HIGH WEIGHT for SELL (best SELL predictor!)
         conc_score, conc_reason = self._check_asset_concentration(asset)
-        components.append(ScoreComponent("Concentration", self.WEIGHTS['concentration'], conc_score, conc_reason))
+        components.append(ScoreComponent("Concentration", weights['concentration'], conc_score, conc_reason))
         
         # Calculate final score
         final_score = sum(c.weighted_score for c in components)
@@ -2342,9 +2466,23 @@ class SignalGeneratorV3:
                 logger.info(f"   Override: {fta_decision_reason}")
         
         # Apply FTA penalty (reduced weight in v2)
-        if fta.fta_penalty > 0:
-            final_score -= fta.fta_penalty
-            logger.info(f"📊 {asset.value}: FTA penalty applied (-{fta.fta_penalty:.0f}): {fta.fta_type} @ ratio {fta.clean_space_ratio:.2f}")
+        # ========== v9.0: FTA TRANSFORMED TO BONUS ==========
+        # User instruction: FTA penalty -> fta_bonus
+        # BUY: if FTA distance condition is favorable -> +3 score
+        # SELL: if FTA distance condition is favorable -> +5 score
+        fta_bonus = 0
+        if fta.clean_space_ratio >= 0.80:
+            # FTA is favorable (clean space)
+            fta_bonus = 5 if direction == "SELL" else 3
+            final_score += fta_bonus
+            logger.info(f"📈 {asset.value} {direction}: FTA bonus applied (+{fta_bonus}): clean space ratio {fta.clean_space_ratio:.2f}")
+        elif fta.clean_space_ratio >= 0.50:
+            # Moderate FTA - small bonus
+            fta_bonus = 2 if direction == "SELL" else 1
+            final_score += fta_bonus
+            logger.info(f"📈 {asset.value} {direction}: FTA moderate bonus (+{fta_bonus}): ratio {fta.clean_space_ratio:.2f}")
+        # NOTE: FTA penalty is now REMOVED per user specification
+        # Old penalty code removed - fta.fta_penalty is NO LONGER applied as penalty
         
         # Apply news penalty
         if news_risk.score_penalty > 0:
@@ -2446,159 +2584,223 @@ class SignalGeneratorV3:
         # Ensure score stays in bounds after MTF penalty
         final_score = max(0, min(100, final_score))
         
+        # ========== v9.0: SESSION MULTIPLIER FOR BUY ==========
+        # Apply session multiplier AFTER all scores calculated
+        if direction == "BUY" and session_name in self.BUY_SESSION_MULTIPLIERS:
+            session_multiplier = self.BUY_SESSION_MULTIPLIERS[session_name]
+            if session_multiplier != 1.0:
+                old_score = final_score
+                final_score = final_score * session_multiplier
+                final_score = min(100, final_score)  # Cap at 100
+                logger.info(f"📈 {asset.value} BUY: Session multiplier applied x{session_multiplier:.2f} ({session_name}): {old_score:.1f} -> {final_score:.1f}")
+        
         # ========== BUFFER ZONE MONITORING: Track candidate ==========
         self.candidates_evaluated += 1
         
-        # ========== CONFIDENCE CLASSIFICATION (v6.0 - RELAXED FILTERS) ==========
-        # v6.0 CHANGES (based on rejection analysis):
-        # - MIN_CONFIDENCE_SCORE: 65 -> 60 (blocked trades had 32% WR vs 17% accepted)
-        # - Buffer zone no longer blocks (82% WR and +1.05R expectancy in blocked trades)
-        # - weak_mtf kept unchanged (0% WR - correctly filtering)
-        
-        # ========== BUFFER ZONE CONSTANTS (v6.0 - diagnostic only, no blocking) ==========
-        BUFFER_MIN_SCORE = 60
-        BUFFER_MTF_MIN = 60
-        BUFFER_H1_MIN = 60
-        BUFFER_RR_MIN = 1.2
+        # ========== v9.0: DIRECTION-SPECIFIC CONFIDENCE RULES ==========
+        # BUY: min 64, preferred 68-85, hard cap 92
+        # SELL: min 58, preferred 58-72, hard cap 78 (HIGH SCORE = REJECT!)
         
         acceptance_source = None  # Track whether accepted via main or buffer
         
-        if final_score >= 80:
-            self.candidates_score_gte_65 += 1  # Track main threshold candidates
-            confidence = SignalConfidence.STRONG
-            priority = "HIGH"
-            acceptance_source = "main_threshold_strong"
-            self.accepted_main_threshold += 1
-        elif final_score >= self.MIN_CONFIDENCE_SCORE:  # >= 65
-            self.candidates_score_gte_65 += 1  # Track main threshold candidates
-            confidence = SignalConfidence.GOOD
-            priority = "NORMAL"
-            acceptance_source = "main_threshold_good"
-            self.accepted_main_threshold += 1
-        elif final_score >= BUFFER_MIN_SCORE:  # 60-64: BUFFER ZONE EVALUATION
-            self.candidates_score_60_64 += 1  # Track buffer zone candidates
-            # ========== BUFFER ZONE LOGIC (v3.3) ==========
-            buffer_mtf_pass = mtf_score_val >= BUFFER_MTF_MIN
-            buffer_h1_pass = h1_score_val >= BUFFER_H1_MIN
-            buffer_rr_pass = rr_ratio >= BUFFER_RR_MIN
+        if direction == "BUY":
+            # ========== BUY CONFIDENCE LOGIC ==========
             
-            buffer_conditions_met = buffer_mtf_pass and buffer_h1_pass and buffer_rr_pass
+            # Hard cap BUY scores
+            if final_score > self.BUY_HARD_CAP:
+                old_score = final_score
+                final_score = self.BUY_HARD_CAP
+                logger.info(f"📊 {asset.value} BUY: Score clamped from {old_score:.1f} to {self.BUY_HARD_CAP}")
             
-            logger.info(f"🔶 {asset.value} {direction}: BUFFER ZONE EVALUATION (score={final_score:.0f}%)")
-            logger.info(f"   buffer_mtf_value={mtf_score_val:.0f}% (need >={BUFFER_MTF_MIN}): {'✅' if buffer_mtf_pass else '❌'}")
-            logger.info(f"   H1={h1_score_val:.0f}% (need >={BUFFER_H1_MIN}): {'✅' if buffer_h1_pass else '❌'}")
-            logger.info(f"   R:R={rr_ratio:.2f} (need >={BUFFER_RR_MIN}): {'✅' if buffer_rr_pass else '❌'}")
-            
-            if buffer_conditions_met:
-                # ========== BUFFER ZONE ACCEPTANCE ==========
-                self.accepted_buffer_zone += 1  # Track buffer zone acceptance
+            if final_score >= 80:
+                self.candidates_score_gte_65 += 1
+                confidence = SignalConfidence.STRONG
+                priority = "HIGH"
+                acceptance_source = "buy_strong"
+                self.accepted_main_threshold += 1
+            elif final_score >= self.BUY_PREFERRED_RANGE[0]:  # >= 68
+                self.candidates_score_gte_65 += 1
                 confidence = SignalConfidence.GOOD
-                priority = "BUFFER"
-                acceptance_source = "buffer_zone"
-                buffer_pass_reason = f"MTF={mtf_score_val:.0f}%>=60, H1={h1_score_val:.0f}%>=60, RR={rr_ratio:.2f}>=1.2"
-                logger.info(f"✅ {asset.value} {direction}: ACCEPTED via BUFFER ZONE")
-                logger.info(f"   buffer_pass_reason: {buffer_pass_reason}")
+                priority = "NORMAL"
+                acceptance_source = "buy_preferred"
+                self.accepted_main_threshold += 1
+            elif final_score >= self.BUY_MIN_CONFIDENCE:  # 64-67.99: Extra confirmation needed
+                # BUY extra confirmation: score 64-67.99 needs H1 >= 70 AND Momentum >= 60
+                h1_pass = h1_score_val >= 70
+                mom_score_val = next((c.score for c in components if "Momentum" in c.name), 50)
+                mom_pass = mom_score_val >= 60
+                
+                if h1_pass and mom_pass:
+                    self.candidates_score_60_64 += 1
+                    confidence = SignalConfidence.ACCEPTABLE
+                    priority = "BUFFER"
+                    acceptance_source = "buy_buffer_confirmed"
+                    self.accepted_buffer_zone += 1
+                    logger.info(f"✅ {asset.value} BUY: Accepted via extra confirmation (H1={h1_score_val:.0f}%, Mom={mom_score_val:.0f}%)")
+                else:
+                    # Missing confirmation
+                    self._record_rejection(self.REJECTION_BUY_NO_DIRECTIONAL)
+                    logger.info(f"🚫 {asset.value} BUY: {self.REJECTION_BUY_NO_DIRECTIONAL} (score={final_score:.0f}%, H1={h1_score_val:.0f}%, Mom={mom_score_val:.0f}%)")
+                    self._log_candidate_audit(
+                        symbol=asset.value, direction=direction, session=session_name,
+                        setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                        decision="rejected", rejection_reason=self.REJECTION_BUY_NO_DIRECTIONAL,
+                        rejection_details=f"Score {final_score:.0f}% requires H1>=70 AND Momentum>=60",
+                        components=components, final_score=final_score, threshold=self.BUY_MIN_CONFIDENCE,
+                        mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                        stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                    )
+                    return None
             else:
-                # ========== v6.0 FIX: BUFFER ZONE NO LONGER BLOCKS ==========
-                # Previously this would reject - now we ACCEPT but log diagnostic data
-                # Analysis showed buffer_zone_failed had 82% WR and +1.05R expectancy
+                # Below BUY minimum
+                self.candidates_score_lt_60 += 1
+                self._record_rejection(self.REJECTION_BUY_CONFIDENCE_LOW)
+                logger.info(f"📉 {asset.value} BUY: {self.REJECTION_BUY_CONFIDENCE_LOW} (score={final_score:.0f}% < {self.BUY_MIN_CONFIDENCE})")
+                self._log_score_breakdown(asset, direction, components, final_score)
+                self._log_candidate_audit(
+                    symbol=asset.value, direction=direction, session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    decision="rejected", rejection_reason=self.REJECTION_BUY_CONFIDENCE_LOW,
+                    rejection_details=f"Score {final_score:.0f}% < {self.BUY_MIN_CONFIDENCE}%",
+                    components=components, final_score=final_score, threshold=self.BUY_MIN_CONFIDENCE,
+                    mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                    stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                )
+                return None
                 
-                self.accepted_buffer_zone += 1  # Track as buffer zone acceptance
-                confidence = SignalConfidence.GOOD
-                priority = "BUFFER_RELAXED"
-                acceptance_source = "buffer_zone_relaxed"
-                
-                # ========== DIAGNOSTIC LOGGING ONLY (no blocking) ==========
-                failed_conditions = []
-                buffer_fail_reason = ""
-                
-                # Track which conditions would have failed (for diagnostics)
-                mtf_failed = not buffer_mtf_pass
-                h1_failed = not buffer_h1_pass
-                rr_failed = not buffer_rr_pass
-                
-                # Track diagnostics but DO NOT block
-                if mtf_failed and h1_failed and rr_failed:
-                    buffer_fail_reason = "all_failed"
-                    self.buffer_fail_by_reason["all_failed"] += 1
-                elif mtf_failed and h1_failed:
-                    buffer_fail_reason = "mtf_h1"
-                    self.buffer_fail_by_reason["mtf_h1"] += 1
-                elif mtf_failed and rr_failed:
-                    buffer_fail_reason = "mtf_rr"
-                    self.buffer_fail_by_reason["mtf_rr"] += 1
-                elif h1_failed and rr_failed:
-                    buffer_fail_reason = "h1_rr"
-                    self.buffer_fail_by_reason["h1_rr"] += 1
-                elif mtf_failed:
-                    buffer_fail_reason = "mtf_low"
-                    self.buffer_fail_by_reason["mtf_low"] += 1
-                elif h1_failed:
-                    buffer_fail_reason = "h1_low"
-                    self.buffer_fail_by_reason["h1_low"] += 1
-                elif rr_failed:
-                    buffer_fail_reason = "rr_low"
-                    self.buffer_fail_by_reason["rr_low"] += 1
-                
-                if not buffer_mtf_pass:
-                    failed_conditions.append(f"MTF {mtf_score_val:.0f}% < {BUFFER_MTF_MIN}")
-                if not buffer_h1_pass:
-                    failed_conditions.append(f"H1 {h1_score_val:.0f}% < {BUFFER_H1_MIN}")
-                if not buffer_rr_pass:
-                    failed_conditions.append(f"R:R {rr_ratio:.2f} < {BUFFER_RR_MIN}")
-                
-                # LOG that this would have been blocked but is now allowed
-                logger.info(f"🔓 {asset.value} {direction}: ACCEPTED via BUFFER_RELAXED (v6.0)")
-                logger.info(f"   ⚠️ Would have been blocked by: {buffer_fail_reason}")
-                logger.info(f"   Failed conditions (diagnostic only): {', '.join(failed_conditions)}")
-                logger.info(f"   buffer_values: MTF={mtf_score_val:.0f}%, H1={h1_score_val:.0f}%, RR={rr_ratio:.2f}")
-                logger.info(f"   confidence_score: {final_score:.1f}%")
-                logger.info(f"   v6.0 FIX: No longer blocking - 82% WR observed in rejected trades")
         else:
-            # Score < 60: HARD REJECT
-            self.candidates_score_lt_60 += 1  # Track below buffer zone candidates
-            confidence = SignalConfidence.REJECTED
-            self._record_rejection("low_confidence")
-            logger.info(f"📉 {asset.value} {direction}: Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% - Rejected (below buffer zone)")
-            self._log_score_breakdown(asset, direction, components, final_score)
+            # ========== SELL CONFIDENCE LOGIC ==========
+            # CRITICAL: High score SELL = BAD! Reject above hard cap
             
-            # Record for simulation
-            self._record_rejected_candidate_for_simulation(
-                reason="low_confidence",
-                asset=asset,
-                direction=direction,
-                entry_price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit_1,
-                confidence_score=final_score,
-                mtf_score=mtf_score_val,
-                session=session_name,
-                setup_type=self._determine_setup_type(components, sl_type, tp_type),
-                risk_reward=rr_ratio,
-                rejection_details=f"Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% (below buffer zone)",
-                score_breakdown={"components": [{"name": c.name, "score": c.score} for c in components]}
-            )
+            conc_score_val = next((c.score for c in components if "Concentration" in c.name), 50)
+            pb_score_val = next((c.score for c in components if "Pullback" in c.name), 50)
             
-            # Log candidate audit with FULL BREAKDOWN
-            self._log_candidate_audit(
-                symbol=asset.value,
-                direction=direction,
-                session=session_name,
-                setup_type=self._determine_setup_type(components, sl_type, tp_type),
-                decision="rejected",
-                rejection_reason="low_confidence",
-                rejection_details=f"Score {final_score:.0f}% < {BUFFER_MIN_SCORE}% (below buffer zone)",
-                components=components,
-                final_score=final_score,
-                threshold=self.MIN_CONFIDENCE_SCORE,
-                mtf_score=mtf_score_val,
-                fta=fta,
-                entry_price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit_1,
-                risk_reward=rr_ratio
-            )
-            return None
+            # ========== v9.1: SELL STRUCTURAL FILTER (MANDATORY) ==========
+            # SELL accettato SOLO se soddisfa requisiti strutturali minimi
+            # H1 >= 70 AND Concentration >= 60 AND Pullback >= 55
+            h1_struct_pass = h1_score_val >= self.SELL_MIN_H1_BIAS
+            conc_struct_pass = conc_score_val >= self.SELL_MIN_CONCENTRATION
+            pb_struct_pass = pb_score_val >= self.SELL_MIN_PULLBACK
+            
+            if not (h1_struct_pass and conc_struct_pass and pb_struct_pass):
+                # SELL WEAK STRUCTURE - REJECT!
+                failed_checks = []
+                if not h1_struct_pass:
+                    failed_checks.append(f"H1={h1_score_val:.0f}%<{self.SELL_MIN_H1_BIAS}")
+                if not conc_struct_pass:
+                    failed_checks.append(f"Conc={conc_score_val:.0f}%<{self.SELL_MIN_CONCENTRATION}")
+                if not pb_struct_pass:
+                    failed_checks.append(f"PB={pb_score_val:.0f}%<{self.SELL_MIN_PULLBACK}")
+                
+                self._record_rejection(self.REJECTION_SELL_WEAK_STRUCTURE)
+                logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_WEAK_STRUCTURE} ({', '.join(failed_checks)})")
+                self._log_candidate_audit(
+                    symbol=asset.value, direction=direction, session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    decision="rejected", rejection_reason=self.REJECTION_SELL_WEAK_STRUCTURE,
+                    rejection_details=f"SELL requires H1>={self.SELL_MIN_H1_BIAS}, Conc>={self.SELL_MIN_CONCENTRATION}, PB>={self.SELL_MIN_PULLBACK}. Failed: {', '.join(failed_checks)}",
+                    components=components, final_score=final_score, threshold=self.SELL_MIN_CONFIDENCE,
+                    mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                    stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                )
+                return None
+            
+            # ========== END STRUCTURAL FILTER ==========
+            
+            if final_score > self.SELL_HARD_CAP:
+                # SELL DISTORTED ZONE - REJECT!
+                self._record_rejection(self.REJECTION_SELL_CONFIDENCE_HIGH)
+                logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_CONFIDENCE_HIGH} (score={final_score:.0f}% > {self.SELL_HARD_CAP})")
+                self._log_candidate_audit(
+                    symbol=asset.value, direction=direction, session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    decision="rejected", rejection_reason=self.REJECTION_SELL_CONFIDENCE_HIGH,
+                    rejection_details=f"SELL score {final_score:.0f}% > {self.SELL_HARD_CAP}% (distorted zone)",
+                    components=components, final_score=final_score, threshold=self.SELL_MIN_CONFIDENCE,
+                    mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                    stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                )
+                return None
+            
+            elif final_score >= self.SELL_PREFERRED_RANGE[1]:  # 72-78: Extra confirmation
+                # SELL strong zone: score 72-78 needs session=OVERLAP, H1>=75, Concentration>=65
+                h1_pass = h1_score_val >= 75
+                conc_pass = conc_score_val >= 65
+                overlap_pass = session_name in self.SELL_ALLOWED_SESSIONS
+                
+                if overlap_pass and h1_pass and conc_pass:
+                    self.candidates_score_gte_65 += 1
+                    confidence = SignalConfidence.GOOD
+                    priority = "HIGH"
+                    acceptance_source = "sell_strong_confirmed"
+                    self.accepted_main_threshold += 1
+                    logger.info(f"✅ {asset.value} SELL: Strong zone accepted (H1={h1_score_val:.0f}%, Conc={conc_score_val:.0f}%)")
+                else:
+                    # Strong zone without confirmation - reject
+                    self._record_rejection(self.REJECTION_SELL_NO_DIRECTIONAL)
+                    logger.info(f"🚫 {asset.value} SELL: Strong zone needs confirmation (H1={h1_score_val:.0f}%, Conc={conc_score_val:.0f}%)")
+                    self._log_candidate_audit(
+                        symbol=asset.value, direction=direction, session=session_name,
+                        setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                        decision="rejected", rejection_reason=self.REJECTION_SELL_NO_DIRECTIONAL,
+                        rejection_details=f"SELL score {final_score:.0f}% needs H1>=75, Concentration>=65",
+                        components=components, final_score=final_score, threshold=self.SELL_MIN_CONFIDENCE,
+                        mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                        stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                    )
+                    return None
+                    
+            elif final_score >= 63:  # 63-72: SELL normal acceptance (preferred range)
+                self.candidates_score_gte_65 += 1
+                confidence = SignalConfidence.GOOD
+                priority = "NORMAL"
+                acceptance_source = "sell_preferred"
+                self.accepted_main_threshold += 1
+                
+            elif final_score >= self.SELL_MIN_CONFIDENCE:  # 58-62.99: Extra confirmation
+                # v9.1: SELL low confidence (58-62) needs stricter requirements
+                # session=OVERLAP, H1>=75, Concentration>=65
+                h1_pass = h1_score_val >= self.SELL_LOW_CONF_MIN_H1  # 75
+                conc_pass = conc_score_val >= self.SELL_LOW_CONF_MIN_CONC  # 65
+                overlap_pass = session_name in self.SELL_ALLOWED_SESSIONS
+                
+                if overlap_pass and h1_pass and conc_pass:
+                    self.candidates_score_60_64 += 1
+                    confidence = SignalConfidence.ACCEPTABLE
+                    priority = "BUFFER"
+                    acceptance_source = "sell_buffer_confirmed"
+                    self.accepted_buffer_zone += 1
+                    logger.info(f"✅ {asset.value} SELL: Low confidence accepted (H1={h1_score_val:.0f}%, Conc={conc_score_val:.0f}%)")
+                else:
+                    # Missing confirmation - v9.1: use specific rejection reason
+                    self._record_rejection(self.REJECTION_SELL_LOW_CONF_WEAK)
+                    logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_LOW_CONF_WEAK} (score={final_score:.0f}%, H1={h1_score_val:.0f}%, Conc={conc_score_val:.0f}%)")
+                    self._log_candidate_audit(
+                        symbol=asset.value, direction=direction, session=session_name,
+                        setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                        decision="rejected", rejection_reason=self.REJECTION_SELL_LOW_CONF_WEAK,
+                        rejection_details=f"SELL score {final_score:.0f}% (58-62) needs H1>={self.SELL_LOW_CONF_MIN_H1}, Conc>={self.SELL_LOW_CONF_MIN_CONC}, Overlap",
+                        components=components, final_score=final_score, threshold=self.SELL_MIN_CONFIDENCE,
+                        mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                        stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                    )
+                    return None
+            else:
+                # Below SELL minimum
+                self.candidates_score_lt_60 += 1
+                self._record_rejection(self.REJECTION_SELL_CONFIDENCE_LOW)
+                logger.info(f"📉 {asset.value} SELL: {self.REJECTION_SELL_CONFIDENCE_LOW} (score={final_score:.0f}% < {self.SELL_MIN_CONFIDENCE})")
+                self._log_score_breakdown(asset, direction, components, final_score)
+                self._log_candidate_audit(
+                    symbol=asset.value, direction=direction, session=session_name,
+                    setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                    decision="rejected", rejection_reason=self.REJECTION_SELL_CONFIDENCE_LOW,
+                    rejection_details=f"SELL score {final_score:.0f}% < {self.SELL_MIN_CONFIDENCE}%",
+                    components=components, final_score=final_score, threshold=self.SELL_MIN_CONFIDENCE,
+                    mtf_score=mtf_score_val, fta=fta, entry_price=entry_price,
+                    stop_loss=stop_loss, take_profit=take_profit_1, risk_reward=rr_ratio
+                )
+                return None
         
         # Duplicate check
         if self._is_duplicate(asset, direction, current_price):
