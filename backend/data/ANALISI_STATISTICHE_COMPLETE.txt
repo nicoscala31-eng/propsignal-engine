@@ -1,0 +1,801 @@
+========================================================================================================================
+STATISTICHE COMPLETE - ANALISI DATI GREZZI
+========================================================================================================================
+
+================================================================================
+1. STATISTICHE GENERALI
+================================================================================
+
+Totale Trade Chiusi: 100
+  - Vincenti (TP Hit): 48
+  - Perdenti (SL Hit): 42
+  - Scaduti (24h): 9
+
+Win Rate (escl. scaduti): 53.33% (48W / 42L)
+
+R Totale: +29.81R
+Expectancy per trade: +0.331R
+R medio per vittoria: +1.50R
+
+================================================================================
+2. BREAKDOWN PER ASSET
+================================================================================
+
+
+EURUSD:
+  Vincenti: 9
+  Perdenti: 7
+  Scaduti: 2
+  Win Rate: 56.2%
+  R Totale: +6.50R
+
+XAUUSD:
+  Vincenti: 39
+  Perdenti: 35
+  Scaduti: 7
+  Win Rate: 52.7%
+  R Totale: +23.31R
+
+================================================================================
+3. BREAKDOWN PER SESSIONE
+================================================================================
+
+
+London:
+  Vincenti: 7
+  Perdenti: 27
+  Scaduti: 4
+  Win Rate: 20.6%
+  R Totale: -16.69R
+
+London/NY Overlap:
+  Vincenti: 8
+  Perdenti: 13
+  Scaduti: 3
+  Win Rate: 38.1%
+  R Totale: -1.00R
+
+New York:
+  Vincenti: 33
+  Perdenti: 2
+  Scaduti: 2
+  Win Rate: 94.3%
+  R Totale: +47.50R
+
+================================================================================
+4. BREAKDOWN PER DIREZIONE
+================================================================================
+
+
+BUY:
+  Vincenti: 48
+  Perdenti: 19
+  Win Rate: 71.6%
+  R Totale: +52.81R
+
+SELL:
+  Vincenti: 0
+  Perdenti: 23
+  Win Rate: 0.0%
+  R Totale: -23.00R
+
+================================================================================
+5. BREAKDOWN PER CONFIDENCE BAND
+================================================================================
+
+
+STRONG (80-100):
+  Vincenti: 1
+  Perdenti: 2
+  Win Rate: 33.3%
+  R Totale: -0.50R
+
+GOOD (70-79):
+  Vincenti: 17
+  Perdenti: 11
+  Win Rate: 60.7%
+  R Totale: +14.50R
+
+ACCEPTABLE (65-69):
+  Vincenti: 8
+  Perdenti: 7
+  Win Rate: 53.3%
+  R Totale: +5.00R
+
+ACCEPTABLE (60-64):
+  Vincenti: 17
+  Perdenti: 18
+  Win Rate: 48.6%
+  R Totale: +7.31R
+
+================================================================================
+6. BREAKDOWN PER SETUP TYPE
+================================================================================
+
+
+Fib Retracement [Structural SL]:
+  Vincenti: 4
+  Perdenti: 3
+  Win Rate: 57.1%
+  R Totale: +3.00R
+
+HTF Trend Continuation:
+  Vincenti: 0
+  Perdenti: 1
+  Win Rate: 0.0%
+  R Totale: -1.00R
+
+HTF Trend Continuation [Structural SL]:
+  Vincenti: 19
+  Perdenti: 17
+  Win Rate: 52.8%
+  R Totale: +11.50R
+
+Momentum Breakout [Structural SL]:
+  Vincenti: 10
+  Perdenti: 10
+  Win Rate: 50.0%
+  R Totale: +5.00R
+
+Technical Setup:
+  Vincenti: 0
+  Perdenti: 2
+  Win Rate: 0.0%
+  R Totale: -2.00R
+
+Technical Setup [Structural SL]:
+  Vincenti: 15
+  Perdenti: 9
+  Win Rate: 62.5%
+  R Totale: +13.31R
+
+================================================================================
+7. ANALISI FACTOR CONTRIBUTIONS - WIN vs LOSS
+================================================================================
+
+
+FATTORE                      |  WIN AVG |  LOSS AVG |   DELTA |  WIN PASS% |  LOSS PASS%
+-----------------------------------------------------------------------------------------------
+Concentration                |     91.7 |      96.4 |    -4.8 |      83.3% |       92.9%
+Entry Quality                |    100.0 |     100.0 |    +0.0 |     100.0% |      100.0%
+H1 Directional Bias          |     76.6 |      74.3 |    +2.3 |      85.4% |       92.9%
+Key Level Reaction           |     72.0 |      78.7 |    -6.7 |      93.8% |      100.0%
+M15 Context                  |     77.8 |      68.6 |    +9.2 |      85.4% |       71.4%
+MTF Alignment                |     96.8 |      88.3 |    +8.4 |     100.0% |      100.0%
+Market Regime                |     79.6 |      74.6 |    +4.9 |      95.8% |       92.9%
+Market Structure             |     69.2 |      69.8 |    -0.6 |      79.2% |       76.2%
+Momentum                     |     59.1 |      54.0 |    +5.0 |      41.7% |       40.5%
+Pullback Quality             |     60.3 |      63.8 |    -3.5 |      29.2% |       42.9%
+Risk/Reward                  |     70.0 |      73.8 |    -3.8 |     100.0% |       97.6%
+Session Quality              |     88.2 |      92.9 |    -4.6 |     100.0% |      100.0%
+Spread                       |     79.7 |      79.2 |    +0.5 |     100.0% |      100.0%
+Volatility                   |     87.1 |      85.7 |    +1.4 |     100.0% |      100.0%
+
+================================================================================
+8. ANALISI PENALTIES - TUTTI I DATI
+================================================================================
+
+
+PENALTY                             |  COUNT |    AVG VAL |  IN WINS |  IN LOSSES
+-------------------------------------------------------------------------------------
+FTA Distance Penalty                |      2 |      +11.5 |        2 |          0
+Spread Quality Penalty              |      2 |      -25.0 |        2 |          0
+
+================================================================================
+9. ANALISI FILTER CHECKS - TUTTI I DATI
+================================================================================
+
+
+FILTER                    |  PASSED |  FAILED |  BLOCKED |  PASS RATE
+---------------------------------------------------------------------------
+score_passed              |       2 |       0 |        0 |     100.0%
+mtf_passed                |       2 |       0 |        0 |     100.0%
+fta_passed                |       2 |       0 |        0 |     100.0%
+session_passed            |       2 |       0 |        0 |     100.0%
+asset_passed              |       2 |       0 |        0 |     100.0%
+rr_passed                 |       2 |       0 |        0 |     100.0%
+spread_passed             |       2 |       0 |        0 |     100.0%
+daily_limit_passed        |       2 |       0 |        0 |     100.0%
+duplicate_blocked         |       0 |       2 |        2 |       0.0%
+news_blocked              |       0 |       2 |        0 |       0.0%
+
+================================================================================
+10. ANALISI MFE/MAE DETTAGLIATA
+================================================================================
+
+
+--- VINCENTI ---
+MFE - Min: 0.0018, Max: 99.9100, Avg: 60.2805
+MAE - Min: 0.0000, Max: 14.3400, Avg: 3.6209
+Peak R - Min: 1.5005, Max: 10.6694, Avg: 2.2625
+
+--- PERDENTI ---
+MFE - Min: 0.0000, Max: 30.9400, Avg: 4.4908
+MAE - Min: 0.0000, Max: 148.1900, Avg: 33.3795
+Peak R - Min: 0.0000, Max: 1.9168, Avg: 0.2655
+
+--- ANALISI TRADE PERDENTI CHE HANNO MOSTRATO PROFITTO ---
+Perdenti che hanno mostrato profitto: 35 / 42 (83.3%)
+Peak R medio prima di SL: 0.319R
+Raggiunsero 0.5R: 7 (20.0%)
+Raggiunsero 1R: 3 (8.6%)
+
+================================================================================
+11. SPREAD DISTRIBUTION - DATI GREZZI
+================================================================================
+
+
+Totale spread data points: 100
+
+EURUSD:
+  Count: 19
+  Unique values: {0.8}
+  Min: 0.80
+  Max: 0.80
+  Avg: 0.80
+
+XAUUSD:
+  Count: 81
+  Unique values: {25.0}
+  Min: 25.00
+  Max: 25.00
+  Avg: 25.00
+
+================================================================================
+12. LISTA ULTIMI 50 SNAPSHOT (con penalties e filters)
+================================================================================
+
+
+--- Snapshot #1 ---
+Signal ID: XAUUSD_BUY_20260409_125814
+Symbol: XAUUSD | Direction: BUY
+Status: active
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+  - Spread Quality Penalty: -25.0 | Spread penalty: 25 points
+
+--- Snapshot #2 ---
+Signal ID: XAUUSD_BUY_20260409_125822
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #3 ---
+Signal ID: XAUUSD_BUY_20260409_125827
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #4 ---
+Signal ID: XAUUSD_BUY_20260409_125832
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #5 ---
+Signal ID: XAUUSD_BUY_20260409_125838
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #6 ---
+Signal ID: XAUUSD_BUY_20260409_125843
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #7 ---
+Signal ID: XAUUSD_BUY_20260409_125848
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #8 ---
+Signal ID: XAUUSD_BUY_20260409_125853
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #9 ---
+Signal ID: XAUUSD_BUY_20260409_125858
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #10 ---
+Signal ID: XAUUSD_BUY_20260409_125903
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #11 ---
+Signal ID: XAUUSD_BUY_20260409_125908
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #12 ---
+Signal ID: XAUUSD_BUY_20260409_125913
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 78.89999999999999
+Score Post-Penalty: 63.89999999999999
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.19R
+Rejection Reason: duplicate
+
+--- Snapshot #13 ---
+Signal ID: XAUUSD_BUY_20260409_125918
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #14 ---
+Signal ID: XAUUSD_BUY_20260409_125924
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #15 ---
+Signal ID: XAUUSD_BUY_20260409_125929
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #16 ---
+Signal ID: XAUUSD_BUY_20260409_125934
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #17 ---
+Signal ID: XAUUSD_BUY_20260409_125939
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #18 ---
+Signal ID: XAUUSD_BUY_20260409_125944
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #19 ---
+Signal ID: XAUUSD_BUY_20260409_125949
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #20 ---
+Signal ID: XAUUSD_BUY_20260409_125954
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #21 ---
+Signal ID: XAUUSD_BUY_20260409_125959
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London
+Score Pre-Penalty: 80.60000000000001
+Score Post-Penalty: 65.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #22 ---
+Signal ID: XAUUSD_BUY_20260409_130004
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 81.10000000000001
+Score Post-Penalty: 66.10000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #23 ---
+Signal ID: XAUUSD_BUY_20260409_130009
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 81.10000000000001
+Score Post-Penalty: 66.10000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #24 ---
+Signal ID: XAUUSD_BUY_20260409_130015
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 81.10000000000001
+Score Post-Penalty: 66.10000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #25 ---
+Signal ID: XAUUSD_BUY_20260409_130020
+Symbol: XAUUSD | Direction: BUY
+Status: active
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+  - Spread Quality Penalty: -25.0 | Spread penalty: 25 points
+
+--- Snapshot #26 ---
+Signal ID: XAUUSD_BUY_20260409_130025
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #27 ---
+Signal ID: XAUUSD_BUY_20260409_130030
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #28 ---
+Signal ID: XAUUSD_BUY_20260409_130035
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #29 ---
+Signal ID: XAUUSD_BUY_20260409_130040
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #30 ---
+Signal ID: XAUUSD_BUY_20260409_130045
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #31 ---
+Signal ID: XAUUSD_BUY_20260409_130050
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #32 ---
+Signal ID: XAUUSD_BUY_20260409_130056
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #33 ---
+Signal ID: XAUUSD_BUY_20260409_130101
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #34 ---
+Signal ID: XAUUSD_BUY_20260409_130106
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #35 ---
+Signal ID: XAUUSD_BUY_20260409_130111
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.00R
+Rejection Reason: duplicate
+
+--- Snapshot #36 ---
+Signal ID: XAUUSD_BUY_20260409_130116
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #37 ---
+Signal ID: XAUUSD_BUY_20260409_130121
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #38 ---
+Signal ID: XAUUSD_BUY_20260409_130126
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #39 ---
+Signal ID: XAUUSD_BUY_20260409_130131
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #40 ---
+Signal ID: XAUUSD_BUY_20260409_130136
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #41 ---
+Signal ID: XAUUSD_BUY_20260409_130141
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 84.60000000000001
+Score Post-Penalty: 69.60000000000001
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.06R
+Rejection Reason: duplicate
+
+--- Snapshot #42 ---
+Signal ID: XAUUSD_BUY_20260409_130147
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #43 ---
+Signal ID: XAUUSD_BUY_20260409_130152
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #44 ---
+Signal ID: XAUUSD_BUY_20260409_130157
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #45 ---
+Signal ID: XAUUSD_BUY_20260409_130202
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #46 ---
+Signal ID: XAUUSD_BUY_20260409_130207
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #47 ---
+Signal ID: XAUUSD_BUY_20260409_130212
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 82.9
+Score Post-Penalty: 67.9
+Penalties:
+  - FTA Distance Penalty: +15.0 | swing_high at 4746.11959, distance 0.17R
+Rejection Reason: duplicate
+
+--- Snapshot #48 ---
+Signal ID: XAUUSD_BUY_20260409_130217
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 78.65
+Score Post-Penalty: 63.650000000000006
+Penalties:
+  - FTA Distance Penalty: +15.0 | wick_rejection at 4743.356162, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #49 ---
+Signal ID: XAUUSD_BUY_20260409_130222
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 78.65
+Score Post-Penalty: 63.650000000000006
+Penalties:
+  - FTA Distance Penalty: +15.0 | wick_rejection at 4743.356162, distance 0.03R
+Rejection Reason: duplicate
+
+--- Snapshot #50 ---
+Signal ID: XAUUSD_BUY_20260409_130227
+Symbol: XAUUSD | Direction: BUY
+Status: rejected
+Session: London/NY Overlap
+Score Pre-Penalty: 78.65
+Score Post-Penalty: 63.650000000000006
+Penalties:
+  - FTA Distance Penalty: +15.0 | wick_rejection at 4743.356162, distance 0.03R
+Rejection Reason: duplicate
+
+========================================================================================================================
+FINE ANALISI STATISTICHE COMPLETE
+========================================================================================================================
