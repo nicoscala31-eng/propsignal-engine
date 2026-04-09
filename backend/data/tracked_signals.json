@@ -1,148 +1,6 @@
 {
   "completed": [
     {
-      "signal_id": "XAUUSD_BUY_20260330_125114",
-      "timestamp": "2026-03-30T12:51:14.552232",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4566.21,
-      "stop_loss": 4524.402331785714,
-      "take_profit_1": 4628.921502321429,
-      "take_profit_2": 4658.18687007143,
-      "confidence_score": 69.60000000000001,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London",
-      "invalidation": "Below 4524.40",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 69.6,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 90,
-            "contribution": 9.9,
-            "reason": "M15 trend + momentum aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "All timeframes aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 55,
-            "contribution": 5.0,
-            "reason": "Weak bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 75,
-            "contribution": 7.5,
-            "reason": "Good pullback zone"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 90,
-            "contribution": 4.5,
-            "reason": "London session"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 95,
-            "contribution": 3.8,
-            "reason": "Strong trending"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "expired",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-03-31T16:51:20.068219",
-      "max_favorable_excursion": 69.85999999999967,
-      "max_adverse_excursion": 14.960000000000036,
-      "highest_price_seen": 4636.07,
-      "lowest_price_seen": 4551.25,
-      "final_outcome": "expired",
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 100805.515987,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 1500.0,
-      "time_in_drawdown_seconds": 2280.0,
-      "peak_r_before_reversal": 1.6709853235997332
-    },
-    {
       "signal_id": "XAUUSD_BUY_20260330_130713",
       "timestamp": "2026-03-30T13:07:13.612472",
       "asset": "XAUUSD",
@@ -14199,6 +14057,148 @@
       "time_in_profit_seconds": 1770.0,
       "time_in_drawdown_seconds": 480.0,
       "peak_r_before_reversal": 1.5126458730310826
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260409_130922",
+      "timestamp": "2026-04-09T13:09:22.385384",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4748.11,
+      "stop_loss": 4734.688136250001,
+      "take_profit_1": 4768.242795624998,
+      "take_profit_2": 4777.6381002499975,
+      "confidence_score": 67.55,
+      "confidence_level": "GOOD",
+      "setup_type": "HTF Trend Continuation [Structural SL]",
+      "session": "London/NY Overlap",
+      "invalidation": "Below 4734.69",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 67.5,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 100,
+            "contribution": 14.0,
+            "reason": "Strong H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 11.0,
+            "score": 55,
+            "contribution": 6.1,
+            "reason": "M15 momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 10.0,
+            "score": 80,
+            "contribution": 8.0,
+            "reason": "H1 + M15 aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 85,
+            "contribution": 9.3,
+            "reason": "Higher lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 9.0,
+            "score": 75,
+            "contribution": 6.8,
+            "reason": "Moderate bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 10.0,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "Excellent Fib pullback (38-62%) + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 7.0,
+            "score": 60,
+            "contribution": 4.2,
+            "reason": "Near round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 100,
+            "contribution": 5.0,
+            "reason": "London/NY overlap"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 4.0,
+            "score": 70,
+            "contribution": 2.8,
+            "reason": "Normal regime"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-09T13:41:19.101760",
+      "max_favorable_excursion": 23.110000000000582,
+      "max_adverse_excursion": 0.21999999999934516,
+      "highest_price_seen": 4771.22,
+      "lowest_price_seen": 4747.89,
+      "final_outcome": "win",
+      "pips_gained": 20.132795624997925,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 1916.716376,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 1950.0,
+      "time_in_drawdown_seconds": 120.0,
+      "peak_r_before_reversal": 1.72181750839204
     }
   ],
   "active": [
@@ -14340,151 +14340,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1680.0,
+      "time_in_profit_seconds": 1740.0,
       "time_in_drawdown_seconds": 630.0,
       "peak_r_before_reversal": 0.9882352941175703
-    },
-    {
-      "signal_id": "XAUUSD_BUY_20260409_130922",
-      "timestamp": "2026-04-09T13:09:22.385384",
-      "asset": "XAUUSD",
-      "direction": "BUY",
-      "entry_price": 4748.11,
-      "stop_loss": 4734.688136250001,
-      "take_profit_1": 4768.242795624998,
-      "take_profit_2": 4777.6381002499975,
-      "confidence_score": 67.55,
-      "confidence_level": "GOOD",
-      "setup_type": "HTF Trend Continuation [Structural SL]",
-      "session": "London/NY Overlap",
-      "invalidation": "Below 4734.69",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 67.5,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1 Directional Bias",
-            "weight": 14.0,
-            "score": 100,
-            "contribution": 14.0,
-            "reason": "Strong H1 bullish"
-          },
-          {
-            "factor": "M15 Context",
-            "weight": 11.0,
-            "score": 55,
-            "contribution": 6.1,
-            "reason": "M15 momentum aligned"
-          },
-          {
-            "factor": "MTF Alignment",
-            "weight": 10.0,
-            "score": 80,
-            "contribution": 8.0,
-            "reason": "H1 + M15 aligned"
-          },
-          {
-            "factor": "Market Structure",
-            "weight": 11.0,
-            "score": 85,
-            "contribution": 9.3,
-            "reason": "Higher lows"
-          },
-          {
-            "factor": "Momentum",
-            "weight": 9.0,
-            "score": 75,
-            "contribution": 6.8,
-            "reason": "Moderate bullish"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent Fib pullback (38-62%) + resuming"
-          },
-          {
-            "factor": "Entry Quality",
-            "weight": 6.0,
-            "score": 100,
-            "contribution": 6.0,
-            "reason": "Optimal entry zone"
-          },
-          {
-            "factor": "Key Level Reaction",
-            "weight": 7.0,
-            "score": 60,
-            "contribution": 4.2,
-            "reason": "Near round number"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 5.0,
-            "score": 100,
-            "contribution": 5.0,
-            "reason": "London/NY overlap"
-          },
-          {
-            "factor": "Risk/Reward",
-            "weight": 6.0,
-            "score": 70,
-            "contribution": 4.2,
-            "reason": "Acceptable R:R (1.50)"
-          },
-          {
-            "factor": "Volatility",
-            "weight": 3.0,
-            "score": 90,
-            "contribution": 2.7,
-            "reason": "Normal volatility"
-          },
-          {
-            "factor": "Market Regime",
-            "weight": 4.0,
-            "score": 70,
-            "contribution": 2.8,
-            "reason": "Normal regime"
-          },
-          {
-            "factor": "Spread",
-            "weight": 2.0,
-            "score": 75,
-            "contribution": 1.5,
-            "reason": "Normal spread (25.0p)"
-          },
-          {
-            "factor": "Concentration",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "No concentration issue"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 17.43000000000029,
-      "max_adverse_excursion": 0.21999999999934516,
-      "highest_price_seen": 4765.54,
-      "lowest_price_seen": 4747.89,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 1890.0,
-      "time_in_drawdown_seconds": 120.0,
-      "peak_r_before_reversal": 1.2986273981511467
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_131226",
@@ -14609,9 +14467,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 14.949999999999818,
+      "max_favorable_excursion": 20.63000000000011,
       "max_adverse_excursion": 0.22000000000025466,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4750.37,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -14619,14 +14477,14 @@
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
       "reached_half_r": true,
-      "reached_one_r": false,
+      "reached_one_r": true,
       "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1770.0,
+      "time_in_profit_seconds": 1830.0,
       "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.942781326533393
+      "peak_r_before_reversal": 1.3009751683200157
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_131429",
@@ -14751,9 +14609,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 12.909999999999854,
+      "max_favorable_excursion": 18.590000000000146,
       "max_adverse_excursion": 0.23000000000047294,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4752.4,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -14761,14 +14619,14 @@
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
       "reached_half_r": true,
-      "reached_one_r": false,
+      "reached_one_r": true,
       "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1530.0,
+      "time_in_profit_seconds": 1590.0,
       "time_in_drawdown_seconds": 180.0,
-      "peak_r_before_reversal": 0.7189658070280172
+      "peak_r_before_reversal": 1.0352884858753753
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_131531",
@@ -14893,9 +14751,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 10.88000000000011,
+      "max_favorable_excursion": 16.5600000000004,
       "max_adverse_excursion": 2.2600000000002183,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4752.4,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -14908,9 +14766,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 780.0,
+      "time_in_profit_seconds": 840.0,
       "time_in_drawdown_seconds": 870.0,
-      "peak_r_before_reversal": 0.5443715968008146
+      "peak_r_before_reversal": 0.828565592189487
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_131736",
@@ -15035,24 +14893,24 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 8.61999999999989,
+      "max_favorable_excursion": 14.300000000000182,
       "max_adverse_excursion": 4.520000000000437,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4752.4,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
-      "reached_half_r": false,
+      "reached_half_r": true,
       "reached_one_r": false,
       "reached_two_r": false,
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 450.0,
+      "time_in_profit_seconds": 510.0,
       "time_in_drawdown_seconds": 1080.0,
-      "peak_r_before_reversal": 0.3870058644151793
+      "peak_r_before_reversal": 0.6420166892270539
     },
     {
       "signal_id": "EURUSD_BUY_20260409_132532",
@@ -15192,7 +15050,7 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 690.0,
+      "time_in_profit_seconds": 750.0,
       "time_in_drawdown_seconds": 330.0,
       "peak_r_before_reversal": 0.4375000000000867
     },
@@ -15319,9 +15177,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 10.649999999999636,
+      "max_favorable_excursion": 16.329999999999927,
       "max_adverse_excursion": 2.490000000000691,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4752.4,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -15334,9 +15192,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 420.0,
+      "time_in_profit_seconds": 480.0,
       "time_in_drawdown_seconds": 600.0,
-      "peak_r_before_reversal": 0.5262811842890225
+      "peak_r_before_reversal": 0.8069644825765251
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_133110",
@@ -15461,9 +15319,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 13.140000000000327,
+      "max_favorable_excursion": 18.82000000000062,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4752.4,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -15471,14 +15329,14 @@
       "time_to_outcome_seconds": 0.0,
       "moved_favorable_before_fail": false,
       "reached_half_r": true,
-      "reached_one_r": false,
+      "reached_one_r": true,
       "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 600.0,
+      "time_in_profit_seconds": 660.0,
       "time_in_drawdown_seconds": 90.0,
-      "peak_r_before_reversal": 0.7391586003681059
+      "peak_r_before_reversal": 1.0586731247281478
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_133613",
@@ -15603,9 +15461,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 6.130000000000109,
+      "max_favorable_excursion": 11.8100000000004,
       "max_adverse_excursion": 0.4499999999998181,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4758.96,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -15618,9 +15476,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 330.0,
+      "time_in_profit_seconds": 390.0,
       "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.2464633163857844
+      "peak_r_before_reversal": 0.47483389339578475
     },
     {
       "signal_id": "XAUUSD_BUY_20260409_133716",
@@ -15745,9 +15603,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 2.5,
+      "max_favorable_excursion": 8.180000000000291,
       "max_adverse_excursion": 1.1400000000003274,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4761.9,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -15760,9 +15618,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 240.0,
+      "time_in_profit_seconds": 300.0,
       "time_in_drawdown_seconds": 90.0,
-      "peak_r_before_reversal": 0.087713587519501
+      "peak_r_before_reversal": 0.28699885836381744
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133742",
@@ -15902,7 +15760,7 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 240.0,
+      "time_in_profit_seconds": 300.0,
       "time_in_drawdown_seconds": 30.0,
       "peak_r_before_reversal": 0.16666666666661303
     },
@@ -16029,9 +15887,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 2.949999999999818,
+      "max_favorable_excursion": 8.63000000000011,
       "max_adverse_excursion": 0.6900000000005093,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4761.9,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -16044,9 +15902,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 240.0,
+      "time_in_profit_seconds": 300.0,
       "time_in_drawdown_seconds": 30.0,
-      "peak_r_before_reversal": 0.10492567216547205
+      "peak_r_before_reversal": 0.3069520511146071
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133754",
@@ -16186,7 +16044,7 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 240.0,
+      "time_in_profit_seconds": 300.0,
       "time_in_drawdown_seconds": 0.0,
       "peak_r_before_reversal": 0.18382352941162905
     },
@@ -16314,9 +16172,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 8.000000000008001e-05,
-      "max_adverse_excursion": 0.0,
+      "max_adverse_excursion": 9.999999999998899e-05,
       "highest_price_seen": 1.16947,
-      "lowest_price_seen": 1.16939,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -16328,8 +16186,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 180.0,
-      "time_in_drawdown_seconds": 30.0,
+      "time_in_profit_seconds": 210.0,
+      "time_in_drawdown_seconds": 60.0,
       "peak_r_before_reversal": 0.05228758169939763
     },
     {
@@ -16455,9 +16313,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 1.1400000000003274,
+      "max_favorable_excursion": 6.8200000000006185,
       "max_adverse_excursion": 0.22999999999956344,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4764.17,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -16470,9 +16328,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 150.0,
+      "time_in_profit_seconds": 210.0,
       "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.038095059418100076
+      "peak_r_before_reversal": 0.22790202213279953
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133825",
@@ -16598,9 +16456,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 8.000000000008001e-05,
+      "max_adverse_excursion": 0.000180000000000069,
       "highest_price_seen": 1.16947,
-      "lowest_price_seen": 1.16939,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -16613,7 +16471,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 180.0,
+      "time_in_drawdown_seconds": 240.0,
       "peak_r_before_reversal": 0.0
     },
     {
@@ -16739,9 +16597,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 1.3699999999998909,
+      "max_favorable_excursion": 7.050000000000182,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4764.17,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -16754,9 +16612,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 180.0,
+      "time_in_profit_seconds": 240.0,
       "time_in_drawdown_seconds": 0.0,
-      "peak_r_before_reversal": 0.04608627146979695
+      "peak_r_before_reversal": 0.23715928019131588
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133833",
@@ -16882,9 +16740,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 8.000000000008001e-05,
-      "max_adverse_excursion": 0.0,
+      "max_adverse_excursion": 9.999999999998899e-05,
       "highest_price_seen": 1.16947,
-      "lowest_price_seen": 1.16939,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -16896,8 +16754,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 150.0,
-      "time_in_drawdown_seconds": 0.0,
+      "time_in_profit_seconds": 180.0,
+      "time_in_drawdown_seconds": 30.0,
       "peak_r_before_reversal": 0.05228758169939763
     },
     {
@@ -17023,9 +16881,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 1.1400000000003274,
+      "max_favorable_excursion": 6.8200000000006185,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4764.4,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -17038,9 +16896,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 150.0,
+      "time_in_profit_seconds": 210.0,
       "time_in_drawdown_seconds": 0.0,
-      "peak_r_before_reversal": 0.03805472654756289
+      "peak_r_before_reversal": 0.2276607325037964
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133901",
@@ -17166,9 +17024,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 4.0000000000040004e-05,
-      "max_adverse_excursion": 0.0,
+      "max_adverse_excursion": 0.000140000000000029,
       "highest_price_seen": 1.16947,
-      "lowest_price_seen": 1.16943,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -17180,8 +17038,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 120.0,
-      "time_in_drawdown_seconds": 0.0,
+      "time_in_profit_seconds": 150.0,
+      "time_in_drawdown_seconds": 30.0,
       "peak_r_before_reversal": 0.02547770700639375
     },
     {
@@ -17307,9 +17165,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.22999999999956344,
+      "max_favorable_excursion": 5.9099999999998545,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4765.31,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -17322,9 +17180,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 60.0,
-      "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.007451357948937971
+      "time_in_profit_seconds": 90.0,
+      "time_in_drawdown_seconds": 90.0,
+      "peak_r_before_reversal": 0.19146750207959093
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133936",
@@ -17450,9 +17308,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 2.0000000000131024e-05,
+      "max_adverse_excursion": 0.000180000000000069,
       "highest_price_seen": 1.16947,
-      "lowest_price_seen": 1.1694499999999999,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -17465,7 +17323,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 60.0,
+      "time_in_drawdown_seconds": 120.0,
       "peak_r_before_reversal": 0.0
     },
     {
@@ -17591,9 +17449,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
+      "max_favorable_excursion": 5.680000000000291,
       "max_adverse_excursion": 0.22999999999956344,
-      "highest_price_seen": 4765.54,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4765.31,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -17606,9 +17464,9 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 60.0,
-      "peak_r_before_reversal": 0.0
+      "time_in_profit_seconds": 30.0,
+      "time_in_drawdown_seconds": 90.0,
+      "peak_r_before_reversal": 0.18265511548397723
     },
     {
       "signal_id": "EURUSD_BUY_20260409_133949",
@@ -17734,9 +17592,9 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 0.0,
+      "max_adverse_excursion": 0.00015999999999993797,
       "highest_price_seen": 1.1694499999999999,
-      "lowest_price_seen": 1.1694499999999999,
+      "lowest_price_seen": 1.16929,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -17749,7 +17607,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 30.0,
+      "time_in_drawdown_seconds": 90.0,
       "peak_r_before_reversal": 0.0
     },
     {
@@ -17875,9 +17733,9 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.0,
+      "max_favorable_excursion": 5.9099999999998545,
       "max_adverse_excursion": 0.0,
-      "highest_price_seen": 4765.31,
+      "highest_price_seen": 4771.22,
       "lowest_price_seen": 4765.31,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -17890,10 +17748,152 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
+      "time_in_profit_seconds": 30.0,
+      "time_in_drawdown_seconds": 60.0,
+      "peak_r_before_reversal": 0.19146750207959093
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260409_134122",
+      "timestamp": "2026-04-09T13:41:22.579041",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4771.22,
+      "stop_loss": 4734.4431430357145,
+      "take_profit_1": 4826.385285446429,
+      "take_profit_2": 4852.129085321429,
+      "confidence_score": 84.33,
+      "confidence_level": "STRONG",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London/NY Overlap",
+      "invalidation": "Below 4734.44",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 84.3,
+        "confidence": "STRONG",
+        "breakdown": [
+          {
+            "factor": "H1 Directional Bias",
+            "weight": 14.0,
+            "score": 100,
+            "contribution": 14.0,
+            "reason": "Strong H1 bullish"
+          },
+          {
+            "factor": "M15 Context",
+            "weight": 15.0,
+            "score": 90,
+            "contribution": 13.5,
+            "reason": "M15 trend + momentum aligned"
+          },
+          {
+            "factor": "MTF Alignment",
+            "weight": 12.0,
+            "score": 100,
+            "contribution": 12.0,
+            "reason": "All timeframes aligned"
+          },
+          {
+            "factor": "Market Structure",
+            "weight": 11.0,
+            "score": 65,
+            "contribution": 7.2,
+            "reason": "Equal lows"
+          },
+          {
+            "factor": "Momentum",
+            "weight": 10.0,
+            "score": 55,
+            "contribution": 5.5,
+            "reason": "Weak bullish"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 6.0,
+            "score": 53,
+            "contribution": 3.2,
+            "reason": "Shallow pullback + resuming"
+          },
+          {
+            "factor": "Entry Quality",
+            "weight": 6.0,
+            "score": 100,
+            "contribution": 6.0,
+            "reason": "Optimal entry zone"
+          },
+          {
+            "factor": "Key Level Reaction",
+            "weight": 3.0,
+            "score": 95,
+            "contribution": 2.8,
+            "reason": "Rejection at round number"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 100,
+            "contribution": 5.0,
+            "reason": "London/NY overlap"
+          },
+          {
+            "factor": "Risk/Reward",
+            "weight": 6.0,
+            "score": 70,
+            "contribution": 4.2,
+            "reason": "Acceptable R:R (1.50)"
+          },
+          {
+            "factor": "Volatility",
+            "weight": 3.0,
+            "score": 90,
+            "contribution": 2.7,
+            "reason": "Normal volatility"
+          },
+          {
+            "factor": "Market Regime",
+            "weight": 5.0,
+            "score": 95,
+            "contribution": 4.8,
+            "reason": "Strong trending"
+          },
+          {
+            "factor": "Spread",
+            "weight": 2.0,
+            "score": 75,
+            "contribution": 1.5,
+            "reason": "Normal spread (25.0p)"
+          },
+          {
+            "factor": "Concentration",
+            "weight": 2.0,
+            "score": 100,
+            "contribution": 2.0,
+            "reason": "No concentration issue"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 4771.22,
+      "lowest_price_seen": 4771.22,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
       "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 30.0,
+      "time_in_drawdown_seconds": 0.0,
       "peak_r_before_reversal": 0.0
     }
   ],
-  "saved_at": "2026-04-09T13:40:19.085276"
+  "saved_at": "2026-04-09T13:41:22.782518"
 }
