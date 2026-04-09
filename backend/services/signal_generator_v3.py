@@ -8,38 +8,41 @@ Signal Generator v3 - Technical Structure-Based Signal Engine
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-VERSION 3.2 - DATA-DRIVEN OPTIMIZATION (March 2026):
-Based on 100-trade performance analysis, this version applies STRICT filters:
+VERSION 7.0 - DATA-DRIVEN OPTIMIZATION (April 2026):
+Based on 100-trade performance analysis (30 Mar - 9 Apr 2026):
 
-DATA-DRIVEN FILTERS (CRITICAL):
-1. SCORE: Minimum 75 (was 60) - lower scores had negative expectancy
-2. MTF ALIGNMENT: Only >= 80 allowed (-18R on weak MTF vs +7R on strong)
-3. SESSION: London ONLY (London=+7R, Overlap=-17R, NY=-2R)
-4. ASSETS: EURUSD ONLY (EURUSD=+0.6R, XAUUSD=-12R)
-5. SETUPS: Only HTF Continuation (+8R) and Momentum Breakout (+3R)
-   DISABLED: Fib Retracement (-10R), Structure Pullback (-4R), Technical Setup (-9R)
-6. FTA: Do NOT block, only adjust TP or score
+=== CRITICAL FINDINGS ===
+- SELL trades: 0% Win Rate (23 consecutive losses) -> DISABLED
+- LONDON session: 20.6% WR vs NEW YORK 94.3% -> BLOCKED
+- M15 Context: +9.2 delta (strongest predictor) -> WEIGHT INCREASED
+- Key Level Reaction: -6.7 delta (inverse correlation!) -> WEIGHT REDUCED
 
-TRADE MANAGEMENT (NEW):
-- Partial TP at 0.5R (close 50%) - 69% of losers saw profit first
-- Move to BE at 1R
-- Trailing stop after 1R
+=== v7.0 CHANGES ===
+1. DIRECTION: BUY ONLY - SELL completely disabled (saved +23R)
+2. SESSION: New York + London/NY Overlap ONLY - London blocked (saved +16.69R)
+3. WEIGHTS REBALANCED:
+   - M15 Context: 11% -> 15% (top predictor)
+   - Key Level Reaction: 7% -> 3% (inverse correlation)
+   - Pullback Quality: 10% -> 6% (inverse correlation)
+   - Spread XAUUSD: effectively ignored (static value)
+4. M15 CONTEXT MINIMUM: 70 required (filters weak setups)
 
-EXPECTED OUTCOME:
-- Reduce signals from ~100 to ~15-20
-- Transform from -0.12R expectancy to POSITIVE expectancy
+=== EXPECTED RESULTS (based on backtest) ===
+- BEFORE: 53.3% WR, +29.81R, +0.331R expectancy
+- AFTER:  95.3% WR, +59.50R, +1.384R expectancy
 
 PROP TRADING ASSUMPTIONS:
 - account_size = 100,000
 - max_daily_loss = 3,000
 - operational_warning = 1,500
 - risk_per_trade = 0.5% to 0.75% (DYNAMIC based on confidence)
-- primary instruments = EURUSD ONLY (XAUUSD DISABLED)
+- primary instruments = EURUSD + XAUUSD (BUY ONLY)
 
 CONFIDENCE CLASSIFICATION (UPDATED):
 - 80-100: Strong setup (high priority) -> 0.75% risk
-- 75-79: Good setup (normal priority) -> 0.65% risk
-- Below 75: REJECT - data shows negative expectancy
+- 70-79: Good setup (normal priority) -> 0.65% risk
+- 60-69: Acceptable setup -> 0.5% risk
+- Below 60: REJECT
 
 MINIMUM STOP LOSS ENFORCED:
 - EURUSD: 8.5 pips minimum
@@ -582,22 +585,23 @@ class SignalGeneratorV3:
     7. All position data properly tracked
     """
     
-    # Scoring weights (must sum to 100)
+    # Scoring weights (must sum to 100) - v7.0 OPTIMIZED
+    # Based on 100-trade analysis: M15 Context (+9.2 delta), Key Level (-6.7 delta inverse!)
     WEIGHTS = {
         'h1_bias': 14.0,           # H1 directional bias
-        'm15_context': 11.0,       # M15 alignment/context
-        'mtf_alignment': 10.0,     # Multi-timeframe alignment
+        'm15_context': 15.0,       # M15 alignment/context - INCREASED from 11% (top predictor!)
+        'mtf_alignment': 12.0,     # Multi-timeframe alignment - INCREASED from 10%
         'market_structure': 11.0,  # Market structure quality
-        'momentum': 9.0,           # Momentum strength
-        'pullback_quality': 10.0,  # Pullback evaluation
-        'entry_quality': 6.0,      # NEW: Entry timing quality
-        'key_level': 7.0,          # Reaction at key level
+        'momentum': 10.0,          # Momentum strength - INCREASED from 9%
+        'pullback_quality': 6.0,   # Pullback evaluation - REDUCED from 10% (inverse correlation!)
+        'entry_quality': 6.0,      # Entry timing quality
+        'key_level': 3.0,          # Reaction at key level - REDUCED from 7% (inverse correlation!)
         'session': 5.0,            # Session quality
         'rr_ratio': 6.0,           # Risk/Reward (DYNAMIC)
         'volatility': 3.0,         # Volatility conditions
-        'regime_quality': 4.0,     # Market regime
+        'regime_quality': 5.0,     # Market regime - INCREASED from 4%
         'spread': 2.0,             # Spread penalty
-        'concentration': 2.0,      # NEW: Asset concentration penalty
+        'concentration': 2.0,      # Asset concentration penalty
     }
     
     # Hard rejection thresholds
@@ -636,6 +640,10 @@ class SignalGeneratorV3:
     # NOTE: This is TEMPORARILY low to unblock the engine
     MIN_CONFIDENCE_SCORE = 60  # v6.0: Lowered from 65 based on rejection analysis (blocked 32% WR trades)
     
+    # v7.0: M15 CONTEXT MINIMUM - strongest predictor (+9.2 delta)
+    # Data: M15 >= 70 in winners vs M15 < 70 in losers
+    MIN_M15_CONTEXT_SCORE = 70  # Hard reject if M15 Context < 70
+    
     # MTF ALIGNMENT - Keep strong alignment requirement
     # ========== MTF FILTER (v5) - MORE LENIENT ==========
     # Data: Strong MTF (>=80) = +35R, Weak MTF (<80) = -3R
@@ -649,27 +657,27 @@ class SignalGeneratorV3:
     # Previous filter was WRONG - XAUUSD is the winner!
     ALLOWED_ASSETS = [Asset.EURUSD, Asset.XAUUSD]
     
-    # ALLOWED SESSIONS - London + Overlap + New York (expanded for data collection)
-    # Data: London = +34R (82% WR), Overlap has volume, NY for data
-    # Priority: HIGH = full confidence, MEDIUM = soft penalty
-    ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap", "New York"]
+    # ALLOWED SESSIONS - v7.0: NY + Overlap ONLY (London blocked!)
+    # Data analysis: London = 20.6% WR (-16.69R), NY = 94.3% WR (+47.50R)
+    # London BLOCKED - massive underperformance
+    ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "New York"]
     
-    # Session priority configuration
+    # Session priority configuration - v7.0 UPDATED
     SESSION_PRIORITY = {
-        "London": "HIGH",           # Best performance, full confidence
-        "London/NY Overlap": "HIGH", # Good volume, full confidence  
-        "Overlap": "HIGH",          # Same as above
-        "New York": "MEDIUM",       # Data collection, -5 score penalty
-        "Asian": "LOW",             # Not allowed
-        "Sydney": "LOW"             # Not allowed
+        "London": "BLOCKED",          # v7.0: BLOCKED - 20.6% WR disaster
+        "London/NY Overlap": "HIGH",  # Good volume, decent performance  
+        "Overlap": "HIGH",            # Same as above
+        "New York": "HIGH",           # v7.0: UPGRADED - 94.3% WR best session!
+        "Asian": "LOW",               # Not allowed
+        "Sydney": "LOW"               # Not allowed
     }
     
-    # Session score adjustment (applied to final score)
+    # Session score adjustment (applied to final score) - v7.0 UPDATED
     SESSION_SCORE_ADJUSTMENT = {
-        "London": 0,
+        "London": -999,               # v7.0: BLOCKED
         "London/NY Overlap": 0,
         "Overlap": 0,
-        "New York": -5,  # Small penalty for lower priority session
+        "New York": +5,               # v7.0: BONUS for best session!
         "Asian": -15,
         "Sydney": -15
     }
@@ -2403,6 +2411,38 @@ class SignalGeneratorV3:
             final_score -= mtf_penalty
             logger.info(f"📉 {asset.value} {direction}: MTF soft penalty -{mtf_penalty:.1f} (MTF={mtf_score_val:.0f}%)")
         
+        # ========== v7.0: M15 CONTEXT MINIMUM FILTER ==========
+        # Data: M15 Context is the strongest predictor (+9.2 delta)
+        # M15 >= 70 correlates strongly with winning trades
+        m15_component = next((c for c in components if "M15" in c.name), None)
+        m15_score_val = m15_component.score if m15_component else 50
+        
+        if m15_score_val < self.MIN_M15_CONTEXT_SCORE:  # < 70
+            self._record_rejection("weak_m15_context")
+            logger.info(f"🚫 {asset.value} {direction}: M15 Context {m15_score_val:.0f}% < {self.MIN_M15_CONTEXT_SCORE}% (v7.0 HARD BLOCK)")
+            self._log_score_breakdown(asset, direction, components, final_score)
+            
+            # Log candidate audit
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type=self._determine_setup_type(components, sl_type, tp_type),
+                decision="rejected",
+                rejection_reason="weak_m15_context",
+                rejection_details=f"M15 Context {m15_score_val:.0f}% < {self.MIN_M15_CONTEXT_SCORE}% (v7.0 filter)",
+                components=components,
+                final_score=final_score,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                mtf_score=mtf_score_val,
+                fta=fta,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
+            return None
+        
         # Ensure score stays in bounds after MTF penalty
         final_score = max(0, min(100, final_score))
         
@@ -3075,33 +3115,41 @@ class SignalGeneratorV3:
             return 25, f"Low R:R ({rr:.2f})"
     
     def _analyze_direction_advanced(self, h1: List, m15: List, m5: List) -> Tuple[Optional[str], float, str]:
-        """Advanced direction analysis"""
+        """Advanced direction analysis - v7.0: BUY ONLY (SELL disabled)
+        
+        Data analysis showed 0% win rate on SELL trades (23 consecutive losses).
+        All SELL signals are now filtered out at source.
+        """
         h1_trend = self._get_trend(h1[-20:]) if len(h1) >= 20 else 0
         m15_trend = self._get_trend(m15[-20:]) if len(m15) >= 20 else 0
         m5_momentum = self._get_momentum(m5[-10:]) if len(m5) >= 10 else 0
         
         total = h1_trend * 0.5 + m15_trend * 0.3 + m5_momentum * 0.2
         
+        # v7.0: ONLY allow BUY direction
         if total > 0.2:
             return "BUY", total * 100, "Bullish bias across timeframes"
-        elif total < -0.2:
-            return "SELL", abs(total) * 100, "Bearish bias across timeframes"
-        elif abs(m5_momentum) > 0.4:
-            direction = "BUY" if m5_momentum > 0 else "SELL"
-            return direction, 50, "M5 momentum breakout"
+        elif total > 0 and m5_momentum > 0.2:
+            # Weaker bullish but momentum confirms
+            return "BUY", 50, "M5 bullish momentum"
         
-        return None, 0, "No clear direction"
+        # v7.0: SELL DISABLED - was 0% WR on 23 trades
+        # Previously: elif total < -0.2: return "SELL", ...
+        
+        return None, 0, "No clear BUY direction (SELL disabled v7.0)"
     
     def _fallback_direction(self, m5: List) -> Optional[str]:
-        """Fallback direction from M5"""
+        """Fallback direction from M5 - v7.0: BUY ONLY (SELL disabled)"""
         if len(m5) < 5:
             return None
         
         closes = [c.get('close', 0) for c in m5[-5:]]
+        # v7.0: Only return BUY, never SELL
         if closes[-1] > closes[0] * 1.0003:
             return "BUY"
-        elif closes[-1] < closes[0] * 0.9997:
-            return "SELL"
+        # SELL disabled - was 0% WR
+        # elif closes[-1] < closes[0] * 0.9997:
+        #     return "SELL"
         return None
     
     def _score_mtf_alignment(self, h1: List, m15: List, m5: List, direction: str) -> Tuple[float, str]:
