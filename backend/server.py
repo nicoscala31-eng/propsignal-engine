@@ -3494,3 +3494,71 @@ async def debug_register_device_manual():
         }
     except Exception as e:
         return {"error": str(e)}
+
+# === ENDPOINT PER DOWNLOAD ANALISI ===
+from fastapi.responses import FileResponse, PlainTextResponse
+import os
+
+@app.get("/api/download/analisi-statistiche")
+async def download_analisi_statistiche():
+    """Download file analisi statistiche"""
+    file_path = "/app/backend/data/ANALISI_STATISTICHE_COMPLETE.txt"
+    if os.path.exists(file_path):
+        return FileResponse(file_path, filename="ANALISI_STATISTICHE_COMPLETE.txt", media_type="text/plain")
+    return {"error": "File not found"}
+
+@app.get("/api/download/analisi-trade")
+async def download_analisi_trade():
+    """Download file analisi trade completi"""
+    file_path = "/app/backend/data/ANALISI_COMPLETA_TRADE.txt"
+    if os.path.exists(file_path):
+        return FileResponse(file_path, filename="ANALISI_COMPLETA_TRADE.txt", media_type="text/plain")
+    return {"error": "File not found"}
+
+@app.get("/api/download/analisi-json")
+async def download_analisi_json():
+    """Download analisi in formato JSON compatto per ChatGPT"""
+    import json
+    
+    # Load data
+    with open("/app/backend/data/tracked_signals.json", "r") as f:
+        tracked = json.load(f)
+    
+    with open("/app/backend/data/signal_snapshots.json", "r") as f:
+        snapshots = json.load(f)
+    
+    completed = tracked.get("completed", [])
+    
+    # Create compact analysis
+    analysis = {
+        "summary": {
+            "total_trades": len(completed),
+            "wins": len([t for t in completed if t.get("final_outcome") == "win"]),
+            "losses": len([t for t in completed if t.get("final_outcome") == "loss"]),
+            "expired": len([t for t in completed if t.get("final_outcome") == "expired"]),
+            "win_rate": f"{len([t for t in completed if t.get('final_outcome') == 'win']) / (len([t for t in completed if t.get('final_outcome') == 'win']) + len([t for t in completed if t.get('final_outcome') == 'loss'])) * 100:.1f}%"
+        },
+        "trades": []
+    }
+    
+    for t in completed:
+        trade_data = {
+            "id": t.get("signal_id"),
+            "asset": t.get("asset"),
+            "direction": t.get("direction"),
+            "outcome": t.get("final_outcome"),
+            "session": t.get("session"),
+            "setup": t.get("setup_type"),
+            "confidence": t.get("confidence_score"),
+            "rr": t.get("risk_reward"),
+            "entry": t.get("entry_price"),
+            "sl": t.get("stop_loss"),
+            "tp1": t.get("take_profit_1"),
+            "mfe": t.get("max_favorable_excursion"),
+            "mae": t.get("max_adverse_excursion"),
+            "peak_r": t.get("peak_r_before_reversal"),
+            "factors": t.get("score_breakdown", {}).get("breakdown", [])
+        }
+        analysis["trades"].append(trade_data)
+    
+    return analysis
