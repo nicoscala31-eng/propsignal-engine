@@ -1172,16 +1172,8 @@ class SignalGeneratorV3:
                     })
                     total_penalties += news_penalty
                 
-                if spread_penalty > 0:
-                    penalties_list.append({
-                        "penalty_key": "spread_penalty",
-                        "penalty_name": "Spread Quality Penalty",
-                        "penalty_value": -spread_penalty,
-                        "trigger_condition": "High spread detected",
-                        "raw_measurement": spread_penalty,
-                        "reason": f"Spread penalty: {spread_penalty} points"
-                    })
-                    total_penalties += spread_penalty
+                # v9.1: spread_penalty REMOVED - no discrimination between W/L
+                # Old code removed: if spread_penalty > 0: ...
                 
                 if setup_penalty > 0:
                     penalties_list.append({
