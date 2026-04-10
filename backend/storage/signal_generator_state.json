@@ -1,23 +1,26 @@
 {
-  "scan_count": 47480,
+  "scan_count": 48020,
   "signal_count": 430,
   "notification_count": 159,
-  "rejection_count": 48337,
+  "rejection_count": 48865,
   "rejection_reasons": {
     "low_rr": 16,
     "daily_limit": 594,
     "low_confidence": 7517,
     "duplicate": 15068,
-    "fta_blocked": 14623,
+    "fta_blocked": 14644,
     "weak_mtf": 8653,
     "setup_penalty_dropped_score": 538,
     "buffer_zone_failed": 289,
     "weak_m15_context": 233,
     "buy_session_blocked": 198,
-    "weak_trigger": 51
+    "weak_trigger": 129,
+    "h1_weak": 421,
+    "sell_session_blocked": 4,
+    "market_not_sane": 4
   },
   "invalid_tokens_removed": 0,
   "daily_risk_used": 0.0,
   "last_reset_date": "2026-04-10",
-  "last_save": "2026-04-10T07:05:50.157006"
+  "last_save": "2026-04-10T10:47:17.386858"
 }

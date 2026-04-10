@@ -674,11 +674,11 @@ class SignalGeneratorV3:
     
     # SELL session rules with extra confirmation
     SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "London", "New York"]
-    # SELL in London/NY requires extra confirmation (H1>=80, M15>=75, Rejection>=70)
+    # SELL in London/NY requires extra confirmation (reduced requirements)
     SELL_RESTRICTED_SESSIONS = ["London", "New York"]
-    SELL_RESTRICTED_MIN_H1 = 80
-    SELL_RESTRICTED_MIN_M15 = 75
-    SELL_RESTRICTED_MIN_REJECTION = 70
+    SELL_RESTRICTED_MIN_H1 = 70      # Reduced from 80
+    SELL_RESTRICTED_MIN_M15 = 65     # Reduced from 75
+    SELL_RESTRICTED_MIN_REJECTION = 60  # Reduced from 70
     
     # ==================== REJECTION REASONS (v10.0) ====================
     REJECTION_BUY_SESSION_BLOCKED = "buy_session_blocked"
@@ -697,15 +697,15 @@ class SignalGeneratorV3:
     REJECTION_ASSET_OVERCONCENTRATED = "asset_direction_overconcentrated"
     
     # ==================== MARKET SANITY THRESHOLDS ====================
-    # EURUSD
-    EURUSD_ATR_MIN = 0.00025       # 2.5 pips minimum ATR
-    EURUSD_ATR_MAX = 0.0018        # 18 pips maximum ATR
-    EURUSD_SPIKE_MAX = 0.0012      # 12 pips max single candle
+    # EURUSD - Relaxed thresholds for low volatility market
+    EURUSD_ATR_MIN = 0.00015       # 1.5 pips minimum ATR (reduced from 2.5)
+    EURUSD_ATR_MAX = 0.0020        # 20 pips maximum ATR
+    EURUSD_SPIKE_MAX = 0.0015      # 15 pips max single candle
     
     # XAUUSD
-    XAUUSD_ATR_MIN = 0.9           # $0.9 minimum ATR
-    XAUUSD_ATR_MAX = 9.0           # $9.0 maximum ATR
-    XAUUSD_SPIKE_MAX = 4.5         # $4.5 max single candle
+    XAUUSD_ATR_MIN = 0.6           # $0.6 minimum ATR (reduced from 0.9)
+    XAUUSD_ATR_MAX = 12.0          # $12.0 maximum ATR (increased)
+    XAUUSD_SPIKE_MAX = 6.0         # $6.0 max single candle (increased)
     
     # ==================== PULLBACK THRESHOLDS ====================
     # EURUSD
@@ -2572,6 +2572,15 @@ class SignalGeneratorV3:
         sl_formatted = f"{stop_loss:.5f}" if asset == Asset.EURUSD else f"{stop_loss:.2f}"
         invalidation = f"{'Below' if direction == 'BUY' else 'Above'} {sl_formatted}"
         
+        # Calculate position size using position_sizer
+        position = self.position_sizer.calculate(
+            asset=asset,
+            direction=direction,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            confidence_score=final_score
+        )
+        
         score_obj = SignalScore(
             components=components,
             final_score=final_score,
@@ -3047,6 +3056,7 @@ class SignalGeneratorV3:
         5. EMA20 slope negative
         """
         if len(h1) < 50:
+            logger.debug(f"H1 Structural: Insufficient data ({len(h1)} < 50)")
             return 50, "Insufficient H1 data"
         
         # Calculate EMAs using helper
@@ -3054,11 +3064,15 @@ class SignalGeneratorV3:
         ema50 = calculate_ema(h1, 50)
         ema20_slope = calculate_ema_slope(h1, 20, lookback=5)
         
+        # Debug: log EMA values
+        current_price = h1[-1].get('close', 0)
+        logger.debug(f"H1 Structural: EMA20={ema20:.5f}, EMA50={ema50:.5f}, slope={ema20_slope:.4f}, price={current_price:.5f}")
+        
         # Get swing points
         swing_highs = get_recent_swing_highs(h1[-30:], count=3, lookback=2)
         swing_lows = get_recent_swing_lows(h1[-30:], count=3, lookback=2)
         
-        current_price = h1[-1].get('close', 0)
+        logger.debug(f"H1 Structural: Found {len(swing_highs)} highs, {len(swing_lows)} lows")
         
         conditions_met = 0
         details = []
@@ -3118,6 +3132,8 @@ class SignalGeneratorV3:
         score_map = {5: 100, 4: 85, 3: 70, 2: 50, 1: 30, 0: 30}
         score = score_map.get(conditions_met, 30)
         reason = f"H1 Structural {conditions_met}/5 ({', '.join(details)})"
+        
+        logger.debug(f"H1 Structural: {reason} -> score={score}")
         
         return score, reason
     
@@ -3478,9 +3494,10 @@ class SignalGeneratorV3:
         # Calculate clean space ratio
         clean_space_ratio = fta_distance / tp_distance if tp_distance > 0 else 0
         
-        # Reject if too little clean space
-        if clean_space_ratio < 0.30:
-            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 30%)", False
+        # v10.0 FIX: FTA blocking DISABLED - only use as scoring factor
+        # The clean space ratio is just used for scoring, not blocking
+        # if clean_space_ratio < 0.15:
+        #     return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 15%)", False
         
         # Score based on clean space
         if clean_space_ratio >= 0.80:
@@ -3754,11 +3771,11 @@ class SignalGeneratorV3:
             ideal_atr_max = 5.0
         
         if ideal_atr_min <= atr <= ideal_atr_max:
-            return 100, "Healthy volatility"
+            return 100, "Healthy volatility", True
         elif atr < ideal_atr_min:
-            return 70, "Low volatility (OK)"
+            return 70, "Low volatility (OK)", True
         else:
-            return 70, "High volatility (OK)"
+            return 70, "High volatility (OK)", True
     
     # ==================== LEGACY FUNCTIONS (kept for compatibility) ====================
         """Score MTF alignment"""
