@@ -2493,15 +2493,15 @@ class SignalGeneratorV3:
                 fta_component = next((c for c in components if "FTA" in c.name), None)
                 fta_score_val = fta_component.score if fta_component else 0
                 
-                # v10.2: Super relaxed extra confirmation
+                # v10.3: Super relaxed extra confirmation
                 h1_ok = h1_score >= 50
                 trigger_ok = trigger_score_val >= 55
-                fta_ok = fta_score_val >= 45
+                fta_ok = fta_score_val >= 35  # v10.3: lowered from 45 to 35
                 
                 logger.info(f"📊 [BUY EXTRA CONFIRM] score={final_score:.0f}%")
                 logger.info(f"📊 [BUY EXTRA CONFIRM] H1={h1_score:.0f} (need >=50) {'✓' if h1_ok else '✗'}")
                 logger.info(f"📊 [BUY EXTRA CONFIRM] Trigger={trigger_score_val:.0f} (need >=55) {'✓' if trigger_ok else '✗'}")
-                logger.info(f"📊 [BUY EXTRA CONFIRM] FTA={fta_score_val:.0f} (need >=45) {'✓' if fta_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] FTA={fta_score_val:.0f} (need >=35) {'✓' if fta_ok else '✗'}")
                 
                 if h1_ok and trigger_ok and fta_ok:
                     confidence = SignalConfidence.ACCEPTABLE
@@ -2515,7 +2515,7 @@ class SignalGeneratorV3:
                     if not trigger_ok:
                         failed_parts.append(f"Trig={trigger_score_val:.0f}<55")
                     if not fta_ok:
-                        failed_parts.append(f"FTA={fta_score_val:.0f}<45")
+                        failed_parts.append(f"FTA={fta_score_val:.0f}<35")
                     self._record_rejection(self.REJECTION_BUY_EXTRA_CONFIRM_FAILED)
                     logger.info(f"🚫 {asset.value} BUY: {self.REJECTION_BUY_EXTRA_CONFIRM_FAILED} ({', '.join(failed_parts)})")
                     return None
@@ -3070,54 +3070,110 @@ class SignalGeneratorV3:
     
     def _analyze_direction_advanced(self, h1: List, m15: List, m5: List) -> Tuple[Optional[str], float, str]:
         """
-        v10.0: Advanced direction analysis - BUY + SELL BOTH ENABLED
+        v10.3: Advanced direction analysis - INTRADAY OPTIMIZED
         
-        Evaluates both directions based on:
-        - H1 trend (50% weight)
-        - M15 trend (30% weight)
-        - M5 momentum (20% weight)
+        NO HARD BLOCK on H1 trend!
         
-        Returns direction with strongest bias.
+        Logic:
+        1. H1 trend is SOFT SCORE (not blocking)
+        2. M15 trend can compensate weak H1
+        3. M5 momentum determines final direction
+        4. Counter-trend allowed with penalty
+        
+        Returns: (direction, confidence_score, reason)
         """
         h1_trend = self._get_trend(h1[-20:]) if len(h1) >= 20 else 0
         m15_trend = self._get_trend(m15[-20:]) if len(m15) >= 20 else 0
         m5_momentum = self._get_momentum(m5[-10:]) if len(m5) >= 10 else 0
         
-        total = h1_trend * 0.5 + m15_trend * 0.3 + m5_momentum * 0.2
+        # === DEBUG ===
+        logger.info(f"📊 [DIRECTION v10.3] H1={h1_trend:.3f}, M15={m15_trend:.3f}, M5={m5_momentum:.3f}")
         
-        # === DEBUG: Direction candidates ===
-        logger.info(f"📊 [DIRECTION DEBUG] H1_trend={h1_trend:.3f}, M15_trend={m15_trend:.3f}, M5_momentum={m5_momentum:.3f}")
-        logger.info(f"📊 [DIRECTION DEBUG] total_score={total:.3f}")
+        # v10.3: H1 SOFT SCORE (NON-BLOCKING!)
+        h1_abs = abs(h1_trend)
+        if h1_abs >= 0.3:
+            h1_score = 100
+            h1_quality = "strong"
+        elif h1_abs >= 0.15:
+            h1_score = 70
+            h1_quality = "moderate"
+        elif h1_abs >= 0.05:
+            h1_score = 50
+            h1_quality = "weak"
+        else:
+            h1_score = 35
+            h1_quality = "very_weak"
         
-        # Calculate BUY and SELL preliminary scores
-        buy_score = 0
-        sell_score = 0
+        # v10.3: M15 PRIORITY - can compensate weak H1
+        m15_abs = abs(m15_trend)
+        m15_strong = m15_abs >= 0.25
         
-        if total > 0:
-            buy_score = total * 100
-        if total < 0:
-            sell_score = abs(total) * 100
+        if m15_strong and h1_score < 70:
+            h1_score = max(h1_score, 60)  # Bump up if M15 is strong
+            logger.info(f"📊 [DIRECTION v10.3] M15 strong ({m15_abs:.3f}) compensates weak H1 -> score bumped to {h1_score}")
         
-        logger.info(f"📊 [DIRECTION DEBUG] BUY_preliminary_score={buy_score:.1f}, SELL_preliminary_score={sell_score:.1f}")
+        # Determine primary direction from M15 + M5 (intraday focus)
+        intraday_bias = m15_trend * 0.6 + m5_momentum * 0.4
         
-        # v10.0: BUY direction check
-        if total > 0.2:
-            logger.info(f"✅ [DIRECTION DEBUG] BUY chosen - strong bullish bias ({total:.3f} > 0.2)")
-            return "BUY", total * 100, "Bullish bias across timeframes"
-        elif total > 0 and m5_momentum > 0.2:
-            logger.info(f"✅ [DIRECTION DEBUG] BUY chosen - M5 momentum confirms ({m5_momentum:.3f} > 0.2)")
-            return "BUY", 50, "M5 bullish momentum"
+        logger.info(f"📊 [DIRECTION v10.3] H1_score={h1_score} ({h1_quality}), M15_strong={m15_strong}, intraday_bias={intraday_bias:.3f}")
         
-        # v10.0: SELL direction check (RE-ENABLED!)
-        if total < -0.2:
-            logger.info(f"✅ [DIRECTION DEBUG] SELL chosen - strong bearish bias ({total:.3f} < -0.2)")
-            return "SELL", abs(total) * 100, "Bearish bias across timeframes"
-        elif total < 0 and m5_momentum < -0.2:
-            logger.info(f"✅ [DIRECTION DEBUG] SELL chosen - M5 momentum confirms ({m5_momentum:.3f} < -0.2)")
-            return "SELL", 50, "M5 bearish momentum"
+        # v10.3: Direction selection - MORE PERMISSIVE
+        direction = None
+        confidence = 0
+        reason = ""
+        counter_trend = False
         
-        logger.info(f"❌ [DIRECTION DEBUG] No direction chosen - bias too weak (total={total:.3f})")
-        return None, 0, f"No clear direction (bias={total:.3f})"
+        # BUY conditions (relaxed)
+        if intraday_bias > 0.05 or (m5_momentum > 0.15 and m15_trend >= 0):
+            direction = "BUY"
+            confidence = 50 + (intraday_bias * 100)
+            
+            # Check if counter-trend to H1
+            if h1_trend < -0.1:
+                counter_trend = True
+                confidence = confidence * 0.88  # 12% penalty
+                reason = f"BUY counter-trend (H1 bearish {h1_trend:.2f})"
+            else:
+                reason = f"BUY aligned (H1={h1_quality}, M15={m15_trend:.2f})"
+        
+        # SELL conditions (relaxed)
+        elif intraday_bias < -0.05 or (m5_momentum < -0.15 and m15_trend <= 0):
+            direction = "SELL"
+            confidence = 50 + (abs(intraday_bias) * 100)
+            
+            # Check if counter-trend to H1
+            if h1_trend > 0.1:
+                counter_trend = True
+                confidence = confidence * 0.88  # 12% penalty
+                reason = f"SELL counter-trend (H1 bullish {h1_trend:.2f})"
+            else:
+                reason = f"SELL aligned (H1={h1_quality}, M15={m15_trend:.2f})"
+        
+        # v10.3: Even with very weak bias, allow if M5 is decisive
+        elif abs(m5_momentum) > 0.25:
+            direction = "BUY" if m5_momentum > 0 else "SELL"
+            confidence = 45
+            reason = f"{direction} from M5 momentum ({m5_momentum:.2f})"
+        
+        if direction:
+            # Cap confidence and apply H1 quality modifier
+            confidence = min(confidence, 95)
+            if h1_quality == "very_weak":
+                confidence = confidence * 0.9
+            
+            logger.info(f"✅ [DIRECTION v10.3] {direction} chosen - conf={confidence:.0f}%, counter_trend={counter_trend}, {reason}")
+            return direction, confidence, reason
+        
+        # Last resort: use M5 direction if any movement
+        if m5_momentum > 0.05:
+            logger.info(f"✅ [DIRECTION v10.3] BUY fallback from M5 ({m5_momentum:.3f})")
+            return "BUY", 40, "M5 micro-momentum bullish"
+        elif m5_momentum < -0.05:
+            logger.info(f"✅ [DIRECTION v10.3] SELL fallback from M5 ({m5_momentum:.3f})")
+            return "SELL", 40, "M5 micro-momentum bearish"
+        
+        logger.info(f"❌ [DIRECTION v10.3] No direction - all signals flat")
+        return None, 0, "Market flat - no clear direction"
     
     def _fallback_direction(self, m5: List) -> Optional[str]:
         """
