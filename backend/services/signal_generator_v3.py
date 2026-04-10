@@ -3787,6 +3787,22 @@ class SignalGeneratorV3:
         atr_m5_pips = atr_m5 * pip_multiplier
         fta_min_pips = fta_min_dynamic * pip_multiplier
         
+        # === v10.4 STRUCTURED AUDIT LOG ===
+        fta_audit = {
+            "symbol": asset.value,
+            "direction": direction,
+            "atr_m5_pips": round(atr_m5_pips, 1),
+            "fta_min_pips": round(fta_min_pips, 1),
+            "fta_distance_pips": round(fta_distance_pips, 1),
+            "tp_distance_pips": round(tp_distance_pips, 1),
+            "clean_space_ratio": round(clean_space_ratio, 3),
+            "fta_type": fta_type,
+            "trigger_score": trigger_score,
+            "trigger_exception_applied": trigger_score >= 70,
+            "entry_price": entry_price,
+            "take_profit": take_profit
+        }
+        
         # === LOGGING (as requested) ===
         logger.info(f"📊 [FTA v10.4] {asset.value} {direction}")
         logger.info(f"📊 [FTA v10.4] ATR_M5={atr_m5_pips:.1f}p, FTA_min={fta_min_pips:.1f}p (trigger={trigger_score:.0f})")
@@ -3795,7 +3811,10 @@ class SignalGeneratorV3:
         
         # v10.4: HARD REJECT if clean_space < 0.30
         if clean_space_ratio < 0.30:
+            fta_audit["decision"] = "HARD_REJECT"
+            fta_audit["rejection_reason"] = "LOW_CLEAN_SPACE"
             logger.info(f"🚫 [FTA v10.4] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 30%")
+            logger.info(f"📋 [FTA AUDIT] {json.dumps(fta_audit)}")
             return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 30%)", False
         
         # v10.4: Check dynamic FTA minimum
