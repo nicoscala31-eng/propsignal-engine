@@ -1,6 +1,6 @@
 """
-Signal Generator v10.0 - Price Action Structure-Based Engine
-=============================================================
+Signal Generator v3 - Technical Structure-Based Signal Engine
+==============================================================
 
 *** AUTHORIZED PRODUCTION ENGINE ***
 *** SINGLE PRODUCTION PIPELINE - NO PARALLEL ENGINES ***
@@ -8,68 +8,57 @@ Signal Generator v10.0 - Price Action Structure-Based Engine
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-VERSION 10.0 - COMPLETE REWRITE (April 2026):
-Price-action / structure based scoring, NOT candle-statistics based.
+VERSION 9.0 - SPLIT BUY/SELL SCORING (April 2026):
+Based on 86-trade Railway production data analysis:
 
-=== PHILOSOPHY ===
-The engine evaluates trades in 3 levels:
-A. CONTEXT - Is the directional bias sensible?
-B. STRUCTURE - Does price structure support BUY or SELL?
-C. TRIGGER - Is the entry timing good right now?
+=== CRITICAL FINDINGS ===
+- BUY:  75.9% WR (22W/7L) = +26.0R  -> SCORING WORKS
+- SELL: 40.4% WR (23W/34L) = +0.5R  -> SCORING ANTI-PREDICTIVE
 
-=== TIMEFRAMES ===
-- H1: Context (120 candles, EMA20, EMA50, ATR14, swing points)
-- M15: Structure & Pullback (160 candles, EMA20, swing points)
-- M5: Entry Trigger (200 candles, EMA20, ATR14)
+KEY INSIGHT: Same weights DON'T WORK for both directions!
+- M15 Context: BUY Δ=+21.2 (good), SELL Δ=-25.4 (ANTI-PREDICTIVE!)
+- Momentum: BUY Δ=+27.7 (best), SELL Δ=-4.4 (negative)
+- MTF Alignment: BUY Δ=+2.7, SELL Δ=-13.3 (anti-predictive)
+- Concentration: BUY Δ=+0.3, SELL Δ=+18.5 (BEST SELL predictor!)
 
-=== BUY FACTORS (Total = 100%) ===
-1. H1 Structural Bias = 20%
-2. M15 Structure Quality = 18%
-3. M5 Trigger Quality = 16%
-4. Pullback Quality = 14%
-5. FTA / Clean Space = 14%
-6. Directional Continuation = 10%
-7. Session Quality = 5%
-8. Market Sanity Check = 3%
+=== v9.0 CHANGES ===
+1. COMPLETELY SEPARATE SCORING: BUY_WEIGHTS ≠ SELL_WEIGHTS
+2. SESSION RULES BY DIRECTION:
+   - BUY: All sessions allowed (London, NY, Overlap)
+   - SELL: ONLY London/NY Overlap allowed (100% WR there!)
+3. CONFIDENCE THRESHOLDS BY DIRECTION:
+   - BUY: min 64, preferred 68-85, hard cap 92
+   - SELL: min 58, preferred 58-72, hard cap 78 (HIGH SCORE = BAD!)
+4. REMOVED: spread_penalty (no discrimination)
+5. ADDED: fta_bonus (replaces fta_penalty)
+6. SESSION MULTIPLIERS FOR BUY
 
-=== SELL FACTORS (Total = 100%) ===
-1. H1 Structural Bias = 22%
-2. M15 Structure Quality = 20%
-3. M5 Trigger Quality = 16%
-4. Pullback Quality = 12%
-5. Rejection / Failed Push = 14%
-6. FTA / Clean Space = 10%
-7. Session Quality = 4%
-8. Market Sanity Check = 2%
+=== SESSION DATA ===
+BUY:  London 68.4%, NY 100%, Overlap 66.7%
+SELL: London 25.0% (BLOCKED!), NY 35.3% (BLOCKED!), Overlap 100% (ONLY ALLOWED)
 
-=== SESSIONS (UTC) ===
-- London: 07:00-12:59
-- Overlap: 13:00-16:00
-- NY: 16:01-20:00
-- Asian/Other: rest
+PROP TRADING ASSUMPTIONS:
+- account_size = 100,000
+- max_daily_loss = 3,000
+- operational_warning = 1,500
+- risk_per_trade = 0.5% to 0.75% (DYNAMIC based on confidence)
+- primary instruments = EURUSD + XAUUSD
 
-=== THRESHOLDS ===
-BUY: min=62, preferred=68-86, hard_cap=94
-SELL: min=60, preferred=64-80, hard_cap=90
+CONFIDENCE CLASSIFICATION (UPDATED - DIRECTION SPECIFIC):
+BUY:
+- 80-92: Strong setup -> 0.75% risk
+- 68-79: Good setup -> 0.65% risk
+- 64-67: Acceptable (with extra confirmation) -> 0.5% risk
+- Below 64: REJECT
 
-=== SESSION MULTIPLIERS (BUY only) ===
-- London: 1.00
-- NY: 1.05
-- Overlap: 1.10
+SELL:
+- 63-72: Good setup -> 0.65% risk
+- 58-62: Acceptable (with extra confirmation) -> 0.5% risk
+- Below 58: REJECT
+- Above 78: REJECT (distorted zone!)
 
-=== KEY CHANGES FROM v9.x ===
-1. REMOVED: concentration from score (now only filter)
-2. REMOVED: old candle-counting momentum
-3. REMOVED: old simple EMA comparisons
-4. ADDED: EMA20/50 with slope analysis
-5. ADDED: Real swing point detection (pivot-based)
-6. ADDED: Pullback depth with Fibonacci zones
-7. ADDED: Trigger patterns (break-hold, reclaim, rejection, failed push)
-8. ADDED: Directional Continuation (BUY only)
-9. ADDED: Rejection/Failed Push Quality (SELL only)
-10. ADDED: Market Sanity Check (replaces regime/volatility)
-
-R:R HARD REJECTION: < 1.15
+R:R HARD REJECTION:
+- R:R < 1.1 = REJECT
 """
 
 import asyncio
@@ -95,15 +84,6 @@ from services.direction_quality_audit import (
 from services.missed_opportunity_analyzer import missed_opportunity_analyzer
 from services.candidate_audit_service import candidate_audit_service
 from services.signal_snapshot_service import signal_snapshot_service, SignalSnapshot, create_snapshot_from_signal_data
-from services.helpers.technical_indicators import (
-    calculate_ema, calculate_ema_slope, calculate_atr,
-    find_swing_points, get_recent_swing_highs, get_recent_swing_lows,
-    get_pullback_depth, get_technical_context,
-    is_bullish_candle, is_bearish_candle,
-    get_upper_wick, get_lower_wick, get_candle_range,
-    is_rejection_candle, get_close_position_in_range,
-    SwingPoint, TechnicalContext
-)
 
 logger = logging.getLogger(__name__)
 
@@ -615,119 +595,101 @@ class SignalGeneratorV3:
     7. All position data properly tracked
     """
     
-    # ==================== v10.0: PRICE-ACTION BASED SCORING ====================
-    # PRODUCTION-READY: Complete rewrite with structure-based analysis
+    # ==================== v9.1: OPTIMIZED BUY/SELL WEIGHTS ====================
+    # PRODUCTION-READY: Based on Railway data (86 trades)
     # 
-    # Philosophy: CONTEXT -> STRUCTURE -> TRIGGER
-    # NOT candle-statistics based, but price-action / structure based
+    # BUY:  75.9% WR (22W/7L) = +26.0R  -> FURTHER OPTIMIZED
+    # SELL: 40.4% WR (23W/34L) = +0.5R  -> MORE STRUCTURAL MODEL
+    #
+    # CRITICAL: BUY and SELL use COMPLETELY DIFFERENT scoring models!
     
     # ==================== BUY WEIGHTS (Total = 100%) ====================
-    # v10.0: Structure-based factors
+    # v9.1: Increased Trend + Momentum + Context, reduced noise factors
     WEIGHTS_BUY = {
-        'h1_structural_bias': 20.0,      # H1 Structural Bias
-        'm15_structure_quality': 18.0,   # M15 Structure Quality
-        'm5_trigger_quality': 16.0,      # M5 Trigger Quality
-        'pullback_quality': 14.0,        # Pullback Quality
-        'fta_clean_space': 14.0,         # FTA / Clean Space
-        'directional_continuation': 10.0, # Directional Continuation (BUY only)
-        'session_quality': 5.0,          # Session Quality
-        'market_sanity': 3.0,            # Market Sanity Check
+        'h1_bias': 22.0,           # H1 Directional Bias - INCREASED
+        'm15_context': 18.0,       # M15 Context - INCREASED
+        'momentum': 16.0,          # Momentum - INCREASED (BEST predictor)
+        'concentration': 14.0,     # Concentration - INCREASED
+        'mtf_alignment': 12.0,     # MTF Alignment - unchanged
+        'session': 10.0,           # Session Quality - unchanged
+        'pullback_quality': 5.0,   # Pullback Quality - REDUCED
+        'regime_quality': 2.0,     # Market Regime - REDUCED (noise)
+        'volatility': 1.0,         # Volatility - REDUCED (noise)
+        # Kept for compatibility but at 0 weight:
+        'market_structure': 0.0,
+        'entry_quality': 0.0,
+        'key_level': 0.0,
+        'rr_ratio': 0.0,
+        'spread': 0.0,
     }
     
     # ==================== SELL WEIGHTS (Total = 100%) ====================
-    # v10.0: Structure-based factors with rejection focus
+    # v9.1: More STRUCTURAL model - H1/Concentration/Session dominate
+    # Drastically reduced unstable factors (MTF, Momentum, M15)
     WEIGHTS_SELL = {
-        'h1_structural_bias': 22.0,      # H1 Structural Bias
-        'm15_structure_quality': 20.0,   # M15 Structure Quality
-        'm5_trigger_quality': 16.0,      # M5 Trigger Quality
-        'pullback_quality': 12.0,        # Pullback Quality
-        'rejection_failed_push': 14.0,   # Rejection / Failed Push (SELL only)
-        'fta_clean_space': 10.0,         # FTA / Clean Space
-        'session_quality': 4.0,          # Session Quality
-        'market_sanity': 2.0,            # Market Sanity Check
+        'h1_bias': 30.0,           # H1 Directional Bias - DOMINANT
+        'concentration': 22.0,     # Concentration - VERY HIGH (best SELL predictor!)
+        'session': 20.0,           # Session Quality - HIGH (OVERLAP critical!)
+        'pullback_quality': 12.0,  # Pullback Quality - structural
+        'mtf_alignment': 6.0,      # MTF Alignment - REDUCED (anti-predictive)
+        'momentum': 4.0,           # Momentum - DRASTICALLY REDUCED
+        'm15_context': 3.0,        # M15 Context - MINIMAL (anti-predictive!)
+        'regime_quality': 2.0,     # Market Regime - minimal
+        'volatility': 1.0,         # Volatility - minimal
+        # Kept for compatibility but at 0 weight:
+        'market_structure': 0.0,
+        'entry_quality': 0.0,
+        'key_level': 0.0,
+        'rr_ratio': 0.0,
+        'spread': 0.0,
     }
+    
+    # ==================== SELL STRUCTURAL FILTER (v9.1 NEW) ====================
+    # SELL accettato SOLO se soddisfa requisiti strutturali minimi
+    SELL_MIN_H1_BIAS = 70          # H1 Directional Bias >= 70
+    SELL_MIN_CONCENTRATION = 60    # Concentration >= 60
+    SELL_MIN_PULLBACK = 55         # Pullback Quality >= 55
+    REJECTION_SELL_WEAK_STRUCTURE = "SELL weak structure"
+    
+    # SELL Low Confidence (58-62) extra requirements
+    SELL_LOW_CONF_MIN_H1 = 75      # H1 >= 75 for low confidence SELL
+    SELL_LOW_CONF_MIN_CONC = 65    # Concentration >= 65 for low confidence SELL
+    REJECTION_SELL_LOW_CONF_WEAK = "SELL low confidence weak"
     
     # Legacy weights for backward compatibility
     WEIGHTS = WEIGHTS_BUY.copy()
     
     # ==================== BUY CONFIDENCE RULES ====================
-    BUY_MIN_CONFIDENCE = 62        # Minimum score to accept BUY
-    BUY_PREFERRED_RANGE = (68, 86) # Preferred score range
-    BUY_HARD_CAP = 94              # Clamp BUY scores above this
+    BUY_MIN_CONFIDENCE = 64        # Minimum score to accept BUY
+    BUY_PREFERRED_RANGE = (68, 85) # Preferred score range
+    BUY_HARD_CAP = 92              # Clamp BUY scores above this
     
     # ==================== SELL CONFIDENCE RULES ====================
-    SELL_MIN_CONFIDENCE = 60       # Minimum score to accept SELL
-    SELL_PREFERRED_RANGE = (64, 80)# Preferred score range
-    SELL_HARD_CAP = 90             # Clamp SELL scores above this
+    SELL_MIN_CONFIDENCE = 58       # Minimum score to accept SELL
+    SELL_PREFERRED_RANGE = (58, 72)# Preferred score range
+    SELL_HARD_CAP = 78             # REJECT SELL scores above this (distorted zone!)
     
-    # ==================== SESSION RULES (UTC) ====================
-    # London: 07:00-12:59, Overlap: 13:00-16:00, NY: 16:01-20:00
+    # ==================== BUY SESSION RULES ====================
     BUY_ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap", "New York"]
-    
-    # BUY Session Multipliers
     BUY_SESSION_MULTIPLIERS = {
-        "London": 1.00,
-        "London/NY Overlap": 1.10,
-        "Overlap": 1.10,
-        "New York": 1.05,
+        "London": 1.00,            # Allowed, no bonus
+        "London/NY Overlap": 1.12, # Best - BONUS +12%
+        "Overlap": 1.12,           # Same as above
+        "New York": 1.08,          # Good - BONUS +8%
     }
     
-    # SELL session rules with extra confirmation
-    SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "London", "New York"]
-    # SELL in London/NY requires extra confirmation (H1>=80, M15>=75, Rejection>=70)
-    SELL_RESTRICTED_SESSIONS = ["London", "New York"]
-    SELL_RESTRICTED_MIN_H1 = 80
-    SELL_RESTRICTED_MIN_M15 = 75
-    SELL_RESTRICTED_MIN_REJECTION = 70
+    # ==================== SELL SESSION RULES ====================
+    # CRITICAL: SELL is ONLY allowed during Overlap (100% WR there!)
+    SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap"]
+    # No multipliers for SELL - blocked outside Overlap
     
-    # ==================== REJECTION REASONS (v10.0) ====================
-    REJECTION_BUY_SESSION_BLOCKED = "buy_session_blocked"
-    REJECTION_SELL_SESSION_BLOCKED = "sell_session_blocked"
-    REJECTION_BUY_CONFIDENCE_LOW = "BUY confidence below threshold"
+    # ==================== REJECTION REASONS (v9.0) ====================
+    REJECTION_SELL_OUTSIDE_OVERLAP = "SELL blocked outside overlap"
     REJECTION_SELL_CONFIDENCE_LOW = "SELL confidence below threshold"
-    REJECTION_BUY_EXTRA_CONFIRM_FAILED = "buy_extra_confirmation_failed"
-    REJECTION_SELL_EXTRA_CONFIRM_FAILED = "sell_extra_confirmation_failed"
-    REJECTION_WEAK_TRIGGER = "weak_trigger"
-    REJECTION_SELL_REJECTION_MISSING = "sell_rejection_missing"
-    REJECTION_IMPULSE_TOO_SMALL = "impulse_too_small"
-    REJECTION_FTA_BLOCKED = "fta_blocked"
-    REJECTION_MARKET_NOT_SANE = "market_not_sane"
-    REJECTION_LOW_RR = "low_rr"
-    REJECTION_DUPLICATE = "duplicate"
-    REJECTION_ASSET_OVERCONCENTRATED = "asset_direction_overconcentrated"
-    
-    # ==================== MARKET SANITY THRESHOLDS ====================
-    # EURUSD
-    EURUSD_ATR_MIN = 0.00025       # 2.5 pips minimum ATR
-    EURUSD_ATR_MAX = 0.0018        # 18 pips maximum ATR
-    EURUSD_SPIKE_MAX = 0.0012      # 12 pips max single candle
-    
-    # XAUUSD
-    XAUUSD_ATR_MIN = 0.9           # $0.9 minimum ATR
-    XAUUSD_ATR_MAX = 9.0           # $9.0 maximum ATR
-    XAUUSD_SPIKE_MAX = 4.5         # $4.5 max single candle
-    
-    # ==================== PULLBACK THRESHOLDS ====================
-    # EURUSD
-    EURUSD_IMPULSE_MIN = 0.0012    # 12 pips minimum impulse
-    EURUSD_PULLBACK_MIN = 0.0005   # 5 pips minimum pullback
-    EURUSD_PULLBACK_IDEAL_MAX = 0.0018  # 18 pips ideal max
-    EURUSD_PULLBACK_DEEP = 0.0024  # 24 pips too deep
-    
-    # XAUUSD
-    XAUUSD_IMPULSE_MIN = 4.0       # $4 minimum impulse
-    XAUUSD_PULLBACK_MIN = 1.5      # $1.5 minimum pullback
-    XAUUSD_PULLBACK_IDEAL_MAX = 6.5  # $6.5 ideal max
-    XAUUSD_PULLBACK_DEEP = 8.5     # $8.5 too deep
-    
-    # ==================== R:R THRESHOLDS ====================
-    MIN_RR_HARD_REJECT = 1.15      # v10.0: Raised from 1.1
-    
-    # ==================== CONCENTRATION FILTER (Not in score) ====================
-    CONCENTRATION_WINDOW_MINUTES = 25
-    CONCENTRATION_MAX_SAME_DIRECTION = 2
-    EURUSD_DUPLICATE_ZONE = 0.0012  # 12 pips
-    XAUUSD_DUPLICATE_ZONE = 3.0     # $3
+    REJECTION_SELL_CONFIDENCE_HIGH = "SELL confidence too high / distorted zone"
+    REJECTION_SELL_NO_DIRECTIONAL = "SELL missing directional confirmation"
+    REJECTION_BUY_CONFIDENCE_LOW = "BUY confidence below threshold"
+    REJECTION_BUY_NO_DIRECTIONAL = "BUY missing directional confirmation"
     
     # Hard rejection thresholds
     MAX_SPREAD_PIPS_EURUSD = 3.0
