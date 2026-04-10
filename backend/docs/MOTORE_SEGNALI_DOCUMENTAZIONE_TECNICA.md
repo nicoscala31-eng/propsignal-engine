@@ -1,12 +1,312 @@
-# PROPSIGNAL ENGINE v9.1 - DOCUMENTAZIONE TECNICA COMPLETA
+# PROPSIGNAL ENGINE v10.0 - DOCUMENTAZIONE TECNICA COMPLETA
 
 **Data:** Aprile 2026
 **File Principale:** `/app/backend/services/signal_generator_v3.py`
-**Status:** PRODUZIONE ATTIVA
+**Status:** PRODUZIONE ATTIVA - RISCRITTURA COMPLETA
 
 ---
 
-## PARTE 1 — MAPPA COMPLETA DEL MOTORE
+## PANORAMICA v10.0
+
+### Filosofia
+Il motore valuta ogni trade in 3 livelli:
+- **A. CONTEXT** - La direzione di fondo è sensata?
+- **B. STRUCTURE** - La struttura del prezzo supporta BUY o SELL?
+- **C. TRIGGER** - Il timing d'ingresso è buono adesso?
+
+**Price-action / structure based, NON candle-statistics based.**
+
+### Timeframe Usati
+| TF | Candles | Uso |
+|----|---------|-----|
+| H1 | 120 | Contesto principale (EMA20, EMA50, swing points) |
+| M15 | 160 | Struttura e pullback (EMA20, swing points) |
+| M5 | 200 | Trigger d'ingresso (EMA20, ATR14) |
+
+### Indicatori Derivati
+- EMA20 su H1, M15, M5
+- EMA50 su H1, M15
+- ATR14 su H1, M15, M5
+- Swing highs/lows (pivot lookback = 2)
+
+---
+
+## FATTORI BUY (Total = 100%)
+
+| # | Fattore | Peso | Min Score |
+|---|---------|------|-----------|
+| 1 | H1 Structural Bias | 20% | 60 |
+| 2 | M15 Structure Quality | 18% | - |
+| 3 | M5 Trigger Quality | 16% | 60 |
+| 4 | Pullback Quality | 14% | - |
+| 5 | FTA / Clean Space | 14% | 30 |
+| 6 | Directional Continuation | 10% | - |
+| 7 | Session Quality | 5% | - |
+| 8 | Market Sanity Check | 3% | 40 |
+
+## FATTORI SELL (Total = 100%)
+
+| # | Fattore | Peso | Min Score |
+|---|---------|------|-----------|
+| 1 | H1 Structural Bias | 22% | 65 |
+| 2 | M15 Structure Quality | 20% | - |
+| 3 | M5 Trigger Quality | 16% | 60 |
+| 4 | Pullback Quality | 12% | - |
+| 5 | Rejection / Failed Push | 14% | 60 |
+| 6 | FTA / Clean Space | 10% | 30 |
+| 7 | Session Quality | 4% | - |
+| 8 | Market Sanity Check | 2% | 40 |
+
+---
+
+## DETTAGLIO FATTORI
+
+### 1. H1 Structural Bias
+
+**Condizioni BUY (5 punti):**
+1. Ultimo swing high > swing high precedente (HH)
+2. Ultimo swing low > swing low precedente (HL)
+3. Close > EMA20 H1
+4. EMA20 > EMA50
+5. Slope EMA20 positiva
+
+**Condizioni SELL (5 punti):**
+1. Ultimo swing high < swing high precedente (LH)
+2. Ultimo swing low < swing low precedente (LL)
+3. Close < EMA20 H1
+4. EMA20 < EMA50
+5. Slope EMA20 negativa
+
+**Scoring:** 5/5=100, 4/5=85, 3/5=70, 2/5=50, 0-1/5=30
+
+### 2. M15 Structure Quality
+
+**Condizioni BUY (3 punti):**
+1. Sequenza HH + HL su M15
+2. Prezzo > EMA20 M15
+3. Nessun swing low rotto nelle ultime 8 candle
+
+**Condizioni SELL (3 punti):**
+1. Sequenza LH + LL su M15
+2. Prezzo < EMA20 M15
+3. Nessun swing high rotto nelle ultime 8 candle
+
+**Scoring:** 3/3=100, 2/3=80, 1/3=65, 0/3=25
+
+### 3. M5 Trigger Quality
+
+**BUY Triggers:**
+- A. Break-and-hold: Close rompe micro high e tiene
+- B. Reclaim: Dip sotto EMA20, reclaim con close bullish
+- C. Continuation: 2 close bullish consecutive dopo pullback
+
+**SELL Triggers:**
+- A. Rejection: Wick superiore >= 35% range, close in bottom 35%
+- B. Failed push: Nuovo high negato entro 2 candle
+- C. Continuation: 2 close bearish consecutive
+
+**Scoring:** 95 (forte), 80 (buono), 60 (debole), 30 (assente)
+**HARD FILTER:** Score < 60 → REJECT
+
+### 4. Pullback Quality
+
+**Calcolo:**
+1. Identifica leg impulsivo (M15 swing)
+2. Verifica impulso minimo (EURUSD >= 12p, XAUUSD >= $4)
+3. Calcola profondità pullback (% del leg)
+
+**Zone:**
+- 38.2%-61.8%: Score 100 (Fib ideale)
+- 25%-75%: Score 80 (accettabile)
+- <25%: Score 60 (shallow)
+- >75%: Score 35 (too deep)
+
+**Bonus:** +8 se c'è reazione M5 nella direzione
+
+### 5. FTA / Clean Space
+
+**Calcolo:**
+```
+clean_space_ratio = distanza_entry→FTA / distanza_entry→TP
+```
+
+**FTA = primo ostacolo** (swing high/low M5/M15, round number)
+
+**Scoring:**
+- >= 80%: Score 100
+- 65-79%: Score 80
+- 50-64%: Score 60
+- 30-49%: Score 35
+- < 30%: **REJECT**
+
+**FTA Bonus:** +3 BUY, +5 SELL se >= 80%
+
+### 6. Directional Continuation (BUY only)
+
+**Condizioni (4 punti):**
+1. Close M15 > EMA20 M15
+2. Nessun close M15 sotto ultimo HL
+3. M5 mostra ripresa bullish
+4. Ultime 3 M5 highs in aumento
+
+**Scoring:** 4/4=100, 3/4=80, 2/4=60, 0-1/4=35
+
+### 7. Rejection / Failed Push (SELL only)
+
+**Pattern A - Rejection Wick:**
+- Candle M5 con upper wick >= 35% range
+- Close nel bottom 35%
+- Candle successiva bearish
+
+**Pattern B - Failed Push:**
+- Prezzo rompe micro high
+- Entro 2 candle chiude sotto
+- Candle successiva chiude sotto low
+
+**HARD FILTER:** Score < 60 → REJECT
+
+### 8. Session Quality
+
+**Sessioni (UTC):**
+- London: 07:00-12:59
+- Overlap: 13:00-16:00
+- NY: 16:01-20:00
+- Asian/Other: resto
+
+**BUY Scores:** Overlap=100, NY=90, London=85, Asian=40
+**SELL Scores:** Overlap=100, London=65, NY=60, Asian=20
+
+**SELL in London/NY:** Richiede H1>=80, M15>=75, Rejection>=70
+
+### 9. Market Sanity Check
+
+**Soglie EURUSD:**
+- ATR min: 2.5 pips
+- ATR max: 18 pips
+- Spike max: 12 pips
+
+**Soglie XAUUSD:**
+- ATR min: $0.9
+- ATR max: $9.0
+- Spike max: $4.5
+
+**Scoring:** 100 (healthy), 70 (borderline), 40 (caotico)
+**HARD FILTER:** Score < 40 → REJECT
+
+---
+
+## THRESHOLD E CONFIDENCE
+
+### BUY
+- **min_confidence:** 62
+- **preferred_range:** 68-86
+- **hard_cap:** 94
+
+### SELL
+- **min_confidence:** 60
+- **preferred_range:** 64-80
+- **hard_cap:** 90
+
+### Extra Confirmation
+
+**BUY (62-67.99):** H1>=70, Trigger>=70, FTA>=60
+**SELL (60-63.99):** H1>=75, Rejection>=70, FTA>=60
+
+---
+
+## SESSION MULTIPLIERS (BUY only)
+
+| Sessione | Multiplier |
+|----------|------------|
+| London | 1.00 |
+| NY | 1.05 |
+| Overlap | 1.10 |
+
+---
+
+## FORMULE FINALI
+
+### BUY_SCORE
+```
+(H1_Structural * 0.20) +
+(M15_Structure * 0.18) +
+(M5_Trigger * 0.16) +
+(Pullback * 0.14) +
+(FTA_Clean_Space * 0.14) +
+(Directional_Continuation * 0.10) +
+(Session * 0.05) +
+(Market_Sanity * 0.03)
++ fta_bonus
+× session_multiplier
+= CLAMP(0, 100)
+```
+
+### SELL_SCORE
+```
+(H1_Structural * 0.22) +
+(M15_Structure * 0.20) +
+(M5_Trigger * 0.16) +
+(Pullback * 0.12) +
+(Rejection_Failed_Push * 0.14) +
+(FTA_Clean_Space * 0.10) +
+(Session * 0.04) +
+(Market_Sanity * 0.02)
++ fta_bonus
+= CLAMP(0, 100)
+```
+
+---
+
+## FILTRI E REJECTION
+
+| # | Filtro | Blocca | Reason |
+|---|--------|--------|--------|
+| 1 | H1 < 60 (BUY) / < 65 (SELL) | Direzione | h1_weak |
+| 2 | Trigger < 60 | Entrambi | weak_trigger |
+| 3 | Impulso troppo piccolo | Entrambi | impulse_too_small |
+| 4 | SELL rejection < 60 | SELL | sell_rejection_missing |
+| 5 | FTA clean space < 30% | Entrambi | fta_blocked |
+| 6 | Market sanity < 40 | Entrambi | market_not_sane |
+| 7 | Session Asian (BUY) | BUY | buy_session_blocked |
+| 8 | Session Asian (SELL) | SELL | sell_session_blocked |
+| 9 | Concentration 2+ same dir | Entrambi | asset_direction_overconcentrated |
+| 10 | Duplicate zona | Entrambi | duplicate |
+| 11 | R:R < 1.15 | Entrambi | low_rr |
+| 12 | Score < threshold | Entrambi | confidence_below_threshold |
+| 13 | Extra confirm failed | Entrambi | extra_confirmation_failed |
+
+---
+
+## CONCENTRATION (Solo Filtro)
+
+**NON fa parte dello score.**
+
+**Regole:**
+- 2+ segnali stesso asset/direzione in 25 min → REJECT
+- Segnale stesso asset/direzione/zona in 25 min → REJECT (duplicate)
+
+**Zone:**
+- EURUSD: 12 pips
+- XAUUSD: $3.0
+
+---
+
+## HELPER FILES
+
+### `/app/backend/services/helpers/technical_indicators.py`
+
+Funzioni pure per calcoli tecnici:
+- `calculate_ema(candles, period)`
+- `calculate_ema_slope(candles, period, lookback)`
+- `calculate_atr(candles, period)`
+- `find_swing_points(candles, lookback)`
+- `get_pullback_depth(price, high, low, direction)`
+- `is_rejection_candle(candle, direction, min_wick_ratio)`
+- `is_bullish_candle(candle)` / `is_bearish_candle(candle)`
+
+---
+
+*Documentazione v10.0 - Aprile 2026*
 
 ### Flusso Completo Step-by-Step
 
