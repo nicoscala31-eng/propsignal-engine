@@ -676,7 +676,7 @@ class SignalGeneratorV3:
     SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "London", "New York"]
     # SELL in London/NY requires extra confirmation (reduced requirements)
     SELL_RESTRICTED_SESSIONS = ["London", "New York"]
-    SELL_RESTRICTED_MIN_H1 = 70      # Reduced from 80
+    SELL_RESTRICTED_MIN_H1 = 55      # v10.2: Reduced from 70 to 55
     SELL_RESTRICTED_MIN_M15 = 65     # Reduced from 75
     SELL_RESTRICTED_MIN_REJECTION = 60  # Reduced from 70
     
@@ -2308,10 +2308,9 @@ class SignalGeneratorV3:
         h1_weight = weights.get('h1_structural_bias', 20)
         components.append(ScoreComponent("H1 Structural Bias", h1_weight, h1_score, h1_reason))
         
-        # v10.1: Relaxed H1 thresholds
-        # Was: BUY 60, SELL 65
-        # Now: BUY 50, SELL 55 (data shows 50 common, need to accept more)
-        h1_min = 50 if direction == "BUY" else 55
+        # v10.2: Relaxed H1 thresholds
+        # BUY: 50, SELL: 50 (equal treatment)
+        h1_min = 50  # Same for both directions now
         if h1_score < h1_min:
             self._record_rejection("h1_weak")
             logger.info(f"🚫 {asset.value} {direction}: H1 Structural Bias too weak ({h1_score:.0f}% < {h1_min}%)")
@@ -2328,7 +2327,8 @@ class SignalGeneratorV3:
         components.append(ScoreComponent("M5 Trigger Quality", trigger_weight, trigger_score, trigger_reason))
         
         # v10.0: Hard filter - weak trigger
-        if trigger_score < 60:
+        # v10.2: Trigger score threshold lowered from 60 to 55
+        if trigger_score < 55:
             self._record_rejection(self.REJECTION_WEAK_TRIGGER)
             logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_WEAK_TRIGGER} (score={trigger_score:.0f}%)")
             return None
@@ -2486,23 +2486,22 @@ class SignalGeneratorV3:
                 priority = "HIGH" if final_score >= 80 else "NORMAL"
                 acceptance_source = "buy_preferred"
             elif final_score >= self.BUY_MIN_CONFIDENCE:  # 62-67.99: Extra confirmation
-                # v10.1: Relaxed requirements
-                # Was: H1 >= 70, M5 Trigger >= 70, FTA >= 60
-                # Now: H1 >= 55, M5 Trigger >= 60, FTA >= 50
+                # v10.2: Further relaxed requirements
+                # H1: 55 → 50, Trigger: 60 → 55, FTA: 50 → 45
                 trigger_component = next((c for c in components if "Trigger" in c.name), None)
                 trigger_score_val = trigger_component.score if trigger_component else 0
                 fta_component = next((c for c in components if "FTA" in c.name), None)
                 fta_score_val = fta_component.score if fta_component else 0
                 
-                # v10.1: Relaxed extra confirmation
-                h1_ok = h1_score >= 55
-                trigger_ok = trigger_score_val >= 60
-                fta_ok = fta_score_val >= 50
+                # v10.2: Super relaxed extra confirmation
+                h1_ok = h1_score >= 50
+                trigger_ok = trigger_score_val >= 55
+                fta_ok = fta_score_val >= 45
                 
                 logger.info(f"📊 [BUY EXTRA CONFIRM] score={final_score:.0f}%")
-                logger.info(f"📊 [BUY EXTRA CONFIRM] H1={h1_score:.0f} (need >=55) {'✓' if h1_ok else '✗'}")
-                logger.info(f"📊 [BUY EXTRA CONFIRM] Trigger={trigger_score_val:.0f} (need >=60) {'✓' if trigger_ok else '✗'}")
-                logger.info(f"📊 [BUY EXTRA CONFIRM] FTA={fta_score_val:.0f} (need >=50) {'✓' if fta_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] H1={h1_score:.0f} (need >=50) {'✓' if h1_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] Trigger={trigger_score_val:.0f} (need >=55) {'✓' if trigger_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] FTA={fta_score_val:.0f} (need >=45) {'✓' if fta_ok else '✗'}")
                 
                 if h1_ok and trigger_ok and fta_ok:
                     confidence = SignalConfidence.ACCEPTABLE
@@ -2512,11 +2511,11 @@ class SignalGeneratorV3:
                 else:
                     failed_parts = []
                     if not h1_ok:
-                        failed_parts.append(f"H1={h1_score:.0f}<55")
+                        failed_parts.append(f"H1={h1_score:.0f}<50")
                     if not trigger_ok:
-                        failed_parts.append(f"Trig={trigger_score_val:.0f}<60")
+                        failed_parts.append(f"Trig={trigger_score_val:.0f}<55")
                     if not fta_ok:
-                        failed_parts.append(f"FTA={fta_score_val:.0f}<50")
+                        failed_parts.append(f"FTA={fta_score_val:.0f}<45")
                     self._record_rejection(self.REJECTION_BUY_EXTRA_CONFIRM_FAILED)
                     logger.info(f"🚫 {asset.value} BUY: {self.REJECTION_BUY_EXTRA_CONFIRM_FAILED} ({', '.join(failed_parts)})")
                     return None
@@ -3336,17 +3335,17 @@ class SignalGeneratorV3:
     
     def _score_m5_trigger_quality(self, m5: List, direction: str) -> Tuple[float, str]:
         """
-        v10.0: M5 Trigger Quality scoring
+        v10.2: M5 Trigger Quality scoring - RELAXED
         
         BUY triggers:
         A. Break-and-hold: M5 close breaks micro high, holds for 1 candle
-        B. Reclaim: M5 dips below EMA20, reclaims with bullish close
-        C. Continuation: After pullback, 2 consecutive bullish closes
+        B. Reclaim: M5 dips below EMA20, reclaims (NO double confirm needed)
+        C. Continuation: 1 strong bullish candle (range >= 0.6 * avg_range)
         
         SELL triggers:
-        A. Rejection: Upper wick >= 35% of range, close in bottom 35%
-        B. Failed push: New micro high made and negated within 2 candles
-        C. Continuation short: After pullback, 2 consecutive bearish closes
+        A. Rejection: Upper wick >= 25% (was 35%), close in bottom 40% (was 35%)
+        B. Failed push: New micro high negated within 3 candles (was 2)
+        C. Continuation short: 1 strong bearish candle
         """
         if len(m5) < 15:
             logger.info(f"📊 [M5 TRIGGER DEBUG] Insufficient M5 data ({len(m5)} < 15)")
@@ -3357,15 +3356,17 @@ class SignalGeneratorV3:
         last_3 = m5[-3:]
         last_5 = m5[-5:]
         
+        # Calculate average range for "strong candle" definition
+        ranges = [c.get('high', 0) - c.get('low', 0) for c in last_5]
+        avg_range = sum(ranges) / len(ranges) if ranges else 0
+        
         trigger_found = False
         trigger_strength = 0
         trigger_type = ""
-        
-        # === DEBUG: Pattern detection state ===
         patterns_checked = []
         
         if direction == "BUY":
-            # Pattern A: Break-and-hold
+            # Pattern A: Break-and-hold (unchanged)
             pattern_a_found = False
             if len(recent) >= 10:
                 micro_highs = [c.get('high', 0) for c in recent[-10:-2]]
@@ -3378,116 +3379,119 @@ class SignalGeneratorV3:
                         trigger_strength = 95
                         trigger_type = "Break-and-hold"
                         pattern_a_found = True
-                    patterns_checked.append(f"Break-hold(highest={highest_micro:.5f}, close_n2={close_n2:.5f}, close_n1={close_n1:.5f}, found={pattern_a_found})")
+                    patterns_checked.append(f"Break-hold(found={pattern_a_found})")
             
-            # Pattern B: Reclaim
+            # Pattern B: Reclaim - SIMPLIFIED v10.2
+            # Was: below_ema AND current_above AND current_bullish
+            # Now: below_ema AND current_above (no bullish required)
             pattern_b_found = False
             if not trigger_found and len(last_5) >= 3:
-                # Check if any of last 5 candles went below EMA20 and current is above
                 below_ema = any(c.get('low', float('inf')) < ema20 for c in last_5[:-1])
                 current_above = last_3[-1].get('close', 0) > ema20
-                current_bullish = is_bullish_candle(last_3[-1])
-                if below_ema and current_above and current_bullish:
+                if below_ema and current_above:
                     trigger_found = True
-                    trigger_strength = 80
+                    trigger_strength = 75  # Slightly lower since no bullish confirm
                     trigger_type = "EMA20 Reclaim"
                     pattern_b_found = True
-                patterns_checked.append(f"Reclaim(below_ema={below_ema}, current_above={current_above}, bullish={current_bullish}, found={pattern_b_found})")
+                patterns_checked.append(f"Reclaim(below={below_ema}, above={current_above}, found={pattern_b_found})")
             
-            # Pattern C: Continuation - RELAXED v10.1
-            # Was: c1_bullish AND c2_bullish AND c2_higher
-            # Now: (c1_bullish OR c2_bullish) AND momentum positive
+            # Pattern C: Continuation - SUPER RELAXED v10.2
+            # Now: Just need 1 strong bullish candle (range >= 0.6 * avg)
             pattern_c_found = False
             if not trigger_found:
-                if len(last_3) >= 2:
-                    c1_bullish = is_bullish_candle(last_3[-2])
-                    c2_bullish = is_bullish_candle(last_3[-1])
-                    # v10.1: Relaxed - at least one bullish candle
-                    at_least_one_bullish = c1_bullish or c2_bullish
-                    # v10.1: Momentum check - close above previous close
-                    momentum_positive = last_3[-1].get('close', 0) > last_3[-2].get('close', 0)
-                    
-                    if at_least_one_bullish and momentum_positive:
-                        trigger_found = True
-                        # Score based on strength: both bullish = 70, one bullish = 60
-                        trigger_strength = 70 if (c1_bullish and c2_bullish) else 60
-                        trigger_type = "Continuation" if (c1_bullish and c2_bullish) else "Momentum continuation"
-                        pattern_c_found = True
-                    patterns_checked.append(f"Continuation(c1_bull={c1_bullish}, c2_bull={c2_bullish}, mom+={momentum_positive}, found={pattern_c_found})")
+                last_candle = last_3[-1]
+                candle_range = last_candle.get('high', 0) - last_candle.get('low', 0)
+                is_strong = candle_range >= 0.6 * avg_range if avg_range > 0 else False
+                is_bullish = is_bullish_candle(last_candle)
+                
+                if is_bullish and is_strong:
+                    trigger_found = True
+                    trigger_strength = 65
+                    trigger_type = "Strong bullish continuation"
+                    pattern_c_found = True
+                elif is_bullish:
+                    # Even weak bullish gives minimum trigger
+                    trigger_found = True
+                    trigger_strength = 55
+                    trigger_type = "Bullish continuation"
+                    pattern_c_found = True
+                patterns_checked.append(f"Continuation(bullish={is_bullish}, strong={is_strong}, found={pattern_c_found})")
         
         else:  # SELL
-            # Pattern A: Rejection
+            # Pattern A: Rejection - RELAXED v10.2
+            # Was: wick >= 35%, close in bottom 35%
+            # Now: wick >= 25%, close in bottom 40%
             pattern_a_found = False
             for candle in last_3:
-                if is_rejection_candle(candle, "SELL", min_wick_ratio=0.35):
+                candle_range = candle.get('high', 0) - candle.get('low', 0)
+                if candle_range > 0:
+                    upper_wick = candle.get('high', 0) - max(candle.get('open', 0), candle.get('close', 0))
+                    wick_ratio = upper_wick / candle_range
                     close_pos = get_close_position_in_range(candle)
-                    if close_pos <= 0.35:  # Close in bottom 35%
-                        # Check if next candle confirms (if exists)
-                        idx = last_3.index(candle)
-                        if idx < len(last_3) - 1:
-                            next_candle = last_3[idx + 1]
-                            if is_bearish_candle(next_candle):
-                                trigger_found = True
-                                trigger_strength = 95
-                                trigger_type = "Rejection confirmed"
-                                pattern_a_found = True
-                                break
+                    
+                    # v10.2: Relaxed from 0.35/0.35 to 0.25/0.40
+                    if wick_ratio >= 0.25 and close_pos <= 0.40:
+                        trigger_found = True
+                        # Score based on quality
+                        if wick_ratio >= 0.35 and close_pos <= 0.30:
+                            trigger_strength = 90
+                            trigger_type = "Strong rejection"
                         else:
-                            trigger_found = True
-                            trigger_strength = 80
+                            trigger_strength = 70
                             trigger_type = "Rejection"
-                            pattern_a_found = True
-                            break
+                        pattern_a_found = True
+                        break
             patterns_checked.append(f"Rejection(found={pattern_a_found})")
             
-            # Pattern B: Failed push
+            # Pattern B: Failed push - RELAXED v10.2
+            # Now: Allow 3 candles lookback (was 2)
             pattern_b_found = False
             if not trigger_found and len(recent) >= 10:
-                micro_highs = [c.get('high', 0) for c in recent[-10:-3]]
+                micro_highs = [c.get('high', 0) for c in recent[-10:-4]]  # Changed from -3 to -4
                 if micro_highs:
                     highest_micro = max(micro_highs)
-                    # Check if recent candle made new high then reversed
-                    for i in range(-3, 0):
+                    # Check last 4 candles for failed push (was 3)
+                    for i in range(-4, 0):
                         if recent[i].get('high', 0) > highest_micro:
-                            # New high made - check if next candles closed below it
                             subsequent = recent[i+1:] if i < -1 else []
                             if subsequent and all(c.get('close', float('inf')) < highest_micro for c in subsequent):
                                 trigger_found = True
-                                trigger_strength = 80
+                                trigger_strength = 75
                                 trigger_type = "Failed push"
                                 pattern_b_found = True
                                 break
             patterns_checked.append(f"Failed-push(found={pattern_b_found})")
             
-            # Pattern C: Continuation short - RELAXED v10.1
-            # Was: c1_bearish AND c2_bearish AND c2_lower
-            # Now: (c1_bearish OR c2_bearish) AND momentum negative
+            # Pattern C: Continuation short - SUPER RELAXED v10.2
+            # Now: Just need 1 strong bearish candle
             pattern_c_found = False
             if not trigger_found:
-                if len(last_3) >= 2:
-                    c1_bearish = is_bearish_candle(last_3[-2])
-                    c2_bearish = is_bearish_candle(last_3[-1])
-                    # v10.1: Relaxed - at least one bearish candle
-                    at_least_one_bearish = c1_bearish or c2_bearish
-                    # v10.1: Momentum check - close below previous close
-                    momentum_negative = last_3[-1].get('close', 0) < last_3[-2].get('close', 0)
-                    
-                    if at_least_one_bearish and momentum_negative:
-                        trigger_found = True
-                        # Score based on strength: both bearish = 70, one bearish = 60
-                        trigger_strength = 70 if (c1_bearish and c2_bearish) else 60
-                        trigger_type = "Continuation short" if (c1_bearish and c2_bearish) else "Momentum continuation short"
-                        pattern_c_found = True
-                    patterns_checked.append(f"Continuation-short(c1_bear={c1_bearish}, c2_bear={c2_bearish}, mom-={momentum_negative}, found={pattern_c_found})")
+                last_candle = last_3[-1]
+                candle_range = last_candle.get('high', 0) - last_candle.get('low', 0)
+                is_strong = candle_range >= 0.6 * avg_range if avg_range > 0 else False
+                is_bearish = is_bearish_candle(last_candle)
+                
+                if is_bearish and is_strong:
+                    trigger_found = True
+                    trigger_strength = 65
+                    trigger_type = "Strong bearish continuation"
+                    pattern_c_found = True
+                elif is_bearish:
+                    # Even weak bearish gives minimum trigger
+                    trigger_found = True
+                    trigger_strength = 55
+                    trigger_type = "Bearish continuation"
+                    pattern_c_found = True
+                patterns_checked.append(f"Continuation-short(bearish={is_bearish}, strong={is_strong}, found={pattern_c_found})")
         
         # === DEBUG M5 TRIGGER FINAL ===
         logger.info(f"📊 [M5 TRIGGER DEBUG] Direction={direction}, trigger_found={trigger_found}")
-        logger.info(f"📊 [M5 TRIGGER DEBUG] patterns_checked: {patterns_checked}")
+        logger.info(f"📊 [M5 TRIGGER DEBUG] patterns: {patterns_checked}")
         
         if trigger_found:
-            logger.info(f"📊 [M5 TRIGGER DEBUG] TRIGGER FOUND: {trigger_type}, strength={trigger_strength}")
+            logger.info(f"📊 [M5 TRIGGER DEBUG] ✅ TRIGGER: {trigger_type}, strength={trigger_strength}")
             return trigger_strength, f"Trigger: {trigger_type}"
-        logger.info(f"📊 [M5 TRIGGER DEBUG] NO TRIGGER: returning score=30")
+        logger.info(f"📊 [M5 TRIGGER DEBUG] ❌ NO TRIGGER: score=30")
         return 30, "No clear trigger"
     
     def _score_pullback_quality_v10(self, asset: Asset, m15: List, m5: List, direction: str, current_price: float) -> Tuple[float, str, bool]:
