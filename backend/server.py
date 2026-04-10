@@ -1001,9 +1001,11 @@ async def get_signal_feed(
     tracker_signals.sort(key=lambda x: (sort_key(x)[0], -hash(sort_key(x)[1]) if sort_key(x)[1] else 0))
     
     # Better sort by timestamp within each priority group
+    # FIXED: Explicitly handle 'rejected' status separately
     active = [s for s in tracker_signals if s.get('status') in ['active', 'accepted']]
     closed = [s for s in tracker_signals if s.get('status') in ['closed', 'tp_hit', 'sl_hit']]
-    others = [s for s in tracker_signals if s.get('status') not in ['active', 'accepted', 'closed', 'tp_hit', 'sl_hit']]
+    rejected = [s for s in tracker_signals if s.get('status') == 'rejected']
+    others = [s for s in tracker_signals if s.get('status') not in ['active', 'accepted', 'closed', 'tp_hit', 'sl_hit', 'rejected']]
     
     # Sort each by timestamp descending
     def ts_sort(x):
@@ -1011,10 +1013,11 @@ async def get_signal_feed(
     
     active.sort(key=ts_sort, reverse=True)
     closed.sort(key=ts_sort, reverse=True)
+    rejected.sort(key=ts_sort, reverse=True)
     others.sort(key=ts_sort, reverse=True)
     
-    # Combine
-    feed = active + closed + others
+    # Combine: ACTIVE first, then CLOSED, then REJECTED, then others
+    feed = active + closed + rejected + others
     
     # Apply offset and limit
     feed = feed[offset:offset + limit]

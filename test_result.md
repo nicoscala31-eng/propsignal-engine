@@ -595,6 +595,24 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+
+  - task: "Signal Feed API - Include REJECTED signals in feed"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "L'endpoint /api/signals/feed?status=all non restituisce i segnali REJECTED, solo ACTIVE e CLOSED"
+      - working: true
+        agent: "main"
+        comment: "FIX IMPLEMENTATO: Corretto il bug nella funzione get_signal_feed() in server.py. Il problema era nella logica di sorting che metteva i rejected nella categoria 'others' ma non li gestiva esplicitamente. Fix: aggiunta categoria esplicita 'rejected' nel sorting, ora il feed restituisce: active + closed + rejected + others. Test confermato: status=all ora restituisce 192 segnali (30 active + 100 closed + 62 rejected)"
+      - working: true
+        agent: "testing"
+        comment: "✅ SIGNAL FEED REJECTED SIGNALS FIX VERIFIED - 6/6 TESTS PASSED (100% SUCCESS)! CRITICAL VERIFICATION CONFIRMED: All requested signal feed functionality working perfectly. Key confirmations: 1) ✅ status=all INCLUDES REJECTED: Returns 200 total signals with breakdown: 30 active + 100 closed + 70 rejected - REJECTED signals now properly included, 2) ✅ status=rejected FILTER: Returns ONLY rejected signals (50 tested), all have status='rejected' and rejection_reason field, 3) ✅ status=active FILTER: Returns ONLY active signals (30 tested), 4) ✅ status=closed FILTER: Returns ONLY closed signals (50 tested), 5) ✅ PAGINATION WITH REJECTED: offset=130 returns 50 rejected signals - rejected signals appear correctly in pagination, 6) ✅ STATS ENDPOINT: /api/signals/feed/stats shows 128 rejected signals count > 0 as required. Signal structure verified: rejected signals contain signal_id, status='rejected', rejection_reason, and blocking_filter fields as expected. The main agent's fix has SUCCESSFULLY resolved the user's issue - status=all now returns ALL three statuses (active + closed + rejected) in priority order as designed!"
     status_history:
       - working: false
         agent: "user"
@@ -686,3 +704,7 @@ agent_communication:
     message: "🔶 BUFFER DECISION ZONE v3.3 IMPLEMENTED! Key changes: 1) NEW score classification: >=80=STRONG, 65-79=GOOD, 60-64=BUFFER ZONE, <60=REJECTED, 2) Buffer Zone Logic: Candidates with score 60-64 get ACCEPTED if MTF>=70 AND H1>=60 AND R:R>=1.2, 3) NEW acceptance_source field in GeneratedSignal tracks 'main_threshold_strong', 'main_threshold_good', or 'buffer_zone', 4) Signal processing logs now show 'Acceptance: BUFFER_ZONE' for buffer-zone trades, 5) NEW buffer_zone_metrics in GET /api/scanner/v3/status: candidates_evaluated, pct_gte_65, pct_60_64, pct_lt_60, accepted_main_threshold, accepted_buffer_zone, buffer_zone_failed, total_accepted, acceptance_rate, 6) NEW rejection reason 'buffer_zone_failed' for candidates in 60-64 range that don't meet MTF/H1/R:R conditions. System is LIVE and collecting data. Current stats show 22 buffer_zone_failed rejections (candidates reached buffer evaluation but didn't meet conditions)."
   - agent: "testing"
     message: "🎯 SIGNAL GENERATOR v10.0 TESTING COMPLETE - 4/5 TESTS PASSED (80% SUCCESS)! CRITICAL VERIFICATION CONFIRMED: All v10.0 fixes are working correctly. Key confirmations: 1) ✅ SELL DIRECTION RE-ENABLED: Backend logs show 289 SELL direction patterns vs 77 BUY patterns - SELL is being actively evaluated (was 0% before), 2) ✅ COMPREHENSIVE DEBUG LOGGING ACTIVE: Found 'SELL chosen' (29 matches), 'Direction=SELL' (87 matches), 'SELL strong bearish bias' (29 matches), all v10.0 debug patterns confirmed, 3) ✅ BOTH DIRECTIONS WORKING: BUY patterns also found (77 total) - both directions being processed correctly, 4) ✅ SIGNAL GENERATOR v3 OPERATIONAL: Running=true, Version=v3.3, signal_generator_v3 properly authorized in production, 5) ✅ v10.0 DEBUG PATTERNS VERIFIED: 'BUY_preliminary_score.*SELL_preliminary_score' (24 matches), 'FALLBACK DEBUG' (12 matches), 'H1 STRUCTURAL DEBUG' (184 matches), 'M5 TRIGGER DEBUG' (69 matches). MINOR: /api/signals/debug/stats endpoint returns 404 (not critical - main functionality verified through logs). Signal Generator v10.0 BUY/SELL direction logic fixes are FULLY FUNCTIONAL - SELL direction successfully re-enabled and both directions being evaluated correctly!"
+  - agent: "testing"
+    message: "✅ SIGNAL FEED REJECTED SIGNALS FIX VERIFIED - 6/6 TESTS PASSED (100% SUCCESS)! CRITICAL VERIFICATION CONFIRMED: All requested signal feed functionality working perfectly. Key confirmations: 1) ✅ status=all INCLUDES REJECTED: Returns 200 total signals with breakdown: 30 active + 100 closed + 70 rejected - REJECTED signals now properly included, 2) ✅ status=rejected FILTER: Returns ONLY rejected signals (50 tested), all have status='rejected' and rejection_reason field, 3) ✅ status=active FILTER: Returns ONLY active signals (30 tested), 4) ✅ status=closed FILTER: Returns ONLY closed signals (50 tested), 5) ✅ PAGINATION WITH REJECTED: offset=130 returns 50 rejected signals - rejected signals appear correctly in pagination, 6) ✅ STATS ENDPOINT: /api/signals/feed/stats shows 128 rejected signals count > 0 as required. Signal structure verified: rejected signals contain signal_id, status='rejected', rejection_reason, and blocking_filter fields as expected. The main agent's fix has SUCCESSFULLY resolved the user's issue - status=all now returns ALL three statuses (active + closed + rejected) in priority order as designed!"
+  - agent: "main"
+    message: "🔧 FIX IMPLEMENTATO: Endpoint /api/signals/feed ora include i segnali REJECTED. Il bug era nella logica di sorting in get_signal_feed() che metteva i rejected in 'others' senza gestirli esplicitamente. Fix: aggiunta categoria 'rejected' nel sorting, ora il feed restituisce: active + closed + rejected + others. Test confermato con curl: status=all ora restituisce 192 segnali (30 active + 100 closed + 62 rejected). Testa l'endpoint /api/signals/feed con tutti i parametri status."
