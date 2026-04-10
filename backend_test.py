@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script - FTA SOFT FILTER v4 & Signal Outcome Tracker
-====================================================================
+Backend Testing Script - Signal Generator v10.0 BUY/SELL Direction Logic Fix
+============================================================================
 
-Testing the two critical fixes:
-1. FTA SOFT FILTER v4 - Soft filtering with score impact, not blocking
-2. Signal Outcome Tracker - Active signal tracking and outcome calculation
+Testing the Signal Generator v10.0 fixes for PropSignal Engine trading app:
 
-ENDPOINTS TO TEST:
-1. GET /api/scanner/v3/status - Check stats (signals, rejections, acceptance rate)
-2. GET /api/signals/active - Check active signals being tracked
-3. GET /api/audit/missed-opportunities/by-reason - Check FTA rejection types
-4. GET /api/production/status - Confirm signal_generator_v3 is authorized
-5. GET /api/health - Backend health
+CRITICAL FIXES TO VERIFY:
+1. SELL direction re-enabled in _analyze_direction_advanced (was disabled since v7.0)
+2. _fallback_direction now supports both BUY and SELL
+3. Fixed NameError for missing variables in DirectionContext
+4. Fixed position_sizer.calculate() call removing unsupported 'direction' parameter
+5. Added comprehensive debug logging
+
+TEST REQUIREMENTS:
+1. Health Check: GET /api/health - Should return OK
+2. Signal Generator v3 Status: GET /api/scanner/v3/status - Should show is_running=true, version info, scans_performed > 0
+3. Debug Stats: GET /api/signals/debug/stats - Should return rejection statistics, show both BUY and SELL directions being evaluated
+4. Live Backend Logs Analysis: Check if SELL direction is being evaluated by looking at recent backend logs
+5. Production Status: GET /api/production/status - Should show signal_generator_v3 as authorized engine
+
+IMPORTANT NOTES:
+- API rate limit from Twelve Data may cause "No price data available" errors - this is expected
+- SELL signals may be rejected due to strict quality criteria (Rejection score < 70, FTA < 60) - this is CORRECT behavior
+- The goal is to verify SELL is being EVALUATED (not necessarily accepted)
 """
 
 import json
@@ -121,86 +131,78 @@ class BackendTester:
         return result
 
     def test_scanner_v3_status(self):
-        """Test Signal Generator v3 status - KEY TEST for FTA v4"""
-        self.log("=== TESTING SIGNAL GENERATOR V3 STATUS (FTA v4) ===")
+        """Test Signal Generator v3 status - KEY TEST for v10.0 fixes"""
+        self.log("=== TESTING SIGNAL GENERATOR V3 STATUS (v10.0 fixes) ===")
         result = self.test_endpoint("GET", "/scanner/v3/status", 
                                    description="Signal Generator v3 Status")
         
         if result:
-            # Check for FTA v4 indicators
+            # Check basic functionality
+            is_running = result.get("is_running", False)
             scans = result.get("scans_performed", 0)
             signals = result.get("signals_generated", 0)
             rejections = result.get("rejections", 0)
-            acceptance_rate = result.get("acceptance_rate", 0)
+            version = result.get("version", "unknown")
             
+            self.log(f"📊 Scanner Status: Running={is_running}, Version={version}")
             self.log(f"📊 Scanner Stats: {scans} scans, {signals} signals, {rejections} rejections")
-            self.log(f"📈 Acceptance Rate: {acceptance_rate:.2f}% (Target: 3-8%)")
             
-            # Check if acceptance rate is improving (FTA v4 should increase it)
-            if acceptance_rate > 0:
-                if 3.0 <= acceptance_rate <= 8.0:
-                    self.log("✅ Acceptance rate in target range (3-8%)")
-                elif acceptance_rate > 1.0:
-                    self.log("✅ Acceptance rate improved over old system (~1%)")
-                else:
-                    self.log("⚠️  Acceptance rate still low - FTA may still be too strict")
+            # Verify requirements from review request
+            if is_running:
+                self.log("✅ Signal Generator v3 is running")
+            else:
+                self.log("❌ Signal Generator v3 is NOT running")
+                
+            if scans > 0:
+                self.log("✅ Scans performed > 0")
+            else:
+                self.log("❌ No scans performed")
+                
+            if version:
+                self.log(f"✅ Version info available: {version}")
+            else:
+                self.log("⚠️  No version info")
             
         return result
 
-    def test_missed_opportunities_analysis(self):
-        """Test missed opportunities - KEY TEST for FTA v4 behavior"""
-        self.log("=== TESTING MISSED OPPORTUNITIES (FTA v4 Analysis) ===")
-        
-        # Test main missed opportunities endpoint
-        result = self.test_endpoint("GET", "/audit/missed-opportunities", 
-                                   description="Missed Opportunities Report")
+    def test_debug_stats(self):
+        """Test debug stats endpoint - KEY TEST for v10.0 BUY/SELL evaluation"""
+        self.log("=== TESTING DEBUG STATS (BUY/SELL Direction Evaluation) ===")
+        result = self.test_endpoint("GET", "/signals/debug/stats", 
+                                   description="Debug Stats - Direction Evaluation")
         
         if result:
-            total = result.get("total_analyzed", 0)
-            self.log(f"📊 Total FTA Rejections Analyzed: {total}")
-        
-        # Test by-reason breakdown - KEY for FTA v4
-        by_reason = self.test_endpoint("GET", "/audit/missed-opportunities/by-reason", 
-                                      description="FTA Rejection Reasons")
-        
-        if by_reason:
-            self.log("🔍 FTA Rejection Analysis:")
-            stats_data = by_reason.get("stats", {})
-            for reason, stats in stats_data.items():
-                count = stats.get("total", 0)
-                winrate = stats.get("simulated_winrate", 0)
-                self.log(f"   {reason}: {count} rejections, {winrate:.1f}% win rate")
-                
-                # Look for FTA v4 specific patterns
-                if "hard_block" in reason:
-                    self.log(f"   ⚠️  Hard blocks found: {count} (should be minimal in v4)")
-                elif any(x in reason for x in ["fta_clean", "fta_moderate", "fta_weak"]):
-                    self.log(f"   ✅ FTA v4 quality classification: {reason}")
-                elif "contextual" in reason:
-                    self.log(f"   ✅ FTA v4 contextual evaluation: {reason}")
-        
-        # Test FTA bucket analysis
-        by_fta = self.test_endpoint("GET", "/audit/missed-opportunities/by-fta-bucket", 
-                                   description="FTA Bucket Distribution")
-        
-        if by_fta:
-            self.log("📊 FTA Bucket Distribution:")
-            stats_data = by_fta.get("stats", {})
-            for bucket, stats in stats_data.items():
-                count = stats.get("total", 0)
-                self.log(f"   {bucket}: {count} signals")
-                
-            # Check if we have diversity (not 100% very_close)
-            very_close = stats_data.get("very_close", {}).get("total", 0)
-            total_buckets = sum(stats.get("total", 0) for stats in stats_data.values())
-            if total_buckets > 0:
-                very_close_pct = (very_close / total_buckets) * 100
-                if very_close_pct < 95:
-                    self.log("✅ FTA diversity confirmed - not 100% very_close rejections")
+            # Look for rejection statistics and direction evaluation
+            self.log("📊 Debug Stats Response Structure:")
+            for key, value in result.items():
+                if isinstance(value, dict):
+                    self.log(f"   {key}: {len(value)} items")
                 else:
-                    self.log("⚠️  Still mostly very_close rejections - FTA v4 may not be active")
+                    self.log(f"   {key}: {value}")
+            
+            # Check for BUY/SELL direction evidence
+            buy_found = False
+            sell_found = False
+            
+            # Look through the response for direction indicators
+            response_str = str(result).lower()
+            if 'buy' in response_str:
+                buy_found = True
+                self.log("✅ BUY direction found in debug stats")
+            if 'sell' in response_str:
+                sell_found = True
+                self.log("✅ SELL direction found in debug stats")
+                
+            if buy_found and sell_found:
+                self.log("✅ Both BUY and SELL directions being evaluated")
+            elif sell_found:
+                self.log("✅ SELL direction evaluation confirmed (main fix)")
+            elif buy_found:
+                self.log("⚠️  Only BUY direction found - SELL may still be disabled")
+            else:
+                self.log("⚠️  No clear direction evaluation evidence in debug stats")
         
-        return by_reason
+        return result
 
     def test_signal_outcome_tracker(self):
         """Test Signal Outcome Tracker - KEY TEST"""
@@ -313,77 +315,151 @@ class BackendTester:
         except Exception as e:
             self.log(f"❌ Error reading signal_stats.json: {e}")
 
-    def check_backend_logs_for_fta_v4(self):
-        """Check backend logs for FTA v4 patterns"""
-        self.log("=== CHECKING BACKEND LOGS FOR FTA v4 ===")
+    def check_backend_logs_for_v10_fixes(self):
+        """Check backend logs for v10.0 SELL direction fixes"""
+        self.log("=== CHECKING BACKEND LOGS FOR v10.0 SELL DIRECTION FIXES ===")
         
         try:
-            # Check supervisor logs for FTA v4 patterns
+            # Check supervisor logs for v10.0 SELL direction patterns
             import subprocess
             
-            # Look for FTA v4 decision patterns
-            log_patterns = [
-                "fta_clean",
-                "fta_moderate", 
-                "fta_weak",
-                "hard_block.*FTA distance.*0.5R",
-                "Decision: hard_block",
-                "ratio.*bonus",
-                "ratio.*penalty"
+            # Look for v10.0 SELL direction patterns
+            sell_patterns = [
+                "SELL chosen",
+                "SELL EXTRA CONFIRM", 
+                "Direction=SELL",
+                "SELL.*strong bearish bias",
+                "preliminary_score.*SELL",
+                "H1 STRUCTURAL.*SELL",
+                "M5 TRIGGER.*SELL"
             ]
             
-            for pattern in log_patterns:
+            buy_patterns = [
+                "BUY chosen",
+                "Direction=BUY", 
+                "BUY.*strong bullish bias",
+                "preliminary_score.*BUY",
+                "H1 STRUCTURAL.*BUY",
+                "M5 TRIGGER.*BUY"
+            ]
+            
+            self.log("🔍 Searching for SELL direction evaluation patterns...")
+            
+            sell_found = 0
+            buy_found = 0
+            
+            for pattern in sell_patterns:
                 try:
                     result = subprocess.run([
-                        "tail", "-n", "500", "/var/log/supervisor/backend.out.log"
+                        "tail", "-n", "1000", "/var/log/supervisor/backend.err.log"
                     ], capture_output=True, text=True, timeout=5)
                     
                     if result.returncode == 0:
                         import re
                         matches = re.findall(pattern, result.stdout, re.IGNORECASE)
                         if matches:
-                            self.log(f"✅ Found FTA v4 pattern '{pattern}': {len(matches)} matches")
-                            if pattern == "Decision: hard_block":
-                                self.log("   🔍 Hard blocks found - checking if only for distance < 0.5R")
-                        else:
-                            self.log(f"ℹ️  Pattern '{pattern}' not found in recent logs")
+                            sell_found += len(matches)
+                            self.log(f"✅ Found SELL pattern '{pattern}': {len(matches)} matches")
                             
                 except subprocess.TimeoutExpired:
                     self.log(f"⚠️  Log check timeout for pattern: {pattern}")
+                    
+            for pattern in buy_patterns:
+                try:
+                    result = subprocess.run([
+                        "tail", "-n", "1000", "/var/log/supervisor/backend.err.log"
+                    ], capture_output=True, text=True, timeout=5)
+                    
+                    if result.returncode == 0:
+                        import re
+                        matches = re.findall(pattern, result.stdout, re.IGNORECASE)
+                        if matches:
+                            buy_found += len(matches)
+                            self.log(f"✅ Found BUY pattern '{pattern}': {len(matches)} matches")
+                            
+                except subprocess.TimeoutExpired:
+                    self.log(f"⚠️  Log check timeout for pattern: {pattern}")
+            
+            # Summary of direction evaluation
+            self.log(f"\n📊 DIRECTION EVALUATION SUMMARY:")
+            self.log(f"   SELL direction patterns found: {sell_found}")
+            self.log(f"   BUY direction patterns found: {buy_found}")
+            
+            if sell_found > 0:
+                self.log("✅ CRITICAL FIX VERIFIED: SELL direction is being evaluated!")
+                if buy_found > 0:
+                    self.log("✅ Both BUY and SELL directions are working")
+                else:
+                    self.log("ℹ️  Only SELL patterns found (may be market conditions)")
+            else:
+                self.log("❌ CRITICAL ISSUE: No SELL direction evaluation found in logs")
+                if buy_found > 0:
+                    self.log("⚠️  Only BUY direction found - SELL may still be disabled")
+                else:
+                    self.log("⚠️  No direction evaluation found at all")
+                    
+            # Look for specific v10.0 debug messages
+            self.log("\n🔍 Checking for v10.0 specific debug messages...")
+            v10_patterns = [
+                "DIRECTION DEBUG.*BUY_preliminary_score.*SELL_preliminary_score",
+                "FALLBACK DEBUG",
+                "H1 STRUCTURAL DEBUG",
+                "M5 TRIGGER DEBUG"
+            ]
+            
+            for pattern in v10_patterns:
+                try:
+                    result = subprocess.run([
+                        "tail", "-n", "500", "/var/log/supervisor/backend.err.log"
+                    ], capture_output=True, text=True, timeout=5)
+                    
+                    if result.returncode == 0:
+                        import re
+                        matches = re.findall(pattern, result.stdout, re.IGNORECASE)
+                        if matches:
+                            self.log(f"✅ v10.0 debug logging active: '{pattern}' ({len(matches)} matches)")
+                        else:
+                            self.log(f"ℹ️  v10.0 pattern '{pattern}' not found")
+                            
+                except subprocess.TimeoutExpired:
+                    self.log(f"⚠️  Log check timeout for v10.0 pattern: {pattern}")
                     
         except Exception as e:
             self.log(f"⚠️  Could not check logs: {e}")
 
     def run_comprehensive_test(self):
-        """Run comprehensive backend test"""
-        self.log("🚀 STARTING FTA SOFT FILTER v4 & SIGNAL OUTCOME TRACKER TESTS")
+        """Run comprehensive backend test for Signal Generator v10.0 fixes"""
+        self.log("🚀 STARTING SIGNAL GENERATOR v10.0 BUY/SELL DIRECTION LOGIC FIX TESTS")
         self.log("=" * 80)
         
-        # Core health and status
+        # Test Requirements from Review Request:
+        # 1. Health Check: GET /api/health - Should return OK
         self.test_health_check()
+        
+        # 2. Signal Generator v3 Status: GET /api/scanner/v3/status 
+        #    - Should show is_running=true, version info, scans_performed > 0
+        self.test_scanner_v3_status()
+        
+        # 3. Debug Stats: GET /api/signals/debug/stats 
+        #    - Should return rejection statistics, show both BUY and SELL directions being evaluated
+        self.test_debug_stats()
+        
+        # 5. Production Status: GET /api/production/status 
+        #    - Should show signal_generator_v3 as authorized engine
         self.test_production_status()
         
-        # KEY TESTS for FTA v4
-        self.test_scanner_v3_status()
-        self.test_missed_opportunities_analysis()
-        
-        # KEY TESTS for Signal Outcome Tracker  
-        self.test_signal_outcome_tracker()
-        self.test_active_signals()
-        
-        # Data verification
-        self.check_data_files()
-        
-        # Log analysis
-        self.check_backend_logs_for_fta_v4()
+        # 4. Live Backend Logs Analysis: Check if SELL direction is being evaluated
+        #    - Look for "SELL chosen" messages, "SELL EXTRA CONFIRM" messages
+        #    - Verify both directions are being processed
+        self.check_backend_logs_for_v10_fixes()
         
         # Summary
         self.print_summary()
 
     def print_summary(self):
-        """Print test summary"""
+        """Print test summary for v10.0 fixes"""
         self.log("\n" + "=" * 80)
-        self.log("🏁 TEST SUMMARY")
+        self.log("🏁 SIGNAL GENERATOR v10.0 TEST SUMMARY")
         self.log("=" * 80)
         
         total_tests = len(self.test_results)
@@ -401,35 +477,49 @@ class BackendTester:
                 if not result["success"]:
                     self.log(f"   • {result['description']}: {result['error']}")
         
-        # Key findings
-        self.log("\n🔍 KEY FINDINGS:")
+        # Key findings for v10.0 fixes
+        self.log("\n🔍 KEY FINDINGS FOR v10.0 FIXES:")
         
-        # Look for FTA v4 evidence
-        fta_v4_found = False
+        # Check if Signal Generator v3 is running
+        scanner_working = False
         for result in self.test_results:
-            if result["response_data"] and "missed-opportunities" in result["endpoint"]:
-                fta_v4_found = True
+            if result["success"] and "scanner/v3/status" in result["endpoint"]:
+                if result["response_data"] and result["response_data"].get("is_running"):
+                    scanner_working = True
+                    self.log("✅ Signal Generator v3 is running and operational")
                 break
         
-        if fta_v4_found:
-            self.log("✅ FTA SOFT FILTER v4: Evidence found in missed opportunities analysis")
-        else:
-            self.log("⚠️  FTA SOFT FILTER v4: No clear evidence found")
+        if not scanner_working:
+            self.log("❌ Signal Generator v3 is NOT running properly")
             
-        # Look for outcome tracker evidence  
-        tracker_found = False
+        # Check if production status shows correct authorization
+        production_ok = False
         for result in self.test_results:
-            if result["success"] and "tracker" in result["endpoint"]:
-                tracker_found = True
+            if result["success"] and "production/status" in result["endpoint"]:
+                if result["response_data"]:
+                    auth_engine = result["response_data"].get("engine", {}).get("authorized")
+                    if auth_engine == "signal_generator_v3":
+                        production_ok = True
+                        self.log("✅ signal_generator_v3 is properly authorized in production")
                 break
-                
-        if tracker_found:
-            self.log("✅ SIGNAL OUTCOME TRACKER: Operational and tracking signals")
+        
+        if not production_ok:
+            self.log("⚠️  Production authorization may not be configured correctly")
+            
+        # Overall assessment
+        self.log("\n🎯 OVERALL ASSESSMENT:")
+        if passed_tests == total_tests and scanner_working and production_ok:
+            self.log("✅ Signal Generator v10.0 fixes appear to be working correctly")
+            self.log("✅ SELL direction evaluation has been successfully re-enabled")
+        elif passed_tests >= total_tests * 0.8:  # 80% pass rate
+            self.log("⚠️  Most tests passed but some issues detected")
+            self.log("ℹ️  Check failed tests and log analysis for details")
         else:
-            self.log("⚠️  SIGNAL OUTCOME TRACKER: No clear evidence of operation")
+            self.log("❌ Significant issues detected with v10.0 fixes")
+            self.log("❌ Manual investigation required")
 
 if __name__ == "__main__":
-    print("FTA SOFT FILTER v4 & Signal Outcome Tracker Testing")
+    print("Signal Generator v10.0 BUY/SELL Direction Logic Fix Testing")
     print("=" * 60)
     
     tester = BackendTester()

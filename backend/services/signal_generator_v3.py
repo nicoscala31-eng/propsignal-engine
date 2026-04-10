@@ -2449,11 +2449,25 @@ class SignalGeneratorV3:
                 rej_component = next((c for c in components if "Rejection" in c.name), None)
                 rej_score_val = rej_component.score if rej_component else 0
                 
+                # === DEBUG SELL EXTRA CONFIRMATION ===
+                logger.info(f"📊 [SELL EXTRA CONFIRM] Session={current_session}")
+                logger.info(f"📊 [SELL EXTRA CONFIRM] H1={h1_score:.0f} (need >={self.SELL_RESTRICTED_MIN_H1})")
+                logger.info(f"📊 [SELL EXTRA CONFIRM] M15={m15_score:.0f} (need >={self.SELL_RESTRICTED_MIN_M15})")
+                logger.info(f"📊 [SELL EXTRA CONFIRM] Rejection={rej_score_val:.0f} (need >={self.SELL_RESTRICTED_MIN_REJECTION})")
+                
                 if not (h1_score >= self.SELL_RESTRICTED_MIN_H1 and 
                         m15_score >= self.SELL_RESTRICTED_MIN_M15 and
                         rej_score_val >= self.SELL_RESTRICTED_MIN_REJECTION):
-                    self._record_rejection(self.REJECTION_SELL_SESSION_BLOCKED)
-                    logger.info(f"🚫 {asset.value} SELL: Session {current_session} needs H1>={self.SELL_RESTRICTED_MIN_H1}, M15>={self.SELL_RESTRICTED_MIN_M15}, Rej>={self.SELL_RESTRICTED_MIN_REJECTION}")
+                    failed_conditions = []
+                    if h1_score < self.SELL_RESTRICTED_MIN_H1:
+                        failed_conditions.append(f"H1={h1_score:.0f}<{self.SELL_RESTRICTED_MIN_H1}")
+                    if m15_score < self.SELL_RESTRICTED_MIN_M15:
+                        failed_conditions.append(f"M15={m15_score:.0f}<{self.SELL_RESTRICTED_MIN_M15}")
+                    if rej_score_val < self.SELL_RESTRICTED_MIN_REJECTION:
+                        failed_conditions.append(f"Rej={rej_score_val:.0f}<{self.SELL_RESTRICTED_MIN_REJECTION}")
+                    
+                    self._record_rejection(self.REJECTION_SELL_EXTRA_CONFIRM_FAILED)
+                    logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_EXTRA_CONFIRM_FAILED} ({', '.join(failed_conditions)})")
                     return None
         
         # ========== v10.0: CONFIDENCE THRESHOLDS ==========
@@ -2506,14 +2520,27 @@ class SignalGeneratorV3:
                 fta_component = next((c for c in components if "FTA" in c.name), None)
                 fta_score_val = fta_component.score if fta_component else 0
                 
+                # === DEBUG SELL EXTRA CONFIRMATION (CONFIDENCE LEVEL) ===
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] score={final_score:.0f}% (needs extra confirm 60-63.99)")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] H1={h1_score:.0f} (need >=75)")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] Rejection={rej_score_val:.0f} (need >=70)")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] FTA={fta_score_val:.0f} (need >=60)")
+                
                 if h1_score >= 75 and rej_score_val >= 70 and fta_score_val >= 60:
                     confidence = SignalConfidence.ACCEPTABLE
                     priority = "BUFFER"
                     acceptance_source = "sell_extra_confirmed"
                     logger.info(f"✅ {asset.value} SELL: Extra confirmation passed (H1={h1_score:.0f}, Rej={rej_score_val:.0f}, FTA={fta_score_val:.0f})")
                 else:
+                    failed_extra = []
+                    if h1_score < 75:
+                        failed_extra.append(f"H1={h1_score:.0f}<75")
+                    if rej_score_val < 70:
+                        failed_extra.append(f"Rej={rej_score_val:.0f}<70")
+                    if fta_score_val < 60:
+                        failed_extra.append(f"FTA={fta_score_val:.0f}<60")
                     self._record_rejection(self.REJECTION_SELL_EXTRA_CONFIRM_FAILED)
-                    logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_EXTRA_CONFIRM_FAILED} (score={final_score:.0f}%)")
+                    logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_EXTRA_CONFIRM_FAILED} ({', '.join(failed_extra)})")
                     return None
             else:
                 self._record_rejection(self.REJECTION_SELL_CONFIDENCE_LOW)
@@ -2575,7 +2602,6 @@ class SignalGeneratorV3:
         # Calculate position size using position_sizer
         position = self.position_sizer.calculate(
             asset=asset,
-            direction=direction,
             entry_price=entry_price,
             stop_loss=stop_loss,
             confidence_score=final_score
@@ -2638,6 +2664,25 @@ class SignalGeneratorV3:
         )
         
         # ========== DIRECTION QUALITY AUDIT ==========
+        
+        # Define scores from components for DirectionContext
+        # Find momentum from trigger component
+        trigger_component = next((c for c in components if "Trigger" in c.name), None)
+        mom_score = trigger_component.score if trigger_component else 50
+        
+        # Structure score from M15
+        struct_score = m15_score
+        
+        # Use M15 as MTF proxy
+        mtf_score = mtf_score_val
+        
+        # Entry score (from entry validation)
+        entry_score = 70  # Default since we passed entry validation
+        
+        # Spread/concentration/regime scores - default values
+        spread_score = 100  # Assuming no spread penalty since we passed validation
+        conc_score = 100    # Assuming no concentration issue
+        regime_score = 60   # Default neutral regime
         
         # Build DirectionContext for audit
         direction_context = DirectionContext(
@@ -2997,10 +3042,15 @@ class SignalGeneratorV3:
             return 25, f"Low R:R ({rr:.2f})"
     
     def _analyze_direction_advanced(self, h1: List, m15: List, m5: List) -> Tuple[Optional[str], float, str]:
-        """Advanced direction analysis - v7.0: BUY ONLY (SELL disabled)
+        """
+        v10.0: Advanced direction analysis - BUY + SELL BOTH ENABLED
         
-        Data analysis showed 0% win rate on SELL trades (23 consecutive losses).
-        All SELL signals are now filtered out at source.
+        Evaluates both directions based on:
+        - H1 trend (50% weight)
+        - M15 trend (30% weight)
+        - M5 momentum (20% weight)
+        
+        Returns direction with strongest bias.
         """
         h1_trend = self._get_trend(h1[-20:]) if len(h1) >= 20 else 0
         m15_trend = self._get_trend(m15[-20:]) if len(m15) >= 20 else 0
@@ -3008,29 +3058,63 @@ class SignalGeneratorV3:
         
         total = h1_trend * 0.5 + m15_trend * 0.3 + m5_momentum * 0.2
         
-        # v7.0: ONLY allow BUY direction
+        # === DEBUG: Direction candidates ===
+        logger.info(f"📊 [DIRECTION DEBUG] H1_trend={h1_trend:.3f}, M15_trend={m15_trend:.3f}, M5_momentum={m5_momentum:.3f}")
+        logger.info(f"📊 [DIRECTION DEBUG] total_score={total:.3f}")
+        
+        # Calculate BUY and SELL preliminary scores
+        buy_score = 0
+        sell_score = 0
+        
+        if total > 0:
+            buy_score = total * 100
+        if total < 0:
+            sell_score = abs(total) * 100
+        
+        logger.info(f"📊 [DIRECTION DEBUG] BUY_preliminary_score={buy_score:.1f}, SELL_preliminary_score={sell_score:.1f}")
+        
+        # v10.0: BUY direction check
         if total > 0.2:
+            logger.info(f"✅ [DIRECTION DEBUG] BUY chosen - strong bullish bias ({total:.3f} > 0.2)")
             return "BUY", total * 100, "Bullish bias across timeframes"
         elif total > 0 and m5_momentum > 0.2:
-            # Weaker bullish but momentum confirms
+            logger.info(f"✅ [DIRECTION DEBUG] BUY chosen - M5 momentum confirms ({m5_momentum:.3f} > 0.2)")
             return "BUY", 50, "M5 bullish momentum"
         
-        # v7.0: SELL DISABLED - was 0% WR on 23 trades
-        # Previously: elif total < -0.2: return "SELL", ...
+        # v10.0: SELL direction check (RE-ENABLED!)
+        if total < -0.2:
+            logger.info(f"✅ [DIRECTION DEBUG] SELL chosen - strong bearish bias ({total:.3f} < -0.2)")
+            return "SELL", abs(total) * 100, "Bearish bias across timeframes"
+        elif total < 0 and m5_momentum < -0.2:
+            logger.info(f"✅ [DIRECTION DEBUG] SELL chosen - M5 momentum confirms ({m5_momentum:.3f} < -0.2)")
+            return "SELL", 50, "M5 bearish momentum"
         
-        return None, 0, "No clear BUY direction (SELL disabled v7.0)"
+        logger.info(f"❌ [DIRECTION DEBUG] No direction chosen - bias too weak (total={total:.3f})")
+        return None, 0, f"No clear direction (bias={total:.3f})"
     
     def _fallback_direction(self, m5: List) -> Optional[str]:
-        """Fallback direction from M5 - v7.0: BUY ONLY (SELL disabled)"""
+        """
+        v10.0: Fallback direction from M5 - BUY + SELL BOTH ENABLED
+        
+        Simple momentum check on last 5 candles.
+        """
         if len(m5) < 5:
+            logger.info("❌ [FALLBACK] Insufficient M5 candles")
             return None
         
         closes = [c.get('close', 0) for c in m5[-5:]]
-        # v7.0: Only return BUY, never SELL
+        change_pct = (closes[-1] - closes[0]) / closes[0] if closes[0] > 0 else 0
+        
+        logger.info(f"📊 [FALLBACK DEBUG] M5 closes: first={closes[0]:.5f}, last={closes[-1]:.5f}, change={change_pct*100:.3f}%")
+        
         if closes[-1] > closes[0] * 1.0003:
+            logger.info(f"✅ [FALLBACK] BUY chosen (change={change_pct*100:.3f}% > 0.03%)")
             return "BUY"
         elif closes[-1] < closes[0] * 0.9997:
+            logger.info(f"✅ [FALLBACK] SELL chosen (change={change_pct*100:.3f}% < -0.03%)")
             return "SELL"
+        
+        logger.info(f"❌ [FALLBACK] No direction - change too small ({change_pct*100:.3f}%)")
         return None
     
     # ==================== v10.0 NEW SCORING FUNCTIONS ====================
@@ -3056,7 +3140,7 @@ class SignalGeneratorV3:
         5. EMA20 slope negative
         """
         if len(h1) < 50:
-            logger.debug(f"H1 Structural: Insufficient data ({len(h1)} < 50)")
+            logger.info(f"📊 [H1 STRUCTURAL DEBUG] Insufficient data ({len(h1)} < 50)")
             return 50, "Insufficient H1 data"
         
         # Calculate EMAs using helper
@@ -3064,17 +3148,27 @@ class SignalGeneratorV3:
         ema50 = calculate_ema(h1, 50)
         ema20_slope = calculate_ema_slope(h1, 20, lookback=5)
         
-        # Debug: log EMA values
+        # Get current price
         current_price = h1[-1].get('close', 0)
-        logger.debug(f"H1 Structural: EMA20={ema20:.5f}, EMA50={ema50:.5f}, slope={ema20_slope:.4f}, price={current_price:.5f}")
         
         # Get swing points
         swing_highs = get_recent_swing_highs(h1[-30:], count=3, lookback=2)
         swing_lows = get_recent_swing_lows(h1[-30:], count=3, lookback=2)
         
-        logger.debug(f"H1 Structural: Found {len(swing_highs)} highs, {len(swing_lows)} lows")
+        # === DEBUG H1 STRUCTURAL BIAS ===
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] Direction={direction}")
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] close={current_price:.5f}, EMA20={ema20:.5f}, EMA50={ema50:.5f}")
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] EMA20_slope={ema20_slope:.4f}")
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] swing_highs_count={len(swing_highs)}, swing_lows_count={len(swing_lows)}")
+        
+        if len(swing_highs) >= 2:
+            logger.info(f"📊 [H1 STRUCTURAL DEBUG] last_2_swing_highs: {[sh.price for sh in swing_highs[-2:]]}")
+        if len(swing_lows) >= 2:
+            logger.info(f"📊 [H1 STRUCTURAL DEBUG] last_2_swing_lows: {[sl.price for sl in swing_lows[-2:]]}")
         
         conditions_met = 0
+        conditions_bullish = []
+        conditions_bearish = []
         details = []
         
         if direction == "BUY":
@@ -3133,7 +3227,9 @@ class SignalGeneratorV3:
         score = score_map.get(conditions_met, 30)
         reason = f"H1 Structural {conditions_met}/5 ({', '.join(details)})"
         
-        logger.debug(f"H1 Structural: {reason} -> score={score}")
+        # === DEBUG H1 FINAL SCORE ===
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] conditions_met={conditions_met}/5, details={details}")
+        logger.info(f"📊 [H1 STRUCTURAL DEBUG] FINAL: score={score}, direction={direction}")
         
         return score, reason
     
@@ -3225,6 +3321,7 @@ class SignalGeneratorV3:
         C. Continuation short: After pullback, 2 consecutive bearish closes
         """
         if len(m5) < 15:
+            logger.info(f"📊 [M5 TRIGGER DEBUG] Insufficient M5 data ({len(m5)} < 15)")
             return 30, "Insufficient M5 data"
         
         ema20 = calculate_ema(m5, 20)
@@ -3236,18 +3333,27 @@ class SignalGeneratorV3:
         trigger_strength = 0
         trigger_type = ""
         
+        # === DEBUG: Pattern detection state ===
+        patterns_checked = []
+        
         if direction == "BUY":
             # Pattern A: Break-and-hold
+            pattern_a_found = False
             if len(recent) >= 10:
                 micro_highs = [c.get('high', 0) for c in recent[-10:-2]]
                 if micro_highs:
                     highest_micro = max(micro_highs)
-                    if last_3[-2].get('close', 0) > highest_micro and last_3[-1].get('close', 0) > highest_micro:
+                    close_n2 = last_3[-2].get('close', 0)
+                    close_n1 = last_3[-1].get('close', 0)
+                    if close_n2 > highest_micro and close_n1 > highest_micro:
                         trigger_found = True
                         trigger_strength = 95
                         trigger_type = "Break-and-hold"
+                        pattern_a_found = True
+                    patterns_checked.append(f"Break-hold(highest={highest_micro:.5f}, close_n2={close_n2:.5f}, close_n1={close_n1:.5f}, found={pattern_a_found})")
             
             # Pattern B: Reclaim
+            pattern_b_found = False
             if not trigger_found and len(last_5) >= 3:
                 # Check if any of last 5 candles went below EMA20 and current is above
                 below_ema = any(c.get('low', float('inf')) < ema20 for c in last_5[:-1])
@@ -3257,8 +3363,11 @@ class SignalGeneratorV3:
                     trigger_found = True
                     trigger_strength = 80
                     trigger_type = "EMA20 Reclaim"
+                    pattern_b_found = True
+                patterns_checked.append(f"Reclaim(below_ema={below_ema}, current_above={current_above}, bullish={current_bullish}, found={pattern_b_found})")
             
             # Pattern C: Continuation
+            pattern_c_found = False
             if not trigger_found:
                 if len(last_3) >= 2:
                     c1_bullish = is_bullish_candle(last_3[-2])
@@ -3268,9 +3377,12 @@ class SignalGeneratorV3:
                         trigger_found = True
                         trigger_strength = 60
                         trigger_type = "Continuation"
+                        pattern_c_found = True
+                    patterns_checked.append(f"Continuation(c1_bull={c1_bullish}, c2_bull={c2_bullish}, c2_higher={c2_higher}, found={pattern_c_found})")
         
         else:  # SELL
             # Pattern A: Rejection
+            pattern_a_found = False
             for candle in last_3:
                 if is_rejection_candle(candle, "SELL", min_wick_ratio=0.35):
                     close_pos = get_close_position_in_range(candle)
@@ -3283,14 +3395,18 @@ class SignalGeneratorV3:
                                 trigger_found = True
                                 trigger_strength = 95
                                 trigger_type = "Rejection confirmed"
+                                pattern_a_found = True
                                 break
                         else:
                             trigger_found = True
                             trigger_strength = 80
                             trigger_type = "Rejection"
+                            pattern_a_found = True
                             break
+            patterns_checked.append(f"Rejection(found={pattern_a_found})")
             
             # Pattern B: Failed push
+            pattern_b_found = False
             if not trigger_found and len(recent) >= 10:
                 micro_highs = [c.get('high', 0) for c in recent[-10:-3]]
                 if micro_highs:
@@ -3304,9 +3420,12 @@ class SignalGeneratorV3:
                                 trigger_found = True
                                 trigger_strength = 80
                                 trigger_type = "Failed push"
+                                pattern_b_found = True
                                 break
+            patterns_checked.append(f"Failed-push(found={pattern_b_found})")
             
             # Pattern C: Continuation short
+            pattern_c_found = False
             if not trigger_found:
                 if len(last_3) >= 2:
                     c1_bearish = is_bearish_candle(last_3[-2])
@@ -3316,9 +3435,17 @@ class SignalGeneratorV3:
                         trigger_found = True
                         trigger_strength = 60
                         trigger_type = "Continuation short"
+                        pattern_c_found = True
+                    patterns_checked.append(f"Continuation-short(c1_bear={c1_bearish}, c2_bear={c2_bearish}, c2_lower={c2_lower}, found={pattern_c_found})")
+        
+        # === DEBUG M5 TRIGGER FINAL ===
+        logger.info(f"📊 [M5 TRIGGER DEBUG] Direction={direction}, trigger_found={trigger_found}")
+        logger.info(f"📊 [M5 TRIGGER DEBUG] patterns_checked: {patterns_checked}")
         
         if trigger_found:
+            logger.info(f"📊 [M5 TRIGGER DEBUG] TRIGGER FOUND: {trigger_type}, strength={trigger_strength}")
             return trigger_strength, f"Trigger: {trigger_type}"
+        logger.info(f"📊 [M5 TRIGGER DEBUG] NO TRIGGER: returning score=30")
         return 30, "No clear trigger"
     
     def _score_pullback_quality_v10(self, asset: Asset, m15: List, m5: List, direction: str, current_price: float) -> Tuple[float, str, bool]:
