@@ -20673,7 +20673,107 @@
       "time_in_profit_seconds": 0.0,
       "time_in_drawdown_seconds": 0.0,
       "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_BUY_20260410_124025",
+      "timestamp": "2026-04-10T12:40:25.470887",
+      "asset": "XAUUSD",
+      "direction": "BUY",
+      "entry_price": 4774.18,
+      "stop_loss": 4752.527835178571,
+      "take_profit_1": 4806.658247232144,
+      "take_profit_2": 4821.814762607145,
+      "confidence_score": 68.95,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Below 4752.53",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 69.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1 Structural Bias",
+            "weight": 20.0,
+            "score": 70,
+            "contribution": 14.0,
+            "reason": "H1 Structural 3/5 (P>EMA20, EMA20>50, Slope+)"
+          },
+          {
+            "factor": "M15 Structure Quality",
+            "weight": 18.0,
+            "score": 80,
+            "contribution": 14.4,
+            "reason": "M15 Structure 2/3 (Partial structure, P>EMA20, SL intact)"
+          },
+          {
+            "factor": "M5 Trigger Quality",
+            "weight": 16.0,
+            "score": 95,
+            "contribution": 15.2,
+            "reason": "Trigger: Break-and-hold"
+          },
+          {
+            "factor": "Pullback Quality",
+            "weight": 14.0,
+            "score": 60,
+            "contribution": 8.4,
+            "reason": "Pullback: Shallow pullback (-70%)"
+          },
+          {
+            "factor": "Directional Continuation",
+            "weight": 10.0,
+            "score": 80,
+            "contribution": 8.0,
+            "reason": "Continuation 3/4 (M15>EMA, HL intact, M5 resume)"
+          },
+          {
+            "factor": "FTA / Clean Space",
+            "weight": 14.0,
+            "score": 25,
+            "contribution": 3.5,
+            "reason": "Very limited clean space (18%)"
+          },
+          {
+            "factor": "Session Quality",
+            "weight": 5.0,
+            "score": 85,
+            "contribution": 4.2,
+            "reason": "London session"
+          },
+          {
+            "factor": "Market Sanity Check",
+            "weight": 3.0,
+            "score": 40,
+            "contribution": 1.2,
+            "reason": "Unconfirmed spike ($20.6)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 4774.18,
+      "lowest_price_seen": 4774.18,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 0.0,
+      "peak_r_before_reversal": 0.0
     }
   ],
-  "saved_at": "2026-04-10T12:40:20.015978"
+  "saved_at": "2026-04-10T12:40:25.686787"
 }
