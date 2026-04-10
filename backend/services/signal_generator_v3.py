@@ -2365,8 +2365,9 @@ class SignalGeneratorV3:
                 return None
         
         # ========== 6. FTA / CLEAN SPACE (14% BUY / 10% SELL) ==========
+        # v10.4: Pass trigger_score for dynamic FTA calculation
         fta_score, fta_reason, fta_valid = self._score_fta_clean_space_v10(
-            asset, m15_candles, m5_candles, entry_price, take_profit_1, direction
+            asset, m15_candles, m5_candles, entry_price, take_profit_1, direction, trigger_score
         )
         fta_weight = weights.get('fta_clean_space', 14)
         components.append(ScoreComponent("FTA / Clean Space", fta_weight, fta_score, fta_reason))
@@ -3638,66 +3639,121 @@ class SignalGeneratorV3:
         return base_score, f"Pullback: {zone} ({depth*100:.0f}%)", True
     
     def _score_fta_clean_space_v10(self, asset: Asset, m15: List, m5: List, entry_price: float, 
-                                   take_profit: float, direction: str) -> Tuple[float, str, bool]:
+                                   take_profit: float, direction: str, trigger_score: float = 50) -> Tuple[float, str, bool]:
         """
-        v10.0: FTA / Clean Space scoring
+        v10.4: FTA / Clean Space scoring - DYNAMIC ATR-BASED
         
         FTA = First Trouble Area between entry and TP
-        clean_space_ratio = distance_to_FTA / distance_to_TP
+        
+        NEW v10.4:
+        - FTA minimum based on ATR_M5 (not fixed threshold)
+        - EURUSD: FTA_min = max(5 pips, 0.8 * ATR_M5)
+        - XAUUSD: FTA_min = max(50 pips, 0.8 * ATR_M5)
+        - Exception: if trigger_score >= 70, allow FTA >= 35% of minimum
+        - clean_space_ratio < 0.30 = HARD REJECT
         
         Returns: (score, reason, is_valid)
-        is_valid = False if clean_space < 0.30 (reject signal)
+        is_valid = False if FTA too close or clean_space < 0.30
         """
-        # Find FTA (first obstacle)
-        swing_highs_m15 = get_recent_swing_highs(m15[-30:], count=3, lookback=2)
-        swing_lows_m15 = get_recent_swing_lows(m15[-30:], count=3, lookback=2)
-        swing_highs_m5 = get_recent_swing_highs(m5[-30:], count=3, lookback=2)
-        swing_lows_m5 = get_recent_swing_lows(m5[-30:], count=3, lookback=2)
+        # Calculate ATR_M5
+        atr_m5 = calculate_atr(m5, 14) if len(m5) >= 14 else 0
         
+        # Dynamic FTA minimum based on ATR
+        if asset == Asset.EURUSD:
+            pip_multiplier = 10000
+            min_pips = 5
+            fta_min_dynamic = max(min_pips / pip_multiplier, 0.8 * atr_m5)
+        else:  # XAUUSD
+            pip_multiplier = 100
+            min_pips = 50
+            fta_min_dynamic = max(min_pips / pip_multiplier, 0.8 * atr_m5)
+        
+        # Exception for strong triggers
+        if trigger_score >= 70:
+            fta_min_dynamic = fta_min_dynamic * 0.35  # Allow closer FTA with strong trigger
+        
+        # Find FTA (first obstacle) - IMPROVED DETECTION
+        fta_price = None
+        fta_type = "none"
         tp_distance = abs(take_profit - entry_price)
         
         if tp_distance == 0:
             return 50, "No TP distance", True
         
-        fta_distance = tp_distance  # Default: no FTA found = clean all the way
-        fta_found = False
+        # 1. Swing points (lookback 5 as requested)
+        swing_highs_m5 = get_recent_swing_highs(m5[-30:], count=5, lookback=2)
+        swing_lows_m5 = get_recent_swing_lows(m5[-30:], count=5, lookback=2)
+        swing_highs_m15 = get_recent_swing_highs(m15[-30:], count=3, lookback=2)
+        swing_lows_m15 = get_recent_swing_lows(m15[-30:], count=3, lookback=2)
+        
+        # 2. Wick rejection zones (candles with wick >= 40% range)
+        wick_zones = []
+        for candle in m5[-20:]:
+            candle_range = candle.get('high', 0) - candle.get('low', 0)
+            if candle_range > 0:
+                upper_wick = candle.get('high', 0) - max(candle.get('open', 0), candle.get('close', 0))
+                lower_wick = min(candle.get('open', 0), candle.get('close', 0)) - candle.get('low', 0)
+                
+                if upper_wick / candle_range >= 0.40:
+                    wick_zones.append(candle.get('high', 0))
+                if lower_wick / candle_range >= 0.40:
+                    wick_zones.append(candle.get('low', 0))
+        
+        # 3. Touch zones (>= 2 touches in last 20 candles)
+        touch_zones = self._find_touch_zones(m5[-20:], tolerance=atr_m5 * 0.3 if atr_m5 > 0 else 0.0001)
+        
+        obstacles = []
         
         if direction == "BUY":
             # FTA = first resistance above entry
-            obstacles = []
-            
             for sh in swing_highs_m15 + swing_highs_m5:
                 if entry_price < sh.price < take_profit:
-                    obstacles.append(sh.price)
+                    obstacles.append((sh.price, "swing_high"))
+            
+            for wz in wick_zones:
+                if entry_price < wz < take_profit:
+                    obstacles.append((wz, "wick_rejection"))
+            
+            for tz in touch_zones:
+                if entry_price < tz < take_profit:
+                    obstacles.append((tz, "touch_zone"))
             
             # Round numbers
             if asset == Asset.EURUSD:
-                round_step = 0.005  # 50 pips
+                round_step = 0.005
                 start = int(entry_price * 1000) / 1000
                 for r in range(1, 10):
                     round_level = start + r * round_step
                     if entry_price < round_level < take_profit:
-                        obstacles.append(round_level)
-            else:  # XAUUSD
-                round_step = 10.0  # $10 levels
+                        obstacles.append((round_level, "round_number"))
+            else:
+                round_step = 10.0
                 start = int(entry_price / 10) * 10
                 for r in range(1, 10):
                     round_level = start + r * round_step
                     if entry_price < round_level < take_profit:
-                        obstacles.append(round_level)
+                        obstacles.append((round_level, "round_number"))
             
             if obstacles:
-                fta_price = min(obstacles)
+                obstacles.sort(key=lambda x: x[0])
+                fta_price, fta_type = obstacles[0]
                 fta_distance = fta_price - entry_price
-                fta_found = True
+            else:
+                fta_distance = tp_distance  # No FTA = clean
                 
         else:  # SELL
             # FTA = first support below entry
-            obstacles = []
-            
             for sl in swing_lows_m15 + swing_lows_m5:
                 if take_profit < sl.price < entry_price:
-                    obstacles.append(sl.price)
+                    obstacles.append((sl.price, "swing_low"))
+            
+            for wz in wick_zones:
+                if take_profit < wz < entry_price:
+                    obstacles.append((wz, "wick_rejection"))
+            
+            for tz in touch_zones:
+                if take_profit < tz < entry_price:
+                    obstacles.append((tz, "touch_zone"))
             
             # Round numbers
             if asset == Asset.EURUSD:
@@ -3706,46 +3762,96 @@ class SignalGeneratorV3:
                 for r in range(1, 10):
                     round_level = start - r * round_step
                     if take_profit < round_level < entry_price:
-                        obstacles.append(round_level)
-            else:  # XAUUSD
+                        obstacles.append((round_level, "round_number"))
+            else:
                 round_step = 10.0
                 start = int(entry_price / 10) * 10
                 for r in range(1, 10):
                     round_level = start - r * round_step
                     if take_profit < round_level < entry_price:
-                        obstacles.append(round_level)
+                        obstacles.append((round_level, "round_number"))
             
             if obstacles:
-                fta_price = max(obstacles)
+                obstacles.sort(key=lambda x: -x[0])  # Highest first for SELL
+                fta_price, fta_type = obstacles[0]
                 fta_distance = entry_price - fta_price
-                fta_found = True
+            else:
+                fta_distance = tp_distance
         
         # Calculate clean space ratio
         clean_space_ratio = fta_distance / tp_distance if tp_distance > 0 else 0
         
-        # v10.0 FIX: FTA blocking DISABLED - only use as scoring factor
-        # The clean space ratio is just used for scoring, not blocking
-        # if clean_space_ratio < 0.15:
-        #     return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 15%)", False
+        # Calculate distance in pips for logging
+        fta_distance_pips = fta_distance * pip_multiplier
+        tp_distance_pips = tp_distance * pip_multiplier
+        atr_m5_pips = atr_m5 * pip_multiplier
+        fta_min_pips = fta_min_dynamic * pip_multiplier
         
-        # Score based on clean space
-        if clean_space_ratio >= 0.80:
-            score = 100
-            reason = f"Excellent clean space ({clean_space_ratio*100:.0f}%)"
-        elif clean_space_ratio >= 0.65:
-            score = 80
-            reason = f"Good clean space ({clean_space_ratio*100:.0f}%)"
-        elif clean_space_ratio >= 0.50:
-            score = 60
-            reason = f"Moderate clean space ({clean_space_ratio*100:.0f}%)"
+        # === LOGGING (as requested) ===
+        logger.info(f"📊 [FTA v10.4] {asset.value} {direction}")
+        logger.info(f"📊 [FTA v10.4] ATR_M5={atr_m5_pips:.1f}p, FTA_min={fta_min_pips:.1f}p (trigger={trigger_score:.0f})")
+        logger.info(f"📊 [FTA v10.4] FTA_distance={fta_distance_pips:.1f}p, TP_distance={tp_distance_pips:.1f}p")
+        logger.info(f"📊 [FTA v10.4] clean_space_ratio={clean_space_ratio:.2f}, fta_type={fta_type}")
+        
+        # v10.4: HARD REJECT if clean_space < 0.30
+        if clean_space_ratio < 0.30:
+            logger.info(f"🚫 [FTA v10.4] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 30%")
+            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 30%)", False
+        
+        # v10.4: Check dynamic FTA minimum
+        if fta_distance < fta_min_dynamic and fta_type != "none":
+            if trigger_score >= 70:
+                # Strong trigger exception - allow but penalize
+                logger.info(f"⚠️ [FTA v10.4] FTA close but strong trigger - allowing with penalty")
+                score = 40
+                reason = f"FTA close ({fta_distance_pips:.1f}p < {fta_min_pips:.1f}p) but strong trigger"
+            else:
+                logger.info(f"🚫 [FTA v10.4] REJECT: FTA {fta_distance_pips:.1f}p < min {fta_min_pips:.1f}p")
+                return 25, f"FTA too close ({fta_distance_pips:.1f}p < {fta_min_pips:.1f}p)", False
         else:
-            score = 35
-            reason = f"Limited clean space ({clean_space_ratio*100:.0f}%)"
+            # Score based on clean space
+            if clean_space_ratio >= 0.80:
+                score = 100
+                reason = f"Excellent clean space ({clean_space_ratio*100:.0f}%)"
+            elif clean_space_ratio >= 0.65:
+                score = 80
+                reason = f"Good clean space ({clean_space_ratio*100:.0f}%)"
+            elif clean_space_ratio >= 0.50:
+                score = 60
+                reason = f"Moderate clean space ({clean_space_ratio*100:.0f}%)"
+            elif clean_space_ratio >= 0.30:
+                score = 45 - int((0.50 - clean_space_ratio) * 30)  # 30-50% gets penalty
+                reason = f"Limited clean space ({clean_space_ratio*100:.0f}%) - penalty applied"
+            else:
+                score = 25
+                reason = f"Very limited clean space ({clean_space_ratio*100:.0f}%)"
         
-        if not fta_found:
-            reason += " (no FTA)"
+        # Bonus for very clean space
+        if clean_space_ratio >= 0.80 and fta_type == "none":
+            score = min(100, score + 3)
+            reason += " (+3 bonus)"
         
         return score, reason, True
+    
+    def _find_touch_zones(self, candles: List, tolerance: float) -> List[float]:
+        """Find price levels with >= 2 touches"""
+        if len(candles) < 5:
+            return []
+        
+        levels = []
+        for c in candles:
+            levels.extend([c.get('high', 0), c.get('low', 0)])
+        
+        # Group similar levels
+        touch_zones = []
+        for level in levels:
+            touches = sum(1 for l in levels if abs(l - level) <= tolerance)
+            if touches >= 2:
+                # Check if not already in list
+                if not any(abs(tz - level) <= tolerance for tz in touch_zones):
+                    touch_zones.append(level)
+        
+        return touch_zones
     
     def _score_directional_continuation(self, m15: List, m5: List, direction: str) -> Tuple[float, str]:
         """
