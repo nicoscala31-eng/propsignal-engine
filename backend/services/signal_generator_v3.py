@@ -3811,14 +3811,15 @@ class SignalGeneratorV3:
         logger.info(f"📊 [FTA v10.4] FTA_distance={fta_distance_pips:.1f}p, TP_distance={tp_distance_pips:.1f}p")
         logger.info(f"📊 [FTA v10.4] clean_space_ratio={clean_space_ratio:.2f}, fta_type={fta_type}")
         
-        # v10.5: SOFT REJECT - FTA now penalizes score instead of hard blocking
-        # Only hard reject if clean_space < 0.05 (extremely tight)
-        if clean_space_ratio < 0.05:
+        # v10.5 BALANCED: SOFT REJECT with reasonable threshold
+        # Wick rejection DISABLED (too sensitive)
+        # Clean space threshold: 15% (balanced between quality and quantity)
+        if clean_space_ratio < 0.15:
             fta_audit["decision"] = "HARD_REJECT"
-            fta_audit["rejection_reason"] = "EXTREMELY_LOW_CLEAN_SPACE"
-            logger.info(f"🚫 [FTA v10.5] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 5%")
+            fta_audit["rejection_reason"] = "LOW_CLEAN_SPACE"
+            logger.info(f"🚫 [FTA v10.5] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 15%")
             logger.info(f"📋 [FTA AUDIT] {json.dumps(fta_audit)}")
-            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 5%)", False
+            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 15%)", False
         
         # v10.4: Check dynamic FTA minimum
         if fta_distance < fta_min_dynamic and fta_type != "none":
