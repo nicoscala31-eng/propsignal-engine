@@ -972,10 +972,15 @@ async def get_signal_feed(
             snapshot_ids_from_tracker.add(sig_id)
     
     # STEP 2: Get snapshots (for rejected and any missed signals)
+    # When status is 'all' or None, we need BOTH accepted and rejected
+    snapshot_status_filter = status
+    if status in [None, 'all']:
+        snapshot_status_filter = 'all'  # Get everything including rejected
+    
     snapshot_feed = signal_snapshot_service.get_feed(
         symbol=symbol,
         direction=direction,
-        status_filter=status,
+        status_filter=snapshot_status_filter,
         limit=1000,  # Get more, we'll filter later
         offset=0
     )
