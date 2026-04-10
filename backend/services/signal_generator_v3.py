@@ -2314,6 +2314,22 @@ class SignalGeneratorV3:
         if h1_score < h1_min:
             self._record_rejection("h1_weak")
             logger.info(f"🚫 {asset.value} {direction}: H1 Structural Bias too weak ({h1_score:.0f}% < {h1_min}%)")
+            # Save rejected candidate audit
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="STRUCTURAL",
+                decision="rejected",
+                rejection_reason="h1_weak",
+                rejection_details=f"H1 Structural Bias {h1_score:.0f}% < {h1_min}%",
+                final_score=h1_score,
+                threshold=h1_min,
+                entry_price=current_price,
+                stop_loss=0,
+                take_profit=0,
+                risk_reward=0
+            )
             return None
         
         # ========== 2. M15 STRUCTURE QUALITY (18% BUY / 20% SELL) ==========
@@ -2331,6 +2347,22 @@ class SignalGeneratorV3:
         if trigger_score < 55:
             self._record_rejection(self.REJECTION_WEAK_TRIGGER)
             logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_WEAK_TRIGGER} (score={trigger_score:.0f}%)")
+            # Save rejected candidate audit
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="STRUCTURAL",
+                decision="rejected",
+                rejection_reason=self.REJECTION_WEAK_TRIGGER,
+                rejection_details=f"Trigger score {trigger_score:.0f}% < 55%",
+                final_score=trigger_score,
+                threshold=55,
+                entry_price=current_price,
+                stop_loss=0,
+                take_profit=0,
+                risk_reward=0
+            )
             return None
         
         # ========== 4. PULLBACK QUALITY (14% BUY / 12% SELL) ==========
@@ -2376,6 +2408,22 @@ class SignalGeneratorV3:
         if not fta_valid:
             self._record_rejection(self.REJECTION_FTA_BLOCKED)
             logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_FTA_BLOCKED}: {fta_reason}")
+            # Save rejected candidate audit
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="STRUCTURAL",
+                decision="rejected",
+                rejection_reason=self.REJECTION_FTA_BLOCKED,
+                rejection_details=fta_reason,
+                final_score=fta_score,
+                threshold=15,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit_1,
+                risk_reward=rr_ratio
+            )
             return None
         
         # ========== 7. SESSION QUALITY (5% BUY / 4% SELL) ==========
