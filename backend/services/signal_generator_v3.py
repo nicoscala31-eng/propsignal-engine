@@ -2308,8 +2308,10 @@ class SignalGeneratorV3:
         h1_weight = weights.get('h1_structural_bias', 20)
         components.append(ScoreComponent("H1 Structural Bias", h1_weight, h1_score, h1_reason))
         
-        # v10.0: Hard filter - H1 too weak
-        h1_min = 60 if direction == "BUY" else 65
+        # v10.1: Relaxed H1 thresholds
+        # Was: BUY 60, SELL 65
+        # Now: BUY 50, SELL 55 (data shows 50 common, need to accept more)
+        h1_min = 50 if direction == "BUY" else 55
         if h1_score < h1_min:
             self._record_rejection("h1_weak")
             logger.info(f"🚫 {asset.value} {direction}: H1 Structural Bias too weak ({h1_score:.0f}% < {h1_min}%)")
@@ -2484,20 +2486,39 @@ class SignalGeneratorV3:
                 priority = "HIGH" if final_score >= 80 else "NORMAL"
                 acceptance_source = "buy_preferred"
             elif final_score >= self.BUY_MIN_CONFIDENCE:  # 62-67.99: Extra confirmation
-                # Need: H1 >= 70, M5 Trigger >= 70, FTA >= 60
+                # v10.1: Relaxed requirements
+                # Was: H1 >= 70, M5 Trigger >= 70, FTA >= 60
+                # Now: H1 >= 55, M5 Trigger >= 60, FTA >= 50
                 trigger_component = next((c for c in components if "Trigger" in c.name), None)
                 trigger_score_val = trigger_component.score if trigger_component else 0
                 fta_component = next((c for c in components if "FTA" in c.name), None)
                 fta_score_val = fta_component.score if fta_component else 0
                 
-                if h1_score >= 70 and trigger_score_val >= 70 and fta_score_val >= 60:
+                # v10.1: Relaxed extra confirmation
+                h1_ok = h1_score >= 55
+                trigger_ok = trigger_score_val >= 60
+                fta_ok = fta_score_val >= 50
+                
+                logger.info(f"📊 [BUY EXTRA CONFIRM] score={final_score:.0f}%")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] H1={h1_score:.0f} (need >=55) {'✓' if h1_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] Trigger={trigger_score_val:.0f} (need >=60) {'✓' if trigger_ok else '✗'}")
+                logger.info(f"📊 [BUY EXTRA CONFIRM] FTA={fta_score_val:.0f} (need >=50) {'✓' if fta_ok else '✗'}")
+                
+                if h1_ok and trigger_ok and fta_ok:
                     confidence = SignalConfidence.ACCEPTABLE
                     priority = "BUFFER"
                     acceptance_source = "buy_extra_confirmed"
                     logger.info(f"✅ {asset.value} BUY: Extra confirmation passed (H1={h1_score:.0f}, Trigger={trigger_score_val:.0f}, FTA={fta_score_val:.0f})")
                 else:
+                    failed_parts = []
+                    if not h1_ok:
+                        failed_parts.append(f"H1={h1_score:.0f}<55")
+                    if not trigger_ok:
+                        failed_parts.append(f"Trig={trigger_score_val:.0f}<60")
+                    if not fta_ok:
+                        failed_parts.append(f"FTA={fta_score_val:.0f}<50")
                     self._record_rejection(self.REJECTION_BUY_EXTRA_CONFIRM_FAILED)
-                    logger.info(f"🚫 {asset.value} BUY: {self.REJECTION_BUY_EXTRA_CONFIRM_FAILED} (score={final_score:.0f}%)")
+                    logger.info(f"🚫 {asset.value} BUY: {self.REJECTION_BUY_EXTRA_CONFIRM_FAILED} ({', '.join(failed_parts)})")
                     return None
             else:
                 self._record_rejection(self.REJECTION_BUY_CONFIDENCE_LOW)
@@ -2514,31 +2535,38 @@ class SignalGeneratorV3:
                 priority = "HIGH" if final_score >= 75 else "NORMAL"
                 acceptance_source = "sell_preferred"
             elif final_score >= self.SELL_MIN_CONFIDENCE:  # 60-63.99: Extra confirmation
-                # Need: H1 >= 75, Rejection >= 70, FTA >= 60
+                # v10.1: Relaxed requirements
+                # Was: H1 >= 75, Rejection >= 70, FTA >= 60
+                # Now: H1 >= 60, Rejection >= 55, FTA >= 45
                 rej_component = next((c for c in components if "Rejection" in c.name), None)
                 rej_score_val = rej_component.score if rej_component else 0
                 fta_component = next((c for c in components if "FTA" in c.name), None)
                 fta_score_val = fta_component.score if fta_component else 0
                 
+                # v10.1: Relaxed extra confirmation
+                h1_ok = h1_score >= 60
+                rej_ok = rej_score_val >= 55
+                fta_ok = fta_score_val >= 45
+                
                 # === DEBUG SELL EXTRA CONFIRMATION (CONFIDENCE LEVEL) ===
                 logger.info(f"📊 [SELL CONFIDENCE EXTRA] score={final_score:.0f}% (needs extra confirm 60-63.99)")
-                logger.info(f"📊 [SELL CONFIDENCE EXTRA] H1={h1_score:.0f} (need >=75)")
-                logger.info(f"📊 [SELL CONFIDENCE EXTRA] Rejection={rej_score_val:.0f} (need >=70)")
-                logger.info(f"📊 [SELL CONFIDENCE EXTRA] FTA={fta_score_val:.0f} (need >=60)")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] H1={h1_score:.0f} (need >=60) {'✓' if h1_ok else '✗'}")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] Rejection={rej_score_val:.0f} (need >=55) {'✓' if rej_ok else '✗'}")
+                logger.info(f"📊 [SELL CONFIDENCE EXTRA] FTA={fta_score_val:.0f} (need >=45) {'✓' if fta_ok else '✗'}")
                 
-                if h1_score >= 75 and rej_score_val >= 70 and fta_score_val >= 60:
+                if h1_ok and rej_ok and fta_ok:
                     confidence = SignalConfidence.ACCEPTABLE
                     priority = "BUFFER"
                     acceptance_source = "sell_extra_confirmed"
                     logger.info(f"✅ {asset.value} SELL: Extra confirmation passed (H1={h1_score:.0f}, Rej={rej_score_val:.0f}, FTA={fta_score_val:.0f})")
                 else:
                     failed_extra = []
-                    if h1_score < 75:
-                        failed_extra.append(f"H1={h1_score:.0f}<75")
-                    if rej_score_val < 70:
-                        failed_extra.append(f"Rej={rej_score_val:.0f}<70")
-                    if fta_score_val < 60:
-                        failed_extra.append(f"FTA={fta_score_val:.0f}<60")
+                    if not h1_ok:
+                        failed_extra.append(f"H1={h1_score:.0f}<60")
+                    if not rej_ok:
+                        failed_extra.append(f"Rej={rej_score_val:.0f}<55")
+                    if not fta_ok:
+                        failed_extra.append(f"FTA={fta_score_val:.0f}<45")
                     self._record_rejection(self.REJECTION_SELL_EXTRA_CONFIRM_FAILED)
                     logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_EXTRA_CONFIRM_FAILED} ({', '.join(failed_extra)})")
                     return None
@@ -3366,19 +3394,26 @@ class SignalGeneratorV3:
                     pattern_b_found = True
                 patterns_checked.append(f"Reclaim(below_ema={below_ema}, current_above={current_above}, bullish={current_bullish}, found={pattern_b_found})")
             
-            # Pattern C: Continuation
+            # Pattern C: Continuation - RELAXED v10.1
+            # Was: c1_bullish AND c2_bullish AND c2_higher
+            # Now: (c1_bullish OR c2_bullish) AND momentum positive
             pattern_c_found = False
             if not trigger_found:
                 if len(last_3) >= 2:
                     c1_bullish = is_bullish_candle(last_3[-2])
                     c2_bullish = is_bullish_candle(last_3[-1])
-                    c2_higher = last_3[-1].get('close', 0) > last_3[-2].get('high', 0)
-                    if c1_bullish and c2_bullish and c2_higher:
+                    # v10.1: Relaxed - at least one bullish candle
+                    at_least_one_bullish = c1_bullish or c2_bullish
+                    # v10.1: Momentum check - close above previous close
+                    momentum_positive = last_3[-1].get('close', 0) > last_3[-2].get('close', 0)
+                    
+                    if at_least_one_bullish and momentum_positive:
                         trigger_found = True
-                        trigger_strength = 60
-                        trigger_type = "Continuation"
+                        # Score based on strength: both bullish = 70, one bullish = 60
+                        trigger_strength = 70 if (c1_bullish and c2_bullish) else 60
+                        trigger_type = "Continuation" if (c1_bullish and c2_bullish) else "Momentum continuation"
                         pattern_c_found = True
-                    patterns_checked.append(f"Continuation(c1_bull={c1_bullish}, c2_bull={c2_bullish}, c2_higher={c2_higher}, found={pattern_c_found})")
+                    patterns_checked.append(f"Continuation(c1_bull={c1_bullish}, c2_bull={c2_bullish}, mom+={momentum_positive}, found={pattern_c_found})")
         
         else:  # SELL
             # Pattern A: Rejection
@@ -3424,19 +3459,26 @@ class SignalGeneratorV3:
                                 break
             patterns_checked.append(f"Failed-push(found={pattern_b_found})")
             
-            # Pattern C: Continuation short
+            # Pattern C: Continuation short - RELAXED v10.1
+            # Was: c1_bearish AND c2_bearish AND c2_lower
+            # Now: (c1_bearish OR c2_bearish) AND momentum negative
             pattern_c_found = False
             if not trigger_found:
                 if len(last_3) >= 2:
                     c1_bearish = is_bearish_candle(last_3[-2])
                     c2_bearish = is_bearish_candle(last_3[-1])
-                    c2_lower = last_3[-1].get('close', 0) < last_3[-2].get('low', 0)
-                    if c1_bearish and c2_bearish and c2_lower:
+                    # v10.1: Relaxed - at least one bearish candle
+                    at_least_one_bearish = c1_bearish or c2_bearish
+                    # v10.1: Momentum check - close below previous close
+                    momentum_negative = last_3[-1].get('close', 0) < last_3[-2].get('close', 0)
+                    
+                    if at_least_one_bearish and momentum_negative:
                         trigger_found = True
-                        trigger_strength = 60
-                        trigger_type = "Continuation short"
+                        # Score based on strength: both bearish = 70, one bearish = 60
+                        trigger_strength = 70 if (c1_bearish and c2_bearish) else 60
+                        trigger_type = "Continuation short" if (c1_bearish and c2_bearish) else "Momentum continuation short"
                         pattern_c_found = True
-                    patterns_checked.append(f"Continuation-short(c1_bear={c1_bearish}, c2_bear={c2_bearish}, c2_lower={c2_lower}, found={pattern_c_found})")
+                    patterns_checked.append(f"Continuation-short(c1_bear={c1_bearish}, c2_bear={c2_bearish}, mom-={momentum_negative}, found={pattern_c_found})")
         
         # === DEBUG M5 TRIGGER FINAL ===
         logger.info(f"📊 [M5 TRIGGER DEBUG] Direction={direction}, trigger_found={trigger_found}")
