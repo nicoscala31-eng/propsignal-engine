@@ -3658,15 +3658,16 @@ class SignalGeneratorV3:
         # Calculate ATR_M5
         atr_m5 = calculate_atr(m5, 14) if len(m5) >= 14 else 0
         
-        # Dynamic FTA minimum based on ATR
+        # v10.5: Dynamic FTA minimum based on ATR - RELAXED
+        # ATR multiplier reduced from 0.8 to 0.3 to allow more signals
         if asset == Asset.EURUSD:
             pip_multiplier = 10000
-            min_pips = 5
-            fta_min_dynamic = max(min_pips / pip_multiplier, 0.8 * atr_m5)
+            min_pips = 3  # Reduced from 5
+            fta_min_dynamic = max(min_pips / pip_multiplier, 0.3 * atr_m5)  # 0.3 instead of 0.8
         else:  # XAUUSD
             pip_multiplier = 100
-            min_pips = 50
-            fta_min_dynamic = max(min_pips / pip_multiplier, 0.8 * atr_m5)
+            min_pips = 30  # Reduced from 50
+            fta_min_dynamic = max(min_pips / pip_multiplier, 0.3 * atr_m5)  # 0.3 instead of 0.8
         
         # Exception for strong triggers
         if trigger_score >= 70:
@@ -3686,18 +3687,19 @@ class SignalGeneratorV3:
         swing_highs_m15 = get_recent_swing_highs(m15[-30:], count=3, lookback=2)
         swing_lows_m15 = get_recent_swing_lows(m15[-30:], count=3, lookback=2)
         
-        # 2. Wick rejection zones (candles with wick >= 40% range)
-        wick_zones = []
-        for candle in m5[-20:]:
-            candle_range = candle.get('high', 0) - candle.get('low', 0)
-            if candle_range > 0:
-                upper_wick = candle.get('high', 0) - max(candle.get('open', 0), candle.get('close', 0))
-                lower_wick = min(candle.get('open', 0), candle.get('close', 0)) - candle.get('low', 0)
-                
-                if upper_wick / candle_range >= 0.40:
-                    wick_zones.append(candle.get('high', 0))
-                if lower_wick / candle_range >= 0.40:
-                    wick_zones.append(candle.get('low', 0))
+        # 2. Wick rejection zones - DISABLED in v10.5 (too restrictive)
+        # These were causing almost all signals to be rejected
+        wick_zones = []  # Disabled for now
+        # for candle in m5[-20:]:
+        #     candle_range = candle.get('high', 0) - candle.get('low', 0)
+        #     if candle_range > 0:
+        #         upper_wick = candle.get('high', 0) - max(candle.get('open', 0), candle.get('close', 0))
+        #         lower_wick = min(candle.get('open', 0), candle.get('close', 0)) - candle.get('low', 0)
+        #         
+        #         if upper_wick / candle_range >= 0.40:
+        #             wick_zones.append(candle.get('high', 0))
+        #         if lower_wick / candle_range >= 0.40:
+        #             wick_zones.append(candle.get('low', 0))
         
         # 3. Touch zones (>= 2 touches in last 20 candles)
         touch_zones = self._find_touch_zones(m5[-20:], tolerance=atr_m5 * 0.3 if atr_m5 > 0 else 0.0001)
@@ -3809,13 +3811,14 @@ class SignalGeneratorV3:
         logger.info(f"📊 [FTA v10.4] FTA_distance={fta_distance_pips:.1f}p, TP_distance={tp_distance_pips:.1f}p")
         logger.info(f"📊 [FTA v10.4] clean_space_ratio={clean_space_ratio:.2f}, fta_type={fta_type}")
         
-        # v10.4: HARD REJECT if clean_space < 0.30
-        if clean_space_ratio < 0.30:
+        # v10.5: SOFT REJECT - FTA now penalizes score instead of hard blocking
+        # Only hard reject if clean_space < 0.05 (extremely tight)
+        if clean_space_ratio < 0.05:
             fta_audit["decision"] = "HARD_REJECT"
-            fta_audit["rejection_reason"] = "LOW_CLEAN_SPACE"
-            logger.info(f"🚫 [FTA v10.4] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 30%")
+            fta_audit["rejection_reason"] = "EXTREMELY_LOW_CLEAN_SPACE"
+            logger.info(f"🚫 [FTA v10.5] HARD REJECT: clean_space {clean_space_ratio*100:.0f}% < 5%")
             logger.info(f"📋 [FTA AUDIT] {json.dumps(fta_audit)}")
-            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 30%)", False
+            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 5%)", False
         
         # v10.4: Check dynamic FTA minimum
         if fta_distance < fta_min_dynamic and fta_type != "none":
