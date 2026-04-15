@@ -1,13 +1,13 @@
 {
   "total_tracked": 345,
-  "wins": 106,
-  "losses": 144,
+  "wins": 111,
+  "losses": 148,
   "expired": 86,
   "invalidated": 0,
   "by_asset": {
     "EURUSD": {
-      "wins": 17,
-      "losses": 27,
+      "wins": 22,
+      "losses": 31,
       "expired": 47
     },
     "XAUUSD": {
@@ -28,6 +28,14 @@
     "New York": {
       "wins": 39,
       "losses": 2
+    },
+    "Asian": {
+      "wins": 0,
+      "losses": 4
+    },
+    "Test": {
+      "wins": 5,
+      "losses": 0
     }
   },
   "by_confidence": {
@@ -36,13 +44,13 @@
       "losses": 30
     },
     "good_70_79": {
-      "wins": 42,
+      "wins": 47,
       "losses": 47
     },
     "acceptable_60_69": {
       "wins": 50,
-      "losses": 67
+      "losses": 71
     }
   },
-  "total_checks": 6402
+  "total_checks": 6448
 }

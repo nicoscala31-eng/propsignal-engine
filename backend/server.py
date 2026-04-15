@@ -3168,12 +3168,13 @@ async def get_tracker_status():
     return {
         "is_running": signal_outcome_tracker.is_running,
         "checks_performed": signal_outcome_tracker.stats.get("total_checks", 0),
-        "tp_hits": signal_outcome_tracker.stats.get("tp_hits", 0),
-        "sl_hits": signal_outcome_tracker.stats.get("sl_hits", 0),
+        "wins": signal_outcome_tracker.stats.get("wins", 0),
+        "losses": signal_outcome_tracker.stats.get("losses", 0),
         "expired": signal_outcome_tracker.stats.get("expired", 0),
         "active_signals": len(signal_outcome_tracker.active_signals),
         "check_interval_seconds": signal_outcome_tracker.PRICE_CHECK_INTERVAL,
-        "max_signal_age_hours": signal_outcome_tracker.EXPIRY_HOURS
+        "max_signal_age_hours": signal_outcome_tracker.EXPIRY_HOURS,
+        "stats": signal_outcome_tracker.stats
     }
 
 @api_router.post("/tracker/start")
@@ -3197,6 +3198,87 @@ async def stop_tracker():
     
     await signal_outcome_tracker.stop()
     return {"status": "stopped"}
+
+
+# ==================== TEST ENDPOINTS ====================
+
+@api_router.post("/test/create-fake-trade")
+async def create_fake_trade():
+    """
+    TEST: Create a fake trade
+    """
+    from datetime import datetime
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker, TrackedSignal
+    
+    # Get current price
+    provider = provider_manager.get_provider()
+    quote = await provider.get_live_quote(Asset.EURUSD) if provider else None
+    
+    if not quote:
+        return {"error": "Cannot get current price"}
+    
+    current_price = quote.mid_price
+    
+    # Create SELL signal
+    entry_price = current_price + 0.0015
+    stop_loss = entry_price + 0.0025
+    take_profit = current_price - 0.0005  # TP below current (already in profit)
+    
+    signal_id = f"TEST_SELL_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    timestamp = datetime.utcnow().isoformat()
+    
+    # Add to tracker
+    tracked_signal = TrackedSignal(
+        signal_id=signal_id,
+        asset="EURUSD",
+        direction="SELL",
+        entry_price=entry_price,
+        stop_loss=stop_loss,
+        take_profit_1=take_profit,
+        take_profit_2=take_profit - 0.0010,
+        timestamp=timestamp,
+        confidence_score=75.0,
+        confidence_level="HIGH",
+        setup_type="Test Signal",
+        session="Test",
+        invalidation="Test SL",
+        risk_reward=1.5
+    )
+    
+    signal_outcome_tracker.active_signals[signal_id] = tracked_signal
+    await signal_outcome_tracker._save_data()
+    logger.info(f"📝 TEST: Created trade {signal_id}")
+    
+    return {
+        "signal_id": signal_id,
+        "entry": round(entry_price, 5),
+        "current": round(current_price, 5),
+        "tp": round(take_profit, 5),
+        "sl": round(stop_loss, 5),
+        "message": f"Trade created. Call POST /api/test/close-fake-trade/{signal_id} to close it."
+    }
+
+
+@api_router.post("/test/close-fake-trade/{signal_id}")
+async def close_fake_trade(signal_id: str):
+    """
+    TEST: Close the fake trade as TP hit
+    """
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    
+    if signal_id not in signal_outcome_tracker.active_signals:
+        return {"error": f"Signal {signal_id} not found in active signals. Available: {list(signal_outcome_tracker.active_signals.keys())[:5]}"}
+    
+    # Close as TP hit
+    await signal_outcome_tracker._complete_signal(signal_id, "tp_hit")
+    logger.info(f"📝 TEST: Closed {signal_id} in tracker as tp_hit")
+    
+    return {
+        "step": "2_closed_tp_hit",
+        "signal_id": signal_id,
+        "status": "tp_hit",
+        "message": "Trade closed as TP HIT! Check /api/tracker/status for wins count."
+    }
 
 
 # ==================== NEWS CALENDAR ====================
@@ -3782,3 +3864,132 @@ async def download_analisi_json():
         analysis["trades"].append(trade_data)
     
     return analysis
+
+
+# ==================== TEST ENDPOINTS ====================
+
+@api_router.post("/test/create-fake-trade")
+async def create_fake_trade():
+    """
+    TEST: Create a fake trade and simulate full lifecycle
+    
+    This will:
+    1. Create an accepted signal
+    2. Add it to tracker as active
+    3. Simulate TP hit
+    4. Close the trade
+    """
+    import uuid
+    from datetime import datetime
+    from services.signal_snapshot_service import signal_snapshot_service, SignalSnapshot
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker, TrackedSignal
+    
+    # Get current price
+    provider = provider_manager.get_provider()
+    quote = await provider.get_live_quote(Asset.EURUSD) if provider else None
+    
+    if not quote:
+        return {"error": "Cannot get current price"}
+    
+    current_price = quote.mid_price
+    
+    # Create fake signal that's already in profit (price moved in our favor)
+    # SELL signal where current price is BELOW entry (in profit)
+    entry_price = current_price + 0.0010  # Entry was 10 pips higher
+    stop_loss = entry_price + 0.0020  # SL 20 pips above entry
+    take_profit = entry_price - 0.0015  # TP 15 pips below entry (already hit!)
+    
+    signal_id = f"TEST_SELL_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    timestamp = datetime.utcnow().isoformat()
+    
+    # Step 1: Create snapshot as "accepted"
+    snapshot = SignalSnapshot(
+        signal_id=signal_id,
+        symbol="EURUSD",
+        direction="SELL",
+        status="accepted",
+        timestamp=timestamp,
+        entry_price=entry_price,
+        stop_loss=stop_loss,
+        take_profit=take_profit,
+        score=75.0,
+        score_breakdown={"total_score": 75.0, "factors": []},
+        session="Test",
+        setup_type="Test Signal",
+        short_reason="Test trade for lifecycle verification",
+        rejection_reason=None,
+        atr=0.0010
+    )
+    
+    await signal_snapshot_service.save_snapshot(snapshot)
+    
+    # Step 2: Add to tracker as active
+    tracked_signal = TrackedSignal(
+        signal_id=signal_id,
+        asset="EURUSD",
+        direction="SELL",
+        entry_price=entry_price,
+        stop_loss=stop_loss,
+        take_profit_1=take_profit,
+        take_profit_2=take_profit - 0.0010,
+        timestamp=timestamp,
+        confidence_score=75.0,
+        setup_type="Test Signal",
+        session="Test"
+    )
+    
+    signal_outcome_tracker.active_signals[signal_id] = tracked_signal
+    
+    # Update snapshot to active
+    await signal_snapshot_service.update_status(signal_id, "active")
+    
+    # Step 3: Simulate price check - TP should be hit since current_price < take_profit for SELL
+    # Actually let's check: for SELL, TP hit when current_price <= take_profit
+    tp_hit = current_price <= take_profit
+    
+    result = {
+        "signal_id": signal_id,
+        "entry_price": entry_price,
+        "current_price": current_price,
+        "take_profit": take_profit,
+        "stop_loss": stop_loss,
+        "tp_would_hit": tp_hit,
+        "status": "created_as_active",
+        "message": "Trade created. Tracker will close it on next check if TP/SL hit."
+    }
+    
+    # If TP is already hit, force close it now
+    if tp_hit:
+        await signal_outcome_tracker._complete_signal(signal_id, "tp_hit")
+        await signal_snapshot_service.update_status(signal_id, "tp_hit")
+        result["status"] = "closed_tp_hit"
+        result["message"] = "Trade created and immediately closed as TP was already hit!"
+    
+    return result
+
+
+@api_router.post("/test/force-close-trade/{signal_id}")
+async def force_close_trade(signal_id: str, outcome: str = "tp_hit"):
+    """
+    TEST: Force close a specific trade
+    
+    outcome: tp_hit, sl_hit, or expired
+    """
+    from services.signal_snapshot_service import signal_snapshot_service
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+    
+    if signal_id not in signal_outcome_tracker.active_signals:
+        return {"error": f"Signal {signal_id} not found in active signals"}
+    
+    # Close in tracker
+    await signal_outcome_tracker._complete_signal(signal_id, outcome)
+    
+    # Update snapshot
+    await signal_snapshot_service.update_status(signal_id, outcome)
+    
+    return {
+        "success": True,
+        "signal_id": signal_id,
+        "outcome": outcome,
+        "message": f"Trade {signal_id} closed as {outcome}"
+    }
