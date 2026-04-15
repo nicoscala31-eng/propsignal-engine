@@ -137,6 +137,7 @@ export default function HomeScreen() {
   // Signals
   const [recentSignals, setRecentSignals] = useState<SignalItem[]>([]);
   const [signalsError, setSignalsError] = useState<string | null>(null);
+  const [signalCounts, setSignalCounts] = useState({ active: 0, closed: 0, rejected: 0 });
   
   // Last update
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -313,11 +314,12 @@ export default function HomeScreen() {
       rejected.sort(sortByTime);
       
       // Combine with priority: ACTIVE first, then CLOSED, then REJECTED
-      // Take exactly 3 signals total
-      const combined = [...active, ...closed, ...rejected].slice(0, 3);
+      // Show more signals on homepage
+      const combined = [...active, ...closed, ...rejected].slice(0, 10);
       
       console.log(`✅ Recent Signals: ${active.length} active, ${closed.length} closed, ${rejected.length} rejected → showing ${combined.length}`);
       setRecentSignals(combined);
+      setSignalCounts({ active: active.length, closed: closed.length, rejected: rejected.length });
       
     } catch (err) {
       console.log('Signals fetch error:', err);
@@ -612,6 +614,22 @@ export default function HomeScreen() {
         >
           <Text style={styles.viewAllText}>View All →</Text>
         </TouchableOpacity>
+      </View>
+      
+      {/* Signal Counts Bar */}
+      <View style={styles.signalCountsBar}>
+        <View style={styles.countItem}>
+          <Text style={[styles.countNumber, { color: '#00aaff' }]}>{signalCounts.active}</Text>
+          <Text style={styles.countLabel}>Active</Text>
+        </View>
+        <View style={styles.countItem}>
+          <Text style={[styles.countNumber, { color: '#00ff88' }]}>{signalCounts.closed}</Text>
+          <Text style={styles.countLabel}>Closed</Text>
+        </View>
+        <View style={styles.countItem}>
+          <Text style={[styles.countNumber, { color: '#ff4444' }]}>{signalCounts.rejected}</Text>
+          <Text style={styles.countLabel}>Rejected</Text>
+        </View>
       </View>
     </View>
   );
@@ -938,7 +956,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   signalsSectionTitle: {
     color: '#fff',
@@ -952,6 +970,26 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: '#00ff88',
     fontSize: 14,
+  },
+  signalCountsBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+  },
+  countItem: {
+    alignItems: 'center',
+  },
+  countNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  countLabel: {
+    fontSize: 10,
+    color: '#888',
+    marginTop: 2,
   },
   
   // Signal Card
