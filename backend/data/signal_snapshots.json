@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-04-15T17:41:37.550666",
-  "total_count": 980,
+  "updated_at": "2026-04-15T18:06:40.310610",
+  "total_count": 982,
   "snapshots": [
     {
       "signal_id": "EURUSD_SELL_20260415_061305",
@@ -112735,6 +112735,354 @@
       "summary_full": "Accepted because score 90.1 met threshold. Strong factors: H1_BIAS, M15_CONTEXT, M5_TRIGGER. Session: New York. Setup: Technical Setup [Structural SL]. RR: 1.50",
       "notification_title": "XAUUSD SELL",
       "notification_body": "Score 90.1 | New York | H1_BIAS, M15_CONTEXT, M5_TRIGGER",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_180634",
+      "timestamp": "2026-04-15T18:06:34.896298",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4797.08,
+      "stop_loss": 4809.833016964286,
+      "take_profit": 4777.9504745535705,
+      "rr_ratio": 1.5000000000000357,
+      "status": "active",
+      "acceptance_source": "",
+      "rejection_reason": "",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 77.6,
+      "score_post_penalty": 92.6,
+      "final_score": 92.6,
+      "confidence_bucket": "75+",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_bias",
+          "factor_name": "H1_BIAS",
+          "raw_value": 80,
+          "normalized_value": 80,
+          "weight_pct": 30,
+          "score_contribution": 24.0,
+          "status": "pass",
+          "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LL, NotExt)"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15_CONTEXT",
+          "raw_value": 72,
+          "normalized_value": 72,
+          "weight_pct": 30,
+          "score_contribution": 21.6,
+          "status": "pass",
+          "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
+        },
+        {
+          "factor_key": "m5_trigger",
+          "factor_name": "M5_TRIGGER",
+          "raw_value": 95,
+          "normalized_value": 95,
+          "weight_pct": 20,
+          "score_contribution": 19.0,
+          "status": "pass",
+          "reason": "Strong rejection (strongest SELL trigger)"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "PULLBACK_QUALITY",
+          "raw_value": 45,
+          "normalized_value": 45,
+          "weight_pct": 10,
+          "score_contribution": 4.5,
+          "status": "fail",
+          "reason": "Pullback 20.7% (Shallow)"
+        },
+        {
+          "factor_key": "fta_clean_space",
+          "factor_name": "FTA_CLEAN_SPACE",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 10,
+          "score_contribution": 8.5,
+          "status": "pass",
+          "reason": "FTA 1.6ATR (Good)"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 4,
+          "trigger_condition": "FTA at 0.36R ratio",
+          "raw_measurement": 0.35746208232655824,
+          "reason": "swing_low at 4790.24192, distance 0.36R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 92.6,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 72,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000000357,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 92.6 | New York | H1_BIAS, M15_CONTEXT, M5_TRIGGER",
+      "summary_full": "Accepted because score 92.6 met threshold. Strong factors: H1_BIAS, M15_CONTEXT, M5_TRIGGER. Session: New York. Setup: Technical Setup [Structural SL]. RR: 1.50",
+      "notification_title": "XAUUSD SELL",
+      "notification_body": "Score 92.6 | New York | H1_BIAS, M15_CONTEXT, M5_TRIGGER",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_180640",
+      "timestamp": "2026-04-15T18:06:40.299343",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "Technical Setup [Structural SL]",
+      "entry_price": 4797.08,
+      "stop_loss": 4809.833016964286,
+      "take_profit": 4777.9504745535705,
+      "rr_ratio": 1.5000000000000357,
+      "status": "active",
+      "acceptance_source": "",
+      "rejection_reason": "",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 77.6,
+      "score_post_penalty": 92.6,
+      "final_score": 92.6,
+      "confidence_bucket": "75+",
+      "factor_contributions": [
+        {
+          "factor_key": "h1_bias",
+          "factor_name": "H1_BIAS",
+          "raw_value": 80,
+          "normalized_value": 80,
+          "weight_pct": 30,
+          "score_contribution": 24.0,
+          "status": "pass",
+          "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LL, NotExt)"
+        },
+        {
+          "factor_key": "m15_context",
+          "factor_name": "M15_CONTEXT",
+          "raw_value": 72,
+          "normalized_value": 72,
+          "weight_pct": 30,
+          "score_contribution": 21.6,
+          "status": "pass",
+          "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
+        },
+        {
+          "factor_key": "m5_trigger",
+          "factor_name": "M5_TRIGGER",
+          "raw_value": 95,
+          "normalized_value": 95,
+          "weight_pct": 20,
+          "score_contribution": 19.0,
+          "status": "pass",
+          "reason": "Strong rejection (strongest SELL trigger)"
+        },
+        {
+          "factor_key": "pullback_quality",
+          "factor_name": "PULLBACK_QUALITY",
+          "raw_value": 45,
+          "normalized_value": 45,
+          "weight_pct": 10,
+          "score_contribution": 4.5,
+          "status": "fail",
+          "reason": "Pullback 20.7% (Shallow)"
+        },
+        {
+          "factor_key": "fta_clean_space",
+          "factor_name": "FTA_CLEAN_SPACE",
+          "raw_value": 85,
+          "normalized_value": 85,
+          "weight_pct": 10,
+          "score_contribution": 8.5,
+          "status": "pass",
+          "reason": "FTA 1.6ATR (Good)"
+        }
+      ],
+      "penalties_applied": [
+        {
+          "penalty_key": "fta_penalty",
+          "penalty_name": "FTA Distance Penalty",
+          "penalty_value": 4,
+          "trigger_condition": "FTA at 0.36R ratio",
+          "raw_measurement": 0.35746208232655824,
+          "reason": "swing_low at 4790.24192, distance 0.36R"
+        }
+      ],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 60,
+          "actual_value": 92.6,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 72,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000000357,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 92.6 | New York | H1_BIAS, M15_CONTEXT, M5_TRIGGER",
+      "summary_full": "Accepted because score 92.6 met threshold. Strong factors: H1_BIAS, M15_CONTEXT, M5_TRIGGER. Session: New York. Setup: Technical Setup [Structural SL]. RR: 1.50",
+      "notification_title": "XAUUSD SELL",
+      "notification_body": "Score 92.6 | New York | H1_BIAS, M15_CONTEXT, M5_TRIGGER",
       "outcome": "",
       "outcome_timestamp": "",
       "mfe_r": 0.0,
