@@ -2365,11 +2365,11 @@ class SignalGeneratorV3:
         block_scores['h1'] = h1_score
         components.append(ScoreComponent("H1_BIAS", 30, h1_score, h1_reason))
         
-        # H1 hard filter (score < 40 = useless)
-        if h1_score < 40:
-            v13_log['rejection_reason'] = "h1_too_weak"
-            self._record_rejection("h1_weak")
-            logger.info(f"🚫 [v13] {asset.value} {direction}: H1 Bias too weak ({h1_score:.0f}% < 40%)")
+        # v13.1: H1 HARD FILTER (score < 50 = weak bias → reject)
+        if h1_score < 50:
+            v13_log['rejection_reason'] = "weak_h1_bias"
+            self._record_rejection("weak_h1_bias")
+            logger.info(f"🚫 [v13.1] {asset.value} {direction}: H1 Bias too weak ({h1_score:.0f}% < 50%) → REJECT")
             self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, 0, 0, 0)
             return None
         
@@ -2412,11 +2412,12 @@ class SignalGeneratorV3:
         block_scores['m5'] = m5_trigger_score
         components.append(ScoreComponent("M5_TRIGGER", 20, m5_trigger_score, m5_trigger_reason))
         
-        # M5 hard filter
-        if m5_trigger_score < 30:
+        # v13.1: M5 TRIGGER HARD FILTER (score < 70 = weak trigger → reject)
+        # break-hold (95) = valid, reclaim (75) = valid, weak continuation (<70) = invalid
+        if m5_trigger_score < 70:
             v13_log['rejection_reason'] = "weak_trigger"
             self._record_rejection(self.REJECTION_WEAK_TRIGGER)
-            logger.info(f"🚫 [v13] {asset.value} {direction}: M5 Trigger too weak ({m5_trigger_score:.0f}% < 30%)")
+            logger.info(f"🚫 [v13.1] {asset.value} {direction}: M5 Trigger too weak ({m5_trigger_score:.0f}% < 70%) → REJECT")
             self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, 0, 0, 0)
             return None
         
@@ -2443,6 +2444,15 @@ class SignalGeneratorV3:
         v13_log['clean_space_ratio'] = clean_space_ratio
         v13_log['clean_space_atr'] = clean_space_atr
         components.append(ScoreComponent("FTA_CLEAN_SPACE", 10, fta_score, fta_reason))
+        
+        # v13.1: FTA HARD FILTER (clean_space_atr < 0.5 = no space → reject)
+        # ONLY use ATR-normalized, NOT ratio percentages
+        if clean_space_atr < 0.5:
+            v13_log['rejection_reason'] = "no_clean_space"
+            self._record_rejection(self.REJECTION_FTA_BLOCKED)
+            logger.info(f"🚫 [v13.1] {asset.value} {direction}: No clean space (ATR={clean_space_atr:.2f} < 0.5) → REJECT")
+            self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, stop_loss, take_profit_1, rr_ratio)
+            return None
         
         if not fta_valid:
             v13_log['rejection_reason'] = "fta_blocked"
@@ -2471,24 +2481,26 @@ class SignalGeneratorV3:
         )
         v13_log['raw_quality_score'] = raw_quality_score
         
-        # ==================== ALIGNMENT ADJUSTMENT ====================
+        # ==================== v13.1: ALIGNMENT PIÙ AGGRESSIVO ====================
+        # aligned_count = sum of blocks meeting stricter thresholds
         aligned_count = sum([
-            1 if h1_score >= 70 else 0,
+            1 if h1_score >= 60 else 0,
             1 if m15_context_score >= 70 else 0,
             1 if m5_trigger_score >= 70 else 0
         ])
         
+        # v13.1: More aggressive alignment adjustment
         if aligned_count == 3:
-            alignment_adjustment = self.V13_ALIGN_ALL      # +10
+            alignment_adjustment = 15      # Was +10, now +15
         elif aligned_count == 2:
-            alignment_adjustment = self.V13_ALIGN_TWO      # +3
+            alignment_adjustment = 0       # Was +3, now 0
         elif aligned_count == 1:
-            alignment_adjustment = self.V13_ALIGN_ONE      # -5
+            alignment_adjustment = -10     # Was -5, now -10
         else:
-            alignment_adjustment = self.V13_ALIGN_NONE     # -10
+            alignment_adjustment = -15     # Was -10, now -15
         
         v13_log['alignment_adjustment'] = alignment_adjustment
-        logger.info(f"📊 [v13] Alignment: {aligned_count}/3 aligned → adj={alignment_adjustment:+d}")
+        logger.info(f"📊 [v13.1] Alignment: {aligned_count}/3 (H1≥60:{h1_score>=60}, M15≥70:{m15_context_score>=70}, M5≥70:{m5_trigger_score>=70}) → adj={alignment_adjustment:+d}")
         
         # ==================== COUNTER-TREND PENALTY ====================
         # Check if trading against H1 direction
