@@ -1,1106 +1,6 @@
 {
   "completed": [
     {
-      "signal_id": "XAUUSD_SELL_20260410_113616",
-      "timestamp": "2026-04-10T11:36:16.287147",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4759.64,
-      "stop_loss": 4761.4143001785715,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4751.612854999999,
-      "confidence_score": 77.16,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4761.41",
-      "risk_reward": 3.02,
-      "score_breakdown": {
-        "final_score": 77.2,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 80,
-            "contribution": 12.8,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (92%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:38:35.701589",
-      "max_favorable_excursion": 0.4500000000007276,
-      "max_adverse_excursion": 2.4899999999997817,
-      "highest_price_seen": 4762.13,
-      "lowest_price_seen": 4759.19,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 1.7743001785711385,
-      "time_to_outcome_seconds": 139.414442,
-      "moved_favorable_before_fail": true,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 30.0,
-      "time_in_drawdown_seconds": 120.0,
-      "peak_r_before_reversal": 0.2536211208427635
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114132",
-      "timestamp": "2026-04-10T11:41:32.082139",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:25.364052",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 233.281913,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 270.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114137",
-      "timestamp": "2026-04-10T11:41:37.919992",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:25.493952",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 227.57396,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 270.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114155",
-      "timestamp": "2026-04-10T11:41:55.570593",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.68,
-      "stop_loss": 4762.530000000001,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.592854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4762.53",
-      "risk_reward": 8.7,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (103%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:25.621290",
-      "max_favorable_excursion": 0.680000000000291,
-      "max_adverse_excursion": 2.719999999999345,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 210.050697,
-      "moved_favorable_before_fail": true,
-      "reached_half_r": true,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 210.0,
-      "time_in_drawdown_seconds": 30.0,
-      "peak_r_before_reversal": 0.8
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114201",
-      "timestamp": "2026-04-10T11:42:01.407381",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.68,
-      "stop_loss": 4762.530000000001,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.592854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4762.53",
-      "risk_reward": 8.7,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (103%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:25.748196",
-      "max_favorable_excursion": 0.680000000000291,
-      "max_adverse_excursion": 2.719999999999345,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 204.340815,
-      "moved_favorable_before_fail": true,
-      "reached_half_r": true,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 210.0,
-      "time_in_drawdown_seconds": 30.0,
-      "peak_r_before_reversal": 0.8
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114221",
-      "timestamp": "2026-04-10T11:42:21.420861",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:25.874868",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 184.454007,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 210.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114227",
-      "timestamp": "2026-04-10T11:42:27.264062",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:26.002320",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 178.738258,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 210.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114240",
-      "timestamp": "2026-04-10T11:42:40.283183",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:26.129388",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 165.846205,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 180.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114246",
-      "timestamp": "2026-04-10T11:42:46.135245",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:26.255702",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 160.120457,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 180.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114251",
-      "timestamp": "2026-04-10T11:42:51.753807",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:26.381567",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 154.62776,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 150.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260410_114257",
-      "timestamp": "2026-04-10T11:42:57.603047",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4761.0,
-      "stop_loss": 4761.85,
-      "take_profit_1": 4754.28857,
-      "take_profit_2": 4750.932854999999,
-      "confidence_score": 76.36,
-      "confidence_level": "STRONG",
-      "setup_type": "Technical Setup",
-      "session": "London",
-      "invalidation": "Above 4761.85",
-      "risk_reward": 7.9,
-      "score_breakdown": {
-        "final_score": 76.4,
-        "confidence": "STRONG",
-        "breakdown": [
-          {
-            "factor": "H1 Structural Bias",
-            "weight": 22.0,
-            "score": 70,
-            "contribution": 15.4,
-            "reason": "H1 Structural 3/5 (LH, LL, Slope-)"
-          },
-          {
-            "factor": "M15 Structure Quality",
-            "weight": 20.0,
-            "score": 65,
-            "contribution": 13.0,
-            "reason": "M15 Structure 1/3 (Partial structure, SH intact)"
-          },
-          {
-            "factor": "M5 Trigger Quality",
-            "weight": 16.0,
-            "score": 75,
-            "contribution": 12.0,
-            "reason": "Trigger: Failed push"
-          },
-          {
-            "factor": "Pullback Quality",
-            "weight": 12.0,
-            "score": 43,
-            "contribution": 5.2,
-            "reason": "Pullback: Too deep (>75%) + reaction (99%)"
-          },
-          {
-            "factor": "Rejection / Failed Push",
-            "weight": 14.0,
-            "score": 80,
-            "contribution": 11.2,
-            "reason": "SELL trigger: Failed push"
-          },
-          {
-            "factor": "FTA / Clean Space",
-            "weight": 10.0,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "Excellent clean space (100%) (no FTA)"
-          },
-          {
-            "factor": "Session Quality",
-            "weight": 4.0,
-            "score": 65,
-            "contribution": 2.6,
-            "reason": "London session"
-          },
-          {
-            "factor": "Market Sanity Check",
-            "weight": 2.0,
-            "score": 100,
-            "contribution": 2.0,
-            "reason": "Healthy volatility"
-          }
-        ]
-      },
-      "status": "sl_hit",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": "2026-04-10T11:45:26.507585",
-      "max_favorable_excursion": 0.0,
-      "max_adverse_excursion": 3.399999999999636,
-      "highest_price_seen": 4764.4,
-      "lowest_price_seen": 4761.0,
-      "final_outcome": "loss",
-      "pips_gained": 0.0,
-      "pips_lost": 0.8500000000003638,
-      "time_to_outcome_seconds": 148.904538,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": false,
-      "reached_one_r": false,
-      "reached_two_r": false,
-      "breakeven_possible": false,
-      "partial_profit_possible": false,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 0.0,
-      "time_in_drawdown_seconds": 150.0,
-      "peak_r_before_reversal": 0.0
-    },
-    {
       "signal_id": "XAUUSD_SELL_20260410_114309",
       "timestamp": "2026-04-10T11:43:09.588052",
       "asset": "XAUUSD",
@@ -11385,6 +10285,875 @@
       "time_in_profit_seconds": 210.0,
       "time_in_drawdown_seconds": 30.0,
       "peak_r_before_reversal": 1.6113142746205042
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_081735",
+      "timestamp": "2026-04-15T08:17:35.963573",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4811.86,
+      "stop_loss": 4822.317105,
+      "take_profit_1": 4796.174342499999,
+      "take_profit_2": 4788.854368999999,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.32",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.87 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 12.9% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.9ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:46:15.586634",
+      "max_favorable_excursion": 15.699999999999818,
+      "max_adverse_excursion": 6.490000000000691,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4796.16,
+      "final_outcome": "win",
+      "pips_gained": 15.68565750000107,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5319.623061,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3960.0,
+      "time_in_drawdown_seconds": 1440.0,
+      "peak_r_before_reversal": 1.5013715555117024
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_081741",
+      "timestamp": "2026-04-15T08:17:41.426532",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4811.86,
+      "stop_loss": 4822.317105,
+      "take_profit_1": 4796.174342499999,
+      "take_profit_2": 4788.854368999999,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.32",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.87 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 12.9% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.9ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:46:15.705607",
+      "max_favorable_excursion": 15.699999999999818,
+      "max_adverse_excursion": 6.490000000000691,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4796.16,
+      "final_outcome": "win",
+      "pips_gained": 15.68565750000107,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5314.279075,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3960.0,
+      "time_in_drawdown_seconds": 1440.0,
+      "peak_r_before_reversal": 1.5013715555117024
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_081932",
+      "timestamp": "2026-04-15T08:19:32.205222",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4811.86,
+      "stop_loss": 4822.317105,
+      "take_profit_1": 4796.174342499999,
+      "take_profit_2": 4788.854368999999,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.32",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 12.9% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.9ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:46:15.820375",
+      "max_favorable_excursion": 15.699999999999818,
+      "max_adverse_excursion": 6.490000000000691,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4796.16,
+      "final_outcome": "win",
+      "pips_gained": 15.68565750000107,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5203.615153,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3930.0,
+      "time_in_drawdown_seconds": 1320.0,
+      "peak_r_before_reversal": 1.5013715555117024
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_081937",
+      "timestamp": "2026-04-15T08:19:37.671687",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4811.86,
+      "stop_loss": 4822.317105,
+      "take_profit_1": 4796.174342499999,
+      "take_profit_2": 4788.854368999999,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.32",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 12.9% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.9ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:46:15.934996",
+      "max_favorable_excursion": 15.699999999999818,
+      "max_adverse_excursion": 6.490000000000691,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4796.16,
+      "final_outcome": "win",
+      "pips_gained": 15.68565750000107,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5198.263309,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3930.0,
+      "time_in_drawdown_seconds": 1320.0,
+      "peak_r_before_reversal": 1.5013715555117024
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_081928",
+      "timestamp": "2026-04-15T08:19:28.699524",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4811.62,
+      "stop_loss": 4822.317105,
+      "take_profit_1": 4795.5743425,
+      "take_profit_2": 4788.086369,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.32",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 12.4% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.8ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:47:16.051544",
+      "max_favorable_excursion": 16.149999999999636,
+      "max_adverse_excursion": 6.730000000000473,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4795.47,
+      "final_outcome": "win",
+      "pips_gained": 16.045657499999834,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 5267.35202,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 3810.0,
+      "time_in_drawdown_seconds": 1530.0,
+      "peak_r_before_reversal": 1.5097542746377965
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_084259",
+      "timestamp": "2026-04-15T08:42:59.696335",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4810.47,
+      "stop_loss": 4822.163861428571,
+      "take_profit_1": 4792.929207857143,
+      "take_profit_2": 4784.743504857144,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.16",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 10.0% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.7ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:48:46.193844",
+      "max_favorable_excursion": 18.670000000000073,
+      "max_adverse_excursion": 7.880000000000109,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4791.8,
+      "final_outcome": "win",
+      "pips_gained": 17.540792142856844,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 3946.497509,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 2310.0,
+      "time_in_drawdown_seconds": 1650.0,
+      "peak_r_before_reversal": 1.5965641558215113
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_084305",
+      "timestamp": "2026-04-15T08:43:05.171359",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4810.47,
+      "stop_loss": 4822.163861428571,
+      "take_profit_1": 4792.929207857143,
+      "take_profit_2": 4784.743504857144,
+      "confidence_score": 71.1,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 4822.16",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.1,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 10.0% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.7ATR (Limited)"
+          }
+        ]
+      },
+      "status": "tp_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T09:48:46.310238",
+      "max_favorable_excursion": 18.670000000000073,
+      "max_adverse_excursion": 7.880000000000109,
+      "highest_price_seen": 4818.35,
+      "lowest_price_seen": 4791.8,
+      "final_outcome": "win",
+      "pips_gained": 17.540792142856844,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 3941.138879,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": true,
+      "reached_one_r": true,
+      "reached_two_r": false,
+      "breakeven_possible": true,
+      "partial_profit_possible": true,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 2310.0,
+      "time_in_drawdown_seconds": 1650.0,
+      "peak_r_before_reversal": 1.5965641558215113
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_091400",
+      "timestamp": "2026-04-15T09:14:00.381877",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17801,
+      "stop_loss": 1.17975,
+      "take_profit_1": 1.1753999999999998,
+      "take_profit_2": 1.1741819999999998,
+      "confidence_score": 68.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 1.17975",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 68.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 35,
+            "contribution": 10.5,
+            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=1.97 pen=-25"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 3.3% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 7.0ATR (Excellent +NoFTA)"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T17:04:28.973188",
+      "max_favorable_excursion": 0.000140000000000029,
+      "max_adverse_excursion": 0.0020599999999999508,
+      "highest_price_seen": 1.18007,
+      "lowest_price_seen": 1.17787,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 0.0017400000000000748,
+      "time_to_outcome_seconds": 28228.591311,
+      "moved_favorable_before_fail": true,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 420.0,
+      "time_in_drawdown_seconds": 2760.0,
+      "peak_r_before_reversal": 0.08045977011495573
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_091405",
+      "timestamp": "2026-04-15T09:14:05.780960",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17801,
+      "stop_loss": 1.17975,
+      "take_profit_1": 1.1753999999999998,
+      "take_profit_2": 1.1741819999999998,
+      "confidence_score": 68.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 1.17975",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 68.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 35,
+            "contribution": 10.5,
+            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=1.97 pen=-25"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 3.3% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 7.0ATR (Excellent +NoFTA)"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T17:04:29.161101",
+      "max_favorable_excursion": 0.000140000000000029,
+      "max_adverse_excursion": 0.0020599999999999508,
+      "highest_price_seen": 1.18007,
+      "lowest_price_seen": 1.17787,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 0.0017400000000000748,
+      "time_to_outcome_seconds": 28223.380141,
+      "moved_favorable_before_fail": true,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 420.0,
+      "time_in_drawdown_seconds": 2760.0,
+      "peak_r_before_reversal": 0.08045977011495573
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_095006",
+      "timestamp": "2026-04-15T09:50:06.995501",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1780599999999999,
+      "stop_loss": 1.17975,
+      "take_profit_1": 1.1755249999999995,
+      "take_profit_2": 1.1743419999999996,
+      "confidence_score": 71.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 1.17975",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 55,
+            "contribution": 16.5,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=1.31 pen=-25"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 16.5% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.0ATR (Moderate)"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T17:04:29.273857",
+      "max_favorable_excursion": 0.00011999999999989797,
+      "max_adverse_excursion": 0.0020100000000000673,
+      "highest_price_seen": 1.18007,
+      "lowest_price_seen": 1.17794,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 0.0016900000000001913,
+      "time_to_outcome_seconds": 26062.278356,
+      "moved_favorable_before_fail": true,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 450.0,
+      "time_in_drawdown_seconds": 570.0,
+      "peak_r_before_reversal": 0.0710059171596949
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_095012",
+      "timestamp": "2026-04-15T09:50:12.447230",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.1780599999999999,
+      "stop_loss": 1.17975,
+      "take_profit_1": 1.1755249999999995,
+      "take_profit_2": 1.1743419999999996,
+      "confidence_score": 71.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "London",
+      "invalidation": "Above 1.17975",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 71.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 55,
+            "contribution": 16.5,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=1.31 pen=-25"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 95,
+            "contribution": 19.0,
+            "reason": "Strong rejection (strongest SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 45,
+            "contribution": 4.5,
+            "reason": "Pullback 16.5% (Shallow)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.0ATR (Moderate)"
+          }
+        ]
+      },
+      "status": "sl_hit",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": "2026-04-15T17:04:29.391782",
+      "max_favorable_excursion": 0.00011999999999989797,
+      "max_adverse_excursion": 0.0020100000000000673,
+      "highest_price_seen": 1.18007,
+      "lowest_price_seen": 1.17794,
+      "final_outcome": "loss",
+      "pips_gained": 0.0,
+      "pips_lost": 0.0016900000000001913,
+      "time_to_outcome_seconds": 26056.944552,
+      "moved_favorable_before_fail": true,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 450.0,
+      "time_in_drawdown_seconds": 570.0,
+      "peak_r_before_reversal": 0.0710059171596949
     }
   ],
   "active": [
@@ -11449,8 +11218,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0007600000000000939,
-      "max_adverse_excursion": 0.0008500000000000174,
-      "highest_price_seen": 1.17947,
+      "max_adverse_excursion": 0.0015000000000000568,
+      "highest_price_seen": 1.18012,
       "lowest_price_seen": 1.17786,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -11463,8 +11232,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1890.0,
-      "time_in_drawdown_seconds": 7410.0,
+      "time_in_profit_seconds": 4170.0,
+      "time_in_drawdown_seconds": 7740.0,
       "peak_r_before_reversal": 0.48407643312105697
     },
     {
@@ -11528,8 +11297,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0007600000000000939,
-      "max_adverse_excursion": 0.0008500000000000174,
-      "highest_price_seen": 1.17947,
+      "max_adverse_excursion": 0.0015000000000000568,
+      "highest_price_seen": 1.18012,
       "lowest_price_seen": 1.17786,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -11542,8 +11311,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1890.0,
-      "time_in_drawdown_seconds": 7410.0,
+      "time_in_profit_seconds": 4170.0,
+      "time_in_drawdown_seconds": 7740.0,
       "peak_r_before_reversal": 0.48407643312105697
     },
     {
@@ -11607,8 +11376,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0007700000000001594,
-      "max_adverse_excursion": 0.0008399999999999519,
-      "highest_price_seen": 1.17947,
+      "max_adverse_excursion": 0.0014899999999999913,
+      "highest_price_seen": 1.18012,
       "lowest_price_seen": 1.17786,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -11621,8 +11390,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 2220.0,
-      "time_in_drawdown_seconds": 7050.0,
+      "time_in_profit_seconds": 4530.0,
+      "time_in_drawdown_seconds": 7350.0,
       "peak_r_before_reversal": 0.493589743589844
     },
     {
@@ -11686,8 +11455,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.0007700000000001594,
-      "max_adverse_excursion": 0.0008399999999999519,
-      "highest_price_seen": 1.17947,
+      "max_adverse_excursion": 0.0014899999999999913,
+      "highest_price_seen": 1.18012,
       "lowest_price_seen": 1.17786,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -11700,27 +11469,27 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 2220.0,
-      "time_in_drawdown_seconds": 7050.0,
+      "time_in_profit_seconds": 4530.0,
+      "time_in_drawdown_seconds": 7350.0,
       "peak_r_before_reversal": 0.493589743589844
     },
     {
-      "signal_id": "XAUUSD_SELL_20260415_081735",
-      "timestamp": "2026-04-15T08:17:35.963573",
+      "signal_id": "XAUUSD_SELL_20260415_093605",
+      "timestamp": "2026-04-15T09:36:05.125955",
       "asset": "XAUUSD",
       "direction": "SELL",
-      "entry_price": 4811.86,
-      "stop_loss": 4822.317105,
-      "take_profit_1": 4796.174342499999,
-      "take_profit_2": 4788.854368999999,
-      "confidence_score": 71.1,
+      "entry_price": 4798.69,
+      "stop_loss": 4819.944581785714,
+      "take_profit_1": 4766.808127321428,
+      "take_profit_2": 4751.929920071428,
+      "confidence_score": 71.0,
       "confidence_level": "GOOD",
       "setup_type": "Technical Setup [Structural SL]",
       "session": "London",
-      "invalidation": "Above 4822.32",
+      "invalidation": "Above 4819.94",
       "risk_reward": 1.5,
       "score_breakdown": {
-        "final_score": 71.1,
+        "final_score": 71.0,
         "confidence": "GOOD",
         "breakdown": [
           {
@@ -11733,9 +11502,9 @@
           {
             "factor": "M15_CONTEXT",
             "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.87 pen=-8"
+            "score": 55,
+            "contribution": 16.5,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=1.61 pen=-25"
           },
           {
             "factor": "M5_TRIGGER",
@@ -11749,14 +11518,14 @@
             "weight": 10,
             "score": 45,
             "contribution": 4.5,
-            "reason": "Pullback 12.9% (Shallow)"
+            "reason": "Pullback 20.1% (Shallow)"
           },
           {
             "factor": "FTA_CLEAN_SPACE",
             "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.9ATR (Limited)"
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.4ATR (Moderate)"
           }
         ]
       },
@@ -11764,563 +11533,10 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 14.779999999999745,
-      "max_adverse_excursion": 6.490000000000691,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 2820.0,
-      "time_in_drawdown_seconds": 1440.0,
-      "peak_r_before_reversal": 1.4133930949339386
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_081741",
-      "timestamp": "2026-04-15T08:17:41.426532",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4811.86,
-      "stop_loss": 4822.317105,
-      "take_profit_1": 4796.174342499999,
-      "take_profit_2": 4788.854368999999,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.32",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.87 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 12.9% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.9ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 14.779999999999745,
-      "max_adverse_excursion": 6.490000000000691,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 2820.0,
-      "time_in_drawdown_seconds": 1440.0,
-      "peak_r_before_reversal": 1.4133930949339386
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_081928",
-      "timestamp": "2026-04-15T08:19:28.699524",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4811.62,
-      "stop_loss": 4822.317105,
-      "take_profit_1": 4795.5743425,
-      "take_profit_2": 4788.086369,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.32",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 12.4% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.8ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 14.539999999999964,
-      "max_adverse_excursion": 6.730000000000473,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 2610.0,
-      "time_in_drawdown_seconds": 1530.0,
-      "peak_r_before_reversal": 1.3592462633581424
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_081932",
-      "timestamp": "2026-04-15T08:19:32.205222",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4811.86,
-      "stop_loss": 4822.317105,
-      "take_profit_1": 4796.174342499999,
-      "take_profit_2": 4788.854368999999,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.32",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 12.9% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.9ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 14.779999999999745,
-      "max_adverse_excursion": 6.490000000000691,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 2790.0,
-      "time_in_drawdown_seconds": 1320.0,
-      "peak_r_before_reversal": 1.4133930949339386
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_081937",
-      "timestamp": "2026-04-15T08:19:37.671687",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4811.86,
-      "stop_loss": 4822.317105,
-      "take_profit_1": 4796.174342499999,
-      "take_profit_2": 4788.854368999999,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.32",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.85 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 12.9% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.9ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 14.779999999999745,
-      "max_adverse_excursion": 6.490000000000691,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 2790.0,
-      "time_in_drawdown_seconds": 1320.0,
-      "peak_r_before_reversal": 1.4133930949339386
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_084259",
-      "timestamp": "2026-04-15T08:42:59.696335",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4810.47,
-      "stop_loss": 4822.163861428571,
-      "take_profit_1": 4792.929207857143,
-      "take_profit_2": 4784.743504857144,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.16",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 10.0% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.7ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 13.390000000000327,
-      "max_adverse_excursion": 7.880000000000109,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 1020.0,
-      "time_in_drawdown_seconds": 1650.0,
-      "peak_r_before_reversal": 1.1450452087011502
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_084305",
-      "timestamp": "2026-04-15T08:43:05.171359",
-      "asset": "XAUUSD",
-      "direction": "SELL",
-      "entry_price": 4810.47,
-      "stop_loss": 4822.163861428571,
-      "take_profit_1": 4792.929207857143,
-      "take_profit_2": 4784.743504857144,
-      "confidence_score": 71.1,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 4822.16",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 71.1,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 72,
-            "contribution": 21.6,
-            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.94 pen=-8"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 10.0% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 50,
-            "contribution": 5.0,
-            "reason": "FTA 0.7ATR (Limited)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 13.390000000000327,
-      "max_adverse_excursion": 7.880000000000109,
-      "highest_price_seen": 4818.35,
-      "lowest_price_seen": 4797.08,
-      "final_outcome": null,
-      "pips_gained": 0.0,
-      "pips_lost": 0.0,
-      "time_to_outcome_seconds": 0.0,
-      "moved_favorable_before_fail": false,
-      "reached_half_r": true,
-      "reached_one_r": true,
-      "reached_two_r": false,
-      "breakeven_possible": true,
-      "partial_profit_possible": true,
-      "trailing_would_improve": false,
-      "time_in_profit_seconds": 1020.0,
-      "time_in_drawdown_seconds": 1650.0,
-      "peak_r_before_reversal": 1.1450452087011502
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_091400",
-      "timestamp": "2026-04-15T09:14:00.381877",
-      "asset": "EURUSD",
-      "direction": "SELL",
-      "entry_price": 1.17801,
-      "stop_loss": 1.17975,
-      "take_profit_1": 1.1753999999999998,
-      "take_profit_2": 1.1741819999999998,
-      "confidence_score": 68.0,
-      "confidence_level": "GOOD",
-      "setup_type": "Technical Setup [Structural SL]",
-      "session": "London",
-      "invalidation": "Above 1.17975",
-      "risk_reward": 1.5,
-      "score_breakdown": {
-        "final_score": 68.0,
-        "confidence": "GOOD",
-        "breakdown": [
-          {
-            "factor": "H1_BIAS",
-            "weight": 30,
-            "score": 80,
-            "contribution": 24.0,
-            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LH, NotExt)"
-          },
-          {
-            "factor": "M15_CONTEXT",
-            "weight": 30,
-            "score": 35,
-            "contribution": 10.5,
-            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=1.97 pen=-25"
-          },
-          {
-            "factor": "M5_TRIGGER",
-            "weight": 20,
-            "score": 95,
-            "contribution": 19.0,
-            "reason": "Strong rejection (strongest SELL trigger)"
-          },
-          {
-            "factor": "PULLBACK_QUALITY",
-            "weight": 10,
-            "score": 45,
-            "contribution": 4.5,
-            "reason": "Pullback 3.3% (Shallow)"
-          },
-          {
-            "factor": "FTA_CLEAN_SPACE",
-            "weight": 10,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "FTA 7.0ATR (Excellent +NoFTA)"
-          }
-        ]
-      },
-      "status": "generated",
-      "notified_at": null,
-      "entry_triggered_at": null,
-      "closed_at": null,
-      "max_favorable_excursion": 0.000140000000000029,
-      "max_adverse_excursion": 0.0006699999999999484,
-      "highest_price_seen": 1.17868,
-      "lowest_price_seen": 1.17787,
+      "max_favorable_excursion": 6.889999999999418,
+      "max_adverse_excursion": 5.080000000000837,
+      "highest_price_seen": 4803.77,
+      "lowest_price_seen": 4791.8,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -12332,27 +11548,27 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 120.0,
-      "time_in_drawdown_seconds": 690.0,
-      "peak_r_before_reversal": 0.08045977011495573
+      "time_in_profit_seconds": 1260.0,
+      "time_in_drawdown_seconds": 840.0,
+      "peak_r_before_reversal": 0.3241653996989159
     },
     {
-      "signal_id": "EURUSD_SELL_20260415_091405",
-      "timestamp": "2026-04-15T09:14:05.780960",
-      "asset": "EURUSD",
+      "signal_id": "XAUUSD_SELL_20260415_093610",
+      "timestamp": "2026-04-15T09:36:10.531462",
+      "asset": "XAUUSD",
       "direction": "SELL",
-      "entry_price": 1.17801,
-      "stop_loss": 1.17975,
-      "take_profit_1": 1.1753999999999998,
-      "take_profit_2": 1.1741819999999998,
-      "confidence_score": 68.0,
+      "entry_price": 4798.69,
+      "stop_loss": 4819.944581785714,
+      "take_profit_1": 4766.808127321428,
+      "take_profit_2": 4751.929920071428,
+      "confidence_score": 71.0,
       "confidence_level": "GOOD",
       "setup_type": "Technical Setup [Structural SL]",
       "session": "London",
-      "invalidation": "Above 1.17975",
+      "invalidation": "Above 4819.94",
       "risk_reward": 1.5,
       "score_breakdown": {
-        "final_score": 68.0,
+        "final_score": 71.0,
         "confidence": "GOOD",
         "breakdown": [
           {
@@ -12365,9 +11581,9 @@
           {
             "factor": "M15_CONTEXT",
             "weight": 30,
-            "score": 35,
-            "contribution": 10.5,
-            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=1.97 pen=-25"
+            "score": 55,
+            "contribution": 16.5,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=1.61 pen=-25"
           },
           {
             "factor": "M5_TRIGGER",
@@ -12381,14 +11597,14 @@
             "weight": 10,
             "score": 45,
             "contribution": 4.5,
-            "reason": "Pullback 3.3% (Shallow)"
+            "reason": "Pullback 20.1% (Shallow)"
           },
           {
             "factor": "FTA_CLEAN_SPACE",
             "weight": 10,
-            "score": 100,
-            "contribution": 10.0,
-            "reason": "FTA 7.0ATR (Excellent +NoFTA)"
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.4ATR (Moderate)"
           }
         ]
       },
@@ -12396,10 +11612,10 @@
       "notified_at": null,
       "entry_triggered_at": null,
       "closed_at": null,
-      "max_favorable_excursion": 0.000140000000000029,
-      "max_adverse_excursion": 0.0006699999999999484,
-      "highest_price_seen": 1.17868,
-      "lowest_price_seen": 1.17787,
+      "max_favorable_excursion": 6.889999999999418,
+      "max_adverse_excursion": 5.080000000000837,
+      "highest_price_seen": 4803.77,
+      "lowest_price_seen": 4791.8,
       "final_outcome": null,
       "pips_gained": 0.0,
       "pips_lost": 0.0,
@@ -12411,10 +11627,168 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 120.0,
-      "time_in_drawdown_seconds": 690.0,
-      "peak_r_before_reversal": 0.08045977011495573
+      "time_in_profit_seconds": 1260.0,
+      "time_in_drawdown_seconds": 840.0,
+      "peak_r_before_reversal": 0.3241653996989159
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_170459",
+      "timestamp": "2026-04-15T17:04:59.122184",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4803.77,
+      "stop_loss": 4812.926026785714,
+      "take_profit_1": 4790.035959821429,
+      "take_profit_2": 4783.62674107143,
+      "confidence_score": 87.6,
+      "confidence_level": "STRONG",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Above 4812.93",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 87.6,
+        "confidence": "STRONG",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LL, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.82 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 36.9% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.5ATR (Limited)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 3.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 4803.77,
+      "lowest_price_seen": 4800.77,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 210.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.3276530388356736
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_170504",
+      "timestamp": "2026-04-15T17:05:04.794042",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4803.77,
+      "stop_loss": 4812.926026785714,
+      "take_profit_1": 4790.035959821429,
+      "take_profit_2": 4783.62674107143,
+      "confidence_score": 87.6,
+      "confidence_level": "STRONG",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "New York",
+      "invalidation": "Above 4812.93",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 87.6,
+        "confidence": "STRONG",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 80,
+            "contribution": 24.0,
+            "reason": "H1 Bias 4/5 (P<EMA20, Slope-, LL, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 72,
+            "contribution": 21.6,
+            "reason": "M15 Trend 4/5 (EMA20<50, Slope20-, Slope50-, P<EMA20) | ext=0.82 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 36.9% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.5ATR (Limited)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 3.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 4803.77,
+      "lowest_price_seen": 4800.77,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 210.0,
+      "time_in_drawdown_seconds": 0.0,
+      "peak_r_before_reversal": 0.3276530388356736
     }
   ],
-  "saved_at": "2026-04-15T09:27:15.404380"
+  "saved_at": "2026-04-15T17:07:21.210914"
 }

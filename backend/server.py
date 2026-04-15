@@ -1989,20 +1989,17 @@ async def initialize_scanner_v3():
             await signal_generator_instance.start()
             logger.info("✅ Signal Generator v3 started manually")
         
-        # Initialize tracker if needed
-        if not tracker:
-            tracker = init_outcome_tracker(db)
-            logger.info("✅ Outcome Tracker initialized manually")
-        
-        if tracker and not tracker.is_running:
-            await tracker.start()
-            logger.info("✅ Outcome Tracker started manually")
+        # Initialize and start tracker V2
+        from services.signal_outcome_tracker_v2 import signal_outcome_tracker
+        if not signal_outcome_tracker.is_running:
+            await signal_outcome_tracker.start()
+            logger.info("✅ Outcome Tracker V2 started manually")
         
         return {
             "status": "success",
             "message": "Signal Generator v3 initialized and started",
             "scanner_running": signal_generator_instance.is_running,
-            "tracker_running": tracker.is_running if tracker else False,
+            "tracker_running": signal_outcome_tracker.is_running,
             "version": signal_generator_instance.get_stats().get("version", "unknown")
         }
         
@@ -3166,33 +3163,39 @@ async def send_real_pipeline_test():
 @api_router.get("/tracker/status")
 async def get_tracker_status():
     """Get signal outcome tracker status"""
-    if not tracker:
-        return {"error": "Tracker not initialized"}
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
-    return tracker.get_stats()
+    return {
+        "is_running": signal_outcome_tracker.is_running,
+        "checks_performed": signal_outcome_tracker.stats.get("total_checks", 0),
+        "tp_hits": signal_outcome_tracker.stats.get("tp_hits", 0),
+        "sl_hits": signal_outcome_tracker.stats.get("sl_hits", 0),
+        "expired": signal_outcome_tracker.stats.get("expired", 0),
+        "active_signals": len(signal_outcome_tracker.active_signals),
+        "check_interval_seconds": signal_outcome_tracker.PRICE_CHECK_INTERVAL,
+        "max_signal_age_hours": signal_outcome_tracker.EXPIRY_HOURS
+    }
 
 @api_router.post("/tracker/start")
 async def start_tracker():
     """Start the signal outcome tracker"""
-    if not tracker:
-        raise HTTPException(status_code=500, detail="Tracker not initialized")
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
-    if tracker.is_running:
+    if signal_outcome_tracker.is_running:
         return {"status": "already_running"}
     
-    await tracker.start()
+    await signal_outcome_tracker.start()
     return {"status": "started"}
 
 @api_router.post("/tracker/stop")
 async def stop_tracker():
     """Stop the signal outcome tracker"""
-    if not tracker:
-        raise HTTPException(status_code=500, detail="Tracker not initialized")
+    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
-    if not tracker.is_running:
+    if not signal_outcome_tracker.is_running:
         return {"status": "already_stopped"}
     
-    await tracker.stop()
+    await signal_outcome_tracker.stop()
     return {"status": "stopped"}
 
 
