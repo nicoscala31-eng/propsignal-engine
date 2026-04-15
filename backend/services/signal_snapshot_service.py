@@ -420,7 +420,11 @@ def create_snapshot_from_signal_data(
     # Calculate score pre/post penalty
     factor_total = sum(f.get('score_contribution', 0) for f in score_breakdown.get('factors', []))
     penalty_total = sum(p.get('penalty_value', 0) for p in penalties)
-    final_score = score_breakdown.get('total_score', factor_total - penalty_total)
+    final_score = score_breakdown.get('total_score') or (factor_total - penalty_total)
+    
+    # Handle None values - use 0 as fallback
+    if final_score is None:
+        final_score = 0.0
     
     # Determine confidence bucket
     if final_score >= 75:

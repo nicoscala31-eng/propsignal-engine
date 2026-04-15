@@ -916,6 +916,9 @@ class SignalGeneratorV3:
         self.is_degraded = False
         self.degradation_reason: Optional[str] = None
         
+        # ========== SNAPSHOT QUEUE (for async save) ==========
+        self._pending_snapshots: List[SignalSnapshot] = []
+        
         # Load persisted state
         self._load_state()
         
@@ -1138,15 +1141,20 @@ class SignalGeneratorV3:
                     score_breakdown[name_key] = comp.score
             
             # Build filter flags based on rejection reason
+            # Handle None values for comparisons
+            safe_final_score = final_score if final_score is not None else 0.0
+            safe_mtf_score = mtf_score if mtf_score is not None else 0.0
+            safe_risk_reward = risk_reward if risk_reward is not None else 0.0
+            
             filter_flags = {
-                "score_passed": final_score >= threshold,
-                "mtf_passed": mtf_score >= self.MIN_MTF_SCORE,
+                "score_passed": safe_final_score >= threshold,
+                "mtf_passed": safe_mtf_score >= self.MIN_MTF_SCORE,
                 "fta_passed": not (fta and fta.fta_blocked_trade),
                 "session_passed": session in self.ALLOWED_SESSIONS,
                 "asset_passed": True,  # Already checked at scan level
                 "duplicate_blocked": "duplicate" in rejection_reason.lower(),
                 "news_blocked": "news" in rejection_reason.lower(),
-                "rr_passed": risk_reward >= self.MIN_RR_HARD_REJECT,
+                "rr_passed": safe_risk_reward >= self.MIN_RR_HARD_REJECT,
                 "spread_passed": True,  # Already checked at scan level
                 "daily_limit_passed": "daily" not in rejection_reason.lower()
             }
@@ -1199,8 +1207,8 @@ class SignalGeneratorV3:
                 total_factor_score = 0
                 if components:
                     for comp in components:
-                        normalized = comp.score
-                        contribution = comp.weighted_score
+                        normalized = comp.score if comp.score is not None else 0
+                        contribution = comp.weighted_score if comp.weighted_score is not None else 0
                         total_factor_score += contribution
                         
                         # Determine status
@@ -1214,12 +1222,12 @@ class SignalGeneratorV3:
                         factor_contributions.append({
                             "factor_key": comp.name.lower().replace(' ', '_').replace('/', '_'),
                             "factor_name": comp.name,
-                            "raw_value": comp.score,
+                            "raw_value": comp.score or 0,
                             "normalized_value": normalized,
-                            "weight_pct": comp.weight,
+                            "weight_pct": comp.weight or 0,
                             "score_contribution": round(contribution, 2),
                             "status": status,
-                            "reason": comp.reason
+                            "reason": comp.reason or ""
                         })
                 
                 # Build penalties list
@@ -1323,14 +1331,9 @@ class SignalGeneratorV3:
                     blocking_filter=blocking_filter
                 )
                 
-                # Save snapshot asynchronously - ensure we get the running loop
-                try:
-                    loop = asyncio.get_running_loop()
-                    loop.create_task(signal_snapshot_service.save_snapshot(snapshot))
-                    logger.info(f"📸 Snapshot queued: {snapshot.signal_id} ({snapshot.status})")
-                except RuntimeError as loop_err:
-                    # No running loop - this shouldn't happen in async context
-                    logger.warning(f"⚠️ No running loop for snapshot save: {loop_err}")
+                # Queue snapshot for async save (will be saved at end of scan cycle)
+                self._pending_snapshots.append(snapshot)
+                logger.info(f"📸 Snapshot queued: {snapshot.signal_id} ({snapshot.status}) - {len(self._pending_snapshots)} pending")
                 
             except Exception as snap_err:
                 logger.warning(f"⚠️ Snapshot creation error: {snap_err}")
@@ -1555,6 +1558,19 @@ class SignalGeneratorV3:
             
             if signal:
                 await self._process_signal(signal)
+        
+        # ========== SAVE PENDING SNAPSHOTS ==========
+        # Save all accumulated snapshots after the scan loop completes
+        if self._pending_snapshots:
+            try:
+                await signal_snapshot_service.initialize()
+                for snapshot in self._pending_snapshots:
+                    await signal_snapshot_service.save_snapshot(snapshot)
+                saved_count = len(self._pending_snapshots)
+                self._pending_snapshots.clear()
+                logger.info(f"📸 Saved {saved_count} snapshots to disk")
+            except Exception as e:
+                logger.error(f"❌ Failed to save pending snapshots: {e}")
     
     # ==================== NEWS RISK DETECTION ====================
     
