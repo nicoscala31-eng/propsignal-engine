@@ -1327,17 +1327,17 @@ class SignalGeneratorV3:
                 try:
                     loop = asyncio.get_running_loop()
                     loop.create_task(signal_snapshot_service.save_snapshot(snapshot))
-                except RuntimeError:
-                    # No running loop - run synchronously as fallback
-                    import asyncio
-                    asyncio.run(signal_snapshot_service.save_snapshot(snapshot))
+                    logger.info(f"📸 Snapshot queued: {snapshot.signal_id} ({snapshot.status})")
+                except RuntimeError as loop_err:
+                    # No running loop - this shouldn't happen in async context
+                    logger.warning(f"⚠️ No running loop for snapshot save: {loop_err}")
                 
             except Exception as snap_err:
-                logger.debug(f"Snapshot creation error (non-blocking): {snap_err}")
+                logger.warning(f"⚠️ Snapshot creation error: {snap_err}")
             
         except Exception as e:
             # Never let audit logging crash the scanner
-            logger.debug(f"Candidate audit logging error: {e}")
+            logger.warning(f"⚠️ Candidate audit logging error: {e}")
     
     # ==================== LIFECYCLE ====================
     
