@@ -11652,7 +11652,7 @@
       "breakeven_possible": true,
       "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 12660.0,
+      "time_in_profit_seconds": 12900.0,
       "time_in_drawdown_seconds": 660.0,
       "peak_r_before_reversal": 1.0439024390243505
     },
@@ -11752,10 +11752,326 @@
       "breakeven_possible": true,
       "partial_profit_possible": true,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 12660.0,
+      "time_in_profit_seconds": 12900.0,
       "time_in_drawdown_seconds": 660.0,
       "peak_r_before_reversal": 1.0439024390243505
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_065715",
+      "timestamp": "2026-04-15T06:57:15.868495",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17862,
+      "stop_loss": 1.18019,
+      "take_profit_1": 1.176265,
+      "take_profit_2": 1.175166,
+      "confidence_score": 57.5,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 1.18019",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 57.5,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P<EMA20, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 25,
+            "contribution": 7.5,
+            "reason": "M15 Trend 2/5 (EMA20<50, P<EMA20) | ext=1.12 pen=-15"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 32.4% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 2.4ATR (Excellent)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 1.0000000000065512e-05,
+      "highest_price_seen": 1.17863,
+      "lowest_price_seen": 1.17862,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_065721",
+      "timestamp": "2026-04-15T06:57:21.449128",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17862,
+      "stop_loss": 1.18019,
+      "take_profit_1": 1.176265,
+      "take_profit_2": 1.175166,
+      "confidence_score": 57.5,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 1.18019",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 57.5,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P<EMA20, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 25,
+            "contribution": 7.5,
+            "reason": "M15 Trend 2/5 (EMA20<50, P<EMA20) | ext=1.12 pen=-15"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 32.4% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 2.4ATR (Excellent)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 1.0000000000065512e-05,
+      "highest_price_seen": 1.17863,
+      "lowest_price_seen": 1.17862,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_065729",
+      "timestamp": "2026-04-15T06:57:29.152142",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17863,
+      "stop_loss": 1.18019,
+      "take_profit_1": 1.17629,
+      "take_profit_2": 1.175198,
+      "confidence_score": 59.6,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 1.18019",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 59.6,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P<EMA20, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 32,
+            "contribution": 9.6,
+            "reason": "M15 Trend 2/5 (EMA20<50, P<EMA20) | ext=0.90 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 32.9% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 2.4ATR (Excellent)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 1.17863,
+      "lowest_price_seen": 1.17863,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 0.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_SELL_20260415_065734",
+      "timestamp": "2026-04-15T06:57:34.654364",
+      "asset": "EURUSD",
+      "direction": "SELL",
+      "entry_price": 1.17863,
+      "stop_loss": 1.18019,
+      "take_profit_1": 1.17629,
+      "take_profit_2": 1.175198,
+      "confidence_score": 59.6,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 1.18019",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 59.6,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P<EMA20, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 32,
+            "contribution": 9.6,
+            "reason": "M15 Trend 2/5 (EMA20<50, P<EMA20) | ext=0.90 pen=-8"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 32.9% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 100,
+            "contribution": 10.0,
+            "reason": "FTA 2.4ATR (Excellent)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 1.17863,
+      "lowest_price_seen": 1.17863,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 0.0,
+      "peak_r_before_reversal": 0.0
     }
   ],
-  "saved_at": "2026-04-15T06:54:39.680654"
+  "saved_at": "2026-04-15T06:57:34.861177"
 }
