@@ -1323,8 +1323,14 @@ class SignalGeneratorV3:
                     blocking_filter=blocking_filter
                 )
                 
-                # Save snapshot asynchronously
-                asyncio.create_task(signal_snapshot_service.save_snapshot(snapshot))
+                # Save snapshot asynchronously - ensure we get the running loop
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.create_task(signal_snapshot_service.save_snapshot(snapshot))
+                except RuntimeError:
+                    # No running loop - run synchronously as fallback
+                    import asyncio
+                    asyncio.run(signal_snapshot_service.save_snapshot(snapshot))
                 
             except Exception as snap_err:
                 logger.debug(f"Snapshot creation error (non-blocking): {snap_err}")
