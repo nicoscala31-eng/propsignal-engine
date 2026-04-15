@@ -51,8 +51,20 @@ const DEVICE_ID = Constants.installationId || 'default-device';
 interface LivePrice {
   bid: number;
   ask: number;
+  mid?: number;
   spread_pips: number;
   timestamp?: string;
+  age_seconds?: number;
+  is_stale?: boolean;
+}
+
+interface PriceDataResponse {
+  provider: string;
+  is_production: boolean;
+  prices: {
+    EURUSD?: any;
+    XAUUSD?: any;
+  };
 }
 
 interface ScannerStatus {
@@ -110,6 +122,8 @@ export default function HomeScreen() {
   const [eurusdPrice, setEurusdPrice] = useState<LivePrice | null>(null);
   const [xauusdPrice, setXauusdPrice] = useState<LivePrice | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [priceProvider, setPriceProvider] = useState<string>('');
+  const [isSimulation, setIsSimulation] = useState<boolean>(false);
   
   // Scanner status
   const [scannerStatus, setScannerStatus] = useState<ScannerStatus | null>(null);
@@ -151,17 +165,24 @@ export default function HomeScreen() {
         const data = await response.json();
         console.log('📊 Price data keys:', Object.keys(data));
         
+        // Track provider info
+        setPriceProvider(data.provider || 'Unknown');
+        setIsSimulation(!data.is_production);
+        
         // API returns prices inside data.prices object
         const prices = data.prices || data;
         console.log('📊 Prices keys:', Object.keys(prices));
         
         const eurusd = prices.EURUSD || prices.eurusd;
         if (eurusd) {
-          console.log('✅ EURUSD found:', eurusd.bid, eurusd.ask);
+          console.log('✅ EURUSD found:', eurusd.bid, eurusd.ask, 'mid:', eurusd.mid);
           setEurusdPrice({
             bid: eurusd.bid || eurusd.live_bid || 0,
             ask: eurusd.ask || eurusd.live_ask || 0,
+            mid: eurusd.mid || ((eurusd.bid + eurusd.ask) / 2),
             spread_pips: eurusd.spread_pips || eurusd.live_spread_pips || 0,
+            age_seconds: eurusd.age_seconds,
+            is_stale: eurusd.age_seconds > 30,
           });
         } else {
           console.log('❌ EURUSD not found in prices');
@@ -169,11 +190,14 @@ export default function HomeScreen() {
         
         const xauusd = prices.XAUUSD || prices.xauusd;
         if (xauusd) {
-          console.log('✅ XAUUSD found:', xauusd.bid, xauusd.ask);
+          console.log('✅ XAUUSD found:', xauusd.bid, xauusd.ask, 'mid:', xauusd.mid);
           setXauusdPrice({
             bid: xauusd.bid || xauusd.live_bid || 0,
             ask: xauusd.ask || xauusd.live_ask || 0,
+            mid: xauusd.mid || ((xauusd.bid + xauusd.ask) / 2),
             spread_pips: xauusd.spread_pips || xauusd.live_spread_pips || 0,
+            age_seconds: xauusd.age_seconds,
+            is_stale: xauusd.age_seconds > 30,
           });
         } else {
           console.log('❌ XAUUSD not found in prices');
@@ -485,8 +509,20 @@ export default function HomeScreen() {
 
       {/* Live Prices */}
       <View style={styles.pricesContainer}>
+        {/* Price Source Warning */}
+        {isSimulation && (
+          <View style={styles.simulationWarning}>
+            <Text style={styles.simulationWarningText}>⚠️ SIMULATION - Prezzi non reali</Text>
+          </View>
+        )}
+        
+        {/* Data Source Info */}
+        <Text style={styles.priceSourceText}>
+          Fonte: {priceProvider || 'Loading...'} {isSimulation ? '(SIM)' : ''}
+        </Text>
+
         {/* EURUSD */}
-        <View style={styles.priceCard}>
+        <View style={[styles.priceCard, eurusdPrice?.is_stale && styles.priceCardStale]}>
           <Text style={styles.priceSymbol}>EURUSD</Text>
           {priceError ? (
             <Text style={styles.priceError}>{priceError}</Text>
@@ -494,15 +530,18 @@ export default function HomeScreen() {
             <>
               <View style={styles.priceRow}>
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Bid</Text>
+                  <Text style={styles.priceLabel}>Sell</Text>
                   <Text style={styles.priceValue}>{formatPrice(eurusdPrice.bid, 'EURUSD')}</Text>
                 </View>
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Ask</Text>
+                  <Text style={styles.priceLabel}>Buy</Text>
                   <Text style={styles.priceValue}>{formatPrice(eurusdPrice.ask, 'EURUSD')}</Text>
                 </View>
               </View>
-              <Text style={styles.spreadText}>Spread: {eurusdPrice.spread_pips?.toFixed(1) || '-'} pips</Text>
+              <Text style={styles.spreadText}>
+                Spread: {eurusdPrice.spread_pips?.toFixed(1) || '-'} pips
+                {eurusdPrice.age_seconds !== undefined && ` • ${eurusdPrice.age_seconds.toFixed(0)}s ago`}
+              </Text>
             </>
           ) : (
             <ActivityIndicator size="small" color="#00ff88" />
@@ -510,7 +549,7 @@ export default function HomeScreen() {
         </View>
 
         {/* XAUUSD */}
-        <View style={styles.priceCard}>
+        <View style={[styles.priceCard, xauusdPrice?.is_stale && styles.priceCardStale]}>
           <Text style={styles.priceSymbol}>XAUUSD</Text>
           {priceError ? (
             <Text style={styles.priceError}>{priceError}</Text>
@@ -518,15 +557,18 @@ export default function HomeScreen() {
             <>
               <View style={styles.priceRow}>
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Bid</Text>
+                  <Text style={styles.priceLabel}>Sell</Text>
                   <Text style={styles.priceValue}>{formatPrice(xauusdPrice.bid, 'XAUUSD')}</Text>
                 </View>
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Ask</Text>
+                  <Text style={styles.priceLabel}>Buy</Text>
                   <Text style={styles.priceValue}>{formatPrice(xauusdPrice.ask, 'XAUUSD')}</Text>
                 </View>
               </View>
-              <Text style={styles.spreadText}>Spread: {xauusdPrice.spread_pips?.toFixed(1) || '-'} pips</Text>
+              <Text style={styles.spreadText}>
+                Spread: {xauusdPrice.spread_pips?.toFixed(1) || '-'} pips
+                {xauusdPrice.age_seconds !== undefined && ` • ${xauusdPrice.age_seconds.toFixed(0)}s ago`}
+              </Text>
             </>
           ) : (
             <ActivityIndicator size="small" color="#00ff88" />
@@ -802,6 +844,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 12,
+  },
+  priceCardStale: {
+    backgroundColor: '#331a1a',
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  simulationWarning: {
+    backgroundColor: '#ff444430',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  simulationWarningText: {
+    color: '#ff4444',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  priceSourceText: {
+    color: '#666',
+    fontSize: 10,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   priceSymbol: {
     color: '#fff',
