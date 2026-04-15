@@ -1,20 +1,20 @@
 {
-  "scan_count": 55560,
+  "scan_count": 55640,
   "signal_count": 504,
   "notification_count": 159,
-  "rejection_count": 61555,
+  "rejection_count": 61647,
   "rejection_reasons": {
     "low_rr": 16,
     "daily_limit": 594,
     "low_confidence": 7517,
     "duplicate": 15068,
-    "fta_blocked": 20188,
+    "fta_blocked": 20201,
     "weak_mtf": 8653,
     "setup_penalty_dropped_score": 573,
     "buffer_zone_failed": 289,
     "weak_m15_context": 233,
     "buy_session_blocked": 394,
-    "weak_trigger": 2842,
+    "weak_trigger": 2890,
     "h1_weak": 2277,
     "sell_session_blocked": 4,
     "market_not_sane": 165,
@@ -24,12 +24,12 @@
     "BUY confidence below threshold": 88,
     "sell_rejection_missing": 366,
     "SELL confidence below threshold": 36,
-    "confidence_low": 293,
+    "confidence_low": 324,
     "weak_h1_bias": 182,
     "clean_momentum_score_too_low": 59
   },
   "invalid_tokens_removed": 0,
   "daily_risk_used": 0.0,
   "last_reset_date": "2026-04-15",
-  "last_save": "2026-04-15T08:24:04.982781"
+  "last_save": "2026-04-15T08:30:48.340029"
 }
