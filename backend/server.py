@@ -1805,6 +1805,64 @@ async def get_signal_generator_v3_status():
     }
 
 
+@api_router.post("/scanner/v3/initialize")
+async def initialize_scanner_v3():
+    """
+    Manually initialize and start Signal Generator v3.
+    
+    Use this if the scanner failed to initialize during startup.
+    This will:
+    1. Initialize the signal generator if not already done
+    2. Start the scanner if not running
+    3. Initialize the outcome tracker
+    """
+    global signal_generator_instance, tracker
+    
+    try:
+        # Check if already running
+        if signal_generator_instance and signal_generator_instance.is_running:
+            return {
+                "status": "already_running",
+                "message": "Signal Generator v3 is already running",
+                "version": signal_generator_instance.get_stats().get("version", "unknown")
+            }
+        
+        # Initialize if not done
+        if not signal_generator_instance:
+            logger.info("🔄 Manual initialization of Signal Generator v3...")
+            signal_generator_instance = await init_signal_generator(db)
+            logger.info("✅ Signal Generator v3 initialized manually")
+        
+        # Start if not running
+        if not signal_generator_instance.is_running:
+            await signal_generator_instance.start()
+            logger.info("✅ Signal Generator v3 started manually")
+        
+        # Initialize tracker if needed
+        if not tracker:
+            tracker = init_outcome_tracker(db)
+            logger.info("✅ Outcome Tracker initialized manually")
+        
+        if tracker and not tracker.is_running:
+            await tracker.start()
+            logger.info("✅ Outcome Tracker started manually")
+        
+        return {
+            "status": "success",
+            "message": "Signal Generator v3 initialized and started",
+            "scanner_running": signal_generator_instance.is_running,
+            "tracker_running": tracker.is_running if tracker else False,
+            "version": signal_generator_instance.get_stats().get("version", "unknown")
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Manual initialization error: {e}")
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
 @api_router.post("/scanner/v3/reset-daily-risk")
 async def reset_daily_risk():
     """
