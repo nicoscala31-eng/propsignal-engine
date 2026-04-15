@@ -1391,6 +1391,126 @@ async def debug_live_quote(asset: str):
     }
 
 
+@api_router.get("/debug/market-data")
+async def debug_market_data():
+    """
+    DEBUG: Complete market data diagnostic endpoint
+    
+    Shows:
+    - Current prices for all assets
+    - Data source (TwelveData vs Simulation)
+    - Price freshness and staleness
+    - Whether bid/ask are real or calculated
+    """
+    from datetime import datetime
+    
+    provider = provider_manager.get_provider()
+    status = provider_manager.get_status()
+    
+    is_simulation = provider_manager.is_simulation_mode()
+    is_production = provider_manager.is_production_ready()
+    
+    result = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "provider": {
+            "name": status.provider_name if status else "None",
+            "type": "SimulationProvider" if is_simulation else "TwelveDataProvider",
+            "is_simulation": is_simulation,
+            "is_production": is_production,
+            "data_source": "SIMULATED (NOT REAL)" if is_simulation else "TwelveData API",
+        },
+        "data_quality": {
+            "bid_ask_type": "CALCULATED (spread inventato)" if not is_simulation else "SIMULATED",
+            "bid_ask_real": False,
+            "explanation": "TwelveData fornisce solo mid-price. Bid/Ask sono calcolati con spread fisso (EURUSD: 0.8 pips, XAUUSD: 25 pips)"
+        },
+        "assets": {}
+    }
+    
+    # Fetch quotes for all assets
+    for asset in [Asset.EURUSD, Asset.XAUUSD]:
+        try:
+            start_time = datetime.utcnow()
+            quote = await provider.get_live_quote(asset) if provider else None
+            fetch_duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            if quote:
+                age_seconds = (datetime.utcnow() - quote.timestamp).total_seconds()
+                result["assets"][asset.value] = {
+                    "bid": quote.bid,
+                    "ask": quote.ask,
+                    "mid": quote.mid_price,
+                    "spread_pips": quote.spread_pips,
+                    "timestamp_provider": quote.timestamp.isoformat(),
+                    "timestamp_server": datetime.utcnow().isoformat(),
+                    "age_seconds": round(age_seconds, 2),
+                    "is_fresh": age_seconds < 15,
+                    "is_stale": age_seconds > 30,
+                    "source_type": "simulation" if is_simulation else "price_endpoint_calculated_spread",
+                    "fetch_duration_ms": round(fetch_duration * 1000, 1)
+                }
+            else:
+                result["assets"][asset.value] = {
+                    "error": "Failed to fetch quote",
+                    "fetch_duration_ms": round(fetch_duration * 1000, 1)
+                }
+        except Exception as e:
+            result["assets"][asset.value] = {
+                "error": str(e)
+            }
+    
+    # Add warnings
+    result["warnings"] = []
+    if is_simulation:
+        result["warnings"].append("🚨 SIMULATION MODE ACTIVE - Prezzi NON reali!")
+    if not is_production:
+        result["warnings"].append("⚠️ Non connesso a TwelveData - verificare API key")
+    result["warnings"].append("ℹ️ Bid/Ask sono CALCOLATI, non forniti dal provider")
+    
+    return result
+
+
+@api_router.post("/debug/reinitialize-provider")
+async def reinitialize_provider():
+    """
+    DEBUG: Force re-initialization of market data provider
+    
+    Use this if provider fell back to simulation mode incorrectly.
+    """
+    try:
+        logger.info("🔄 Manual provider re-initialization requested...")
+        
+        # Get current state
+        old_status = provider_manager.get_status()
+        old_mode = "simulation" if provider_manager.is_simulation_mode() else "production"
+        
+        # Re-initialize
+        success = await provider_manager.initialize()
+        
+        # Get new state
+        new_status = provider_manager.get_status()
+        new_mode = "simulation" if provider_manager.is_simulation_mode() else "production"
+        
+        return {
+            "success": success,
+            "before": {
+                "mode": old_mode,
+                "provider": old_status.provider_name if old_status else "None"
+            },
+            "after": {
+                "mode": new_mode,
+                "provider": new_status.provider_name if new_status else "None"
+            },
+            "message": f"Provider changed from {old_mode} to {new_mode}"
+        }
+    except Exception as e:
+        logger.error(f"❌ Provider re-initialization error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
 # ==================== DEVICE REGISTRATION ====================
 
 @api_router.post("/register-device")
