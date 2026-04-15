@@ -349,3 +349,12 @@ frontend/dist/propsignal-v5.apk
 frontend/dist/propsignal-engine-v1.1.0.apk
 frontend/dist/propsignal-v3.apk
 frontend/dist/downloads/propsignal-v5.apk
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials

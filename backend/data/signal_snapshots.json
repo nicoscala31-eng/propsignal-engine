@@ -1,3199 +1,7 @@
 {
-  "updated_at": "2026-04-15T18:51:52.595913",
+  "updated_at": "2026-04-15T18:53:08.183653",
   "total_count": 1000,
   "snapshots": [
-    {
-      "signal_id": "EURUSD_SELL_20260415_061310",
-      "timestamp": "2026-04-15T06:13:10.900924",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17961,
-      "stop_loss": 1.18046,
-      "take_profit": 1.1783350000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061310",
-      "timestamp": "2026-04-15T06:13:10.994272",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061316",
-      "timestamp": "2026-04-15T06:13:16.087700",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17961,
-      "stop_loss": 1.18046,
-      "take_profit": 1.1783350000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061316",
-      "timestamp": "2026-04-15T06:13:16.180651",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061321",
-      "timestamp": "2026-04-15T06:13:21.273415",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17961,
-      "stop_loss": 1.18046,
-      "take_profit": 1.1783350000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061321",
-      "timestamp": "2026-04-15T06:13:21.367787",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061324",
-      "timestamp": "2026-04-15T06:13:24.565183",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061324",
-      "timestamp": "2026-04-15T06:13:24.658013",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061329",
-      "timestamp": "2026-04-15T06:13:29.750838",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061329",
-      "timestamp": "2026-04-15T06:13:29.842575",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061334",
-      "timestamp": "2026-04-15T06:13:34.936114",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061335",
-      "timestamp": "2026-04-15T06:13:35.027574",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061340",
-      "timestamp": "2026-04-15T06:13:40.121724",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061340",
-      "timestamp": "2026-04-15T06:13:40.213722",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061345",
-      "timestamp": "2026-04-15T06:13:45.308108",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061345",
-      "timestamp": "2026-04-15T06:13:45.399288",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061350",
-      "timestamp": "2026-04-15T06:13:50.491716",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17962,
-      "stop_loss": 1.18047,
-      "take_profit": 1.1783449999999998,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061350",
-      "timestamp": "2026-04-15T06:13:50.582992",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061355",
-      "timestamp": "2026-04-15T06:13:55.675923",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17961,
-      "stop_loss": 1.18046,
-      "take_profit": 1.1783350000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061355",
-      "timestamp": "2026-04-15T06:13:55.767632",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061400",
-      "timestamp": "2026-04-15T06:14:00.861241",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17961,
-      "stop_loss": 1.18046,
-      "take_profit": 1.1783350000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061400",
-      "timestamp": "2026-04-15T06:14:00.953293",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.42,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061407",
-      "timestamp": "2026-04-15T06:14:07.288809",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.1795499999999999,
-      "stop_loss": 1.1804,
-      "take_profit": 1.1782749999999997,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061407",
-      "timestamp": "2026-04-15T06:14:07.380480",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.19,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061412",
-      "timestamp": "2026-04-15T06:14:12.473120",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.1795499999999999,
-      "stop_loss": 1.1804,
-      "take_profit": 1.1782749999999997,
-      "rr_ratio": 1.5000000000001306,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.5000000000001306,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061412",
-      "timestamp": "2026-04-15T06:14:12.564837",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.19,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "EURUSD_SELL_20260415_061419",
-      "timestamp": "2026-04-15T06:14:19.997770",
-      "symbol": "EURUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 1.17954,
-      "stop_loss": 1.18039,
-      "take_profit": 1.1782650000000001,
-      "rr_ratio": 1.4999999999998694,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "fta_blocked",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 0,
-      "final_score": 0,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 15,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 1.4999999999998694,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 0.0. Reason: fta_blocked. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
-    {
-      "signal_id": "XAUUSD_SELL_20260415_061420",
-      "timestamp": "2026-04-15T06:14:20.091080",
-      "symbol": "XAUUSD",
-      "direction": "SELL",
-      "session": "Asian",
-      "setup_type": "STRUCTURAL",
-      "entry_price": 4817.19,
-      "stop_loss": 0,
-      "take_profit": 0,
-      "rr_ratio": 1.0,
-      "status": "rejected",
-      "acceptance_source": "",
-      "rejection_reason": "h1_weak",
-      "blocking_filter": "duplicate_blocked",
-      "score_pre_penalty": 0,
-      "score_post_penalty": 30,
-      "final_score": 30,
-      "confidence_bucket": "<60",
-      "factor_contributions": [],
-      "penalties_applied": [],
-      "filters_checked": [
-        {
-          "filter_name": "score_passed",
-          "threshold": 50,
-          "actual_value": 30,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: score_passed"
-        },
-        {
-          "filter_name": "mtf_passed",
-          "threshold": 60,
-          "actual_value": 0.0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: mtf_passed"
-        },
-        {
-          "filter_name": "fta_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: fta_passed"
-        },
-        {
-          "filter_name": "session_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: session_passed"
-        },
-        {
-          "filter_name": "asset_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: asset_passed"
-        },
-        {
-          "filter_name": "duplicate_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: duplicate_blocked"
-        },
-        {
-          "filter_name": "news_blocked",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": false,
-          "reason": "BLOCKED: news_blocked"
-        },
-        {
-          "filter_name": "rr_passed",
-          "threshold": 1.1,
-          "actual_value": 0,
-          "passed": false,
-          "blocks_trade": true,
-          "reason": "BLOCKED: rr_passed"
-        },
-        {
-          "filter_name": "spread_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: spread_passed"
-        },
-        {
-          "filter_name": "daily_limit_passed",
-          "threshold": 0,
-          "actual_value": 0,
-          "passed": true,
-          "blocks_trade": false,
-          "reason": "PASSED: daily_limit_passed"
-        }
-      ],
-      "summary_short": "Score 30.0 | Blocked by duplicate_blocked",
-      "summary_full": "Rejected with score 30.0. Reason: h1_weak. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
-      "notification_title": "",
-      "notification_body": "",
-      "outcome": "",
-      "outcome_timestamp": "",
-      "mfe_r": 0.0,
-      "mae_r": 0.0,
-      "final_r": 0.0,
-      "time_to_outcome_minutes": 0.0
-    },
     {
       "signal_id": "EURUSD_SELL_20260415_061425",
       "timestamp": "2026-04-15T06:14:25.183725",
@@ -115156,6 +111964,3198 @@
       "session": "New York",
       "setup_type": "v13_STRUCTURAL",
       "entry_price": 4798.46,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185157",
+      "timestamp": "2026-04-15T18:51:57.787640",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18001,
+      "stop_loss": 1.17916,
+      "take_profit": 1.181285,
+      "rr_ratio": 1.4999999999998694,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.4999999999998694,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185157",
+      "timestamp": "2026-04-15T18:51:57.790421",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4798.46,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185203",
+      "timestamp": "2026-04-15T18:52:03.204218",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18001,
+      "stop_loss": 1.17916,
+      "take_profit": 1.181285,
+      "rr_ratio": 1.4999999999998694,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.4999999999998694,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185203",
+      "timestamp": "2026-04-15T18:52:03.206952",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4798.46,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185208",
+      "timestamp": "2026-04-15T18:52:08.579527",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18001,
+      "stop_loss": 1.17916,
+      "take_profit": 1.181285,
+      "rr_ratio": 1.4999999999998694,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.4999999999998694,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185208",
+      "timestamp": "2026-04-15T18:52:08.582285",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4798.46,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185213",
+      "timestamp": "2026-04-15T18:52:13.958945",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18001,
+      "stop_loss": 1.17916,
+      "take_profit": 1.181285,
+      "rr_ratio": 1.4999999999998694,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.4999999999998694,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185213",
+      "timestamp": "2026-04-15T18:52:13.961671",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4798.46,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185219",
+      "timestamp": "2026-04-15T18:52:19.335673",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18007,
+      "stop_loss": 1.17918,
+      "take_profit": 1.181405,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185219",
+      "timestamp": "2026-04-15T18:52:19.338389",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.31,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185224",
+      "timestamp": "2026-04-15T18:52:24.710256",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18007,
+      "stop_loss": 1.17918,
+      "take_profit": 1.181405,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185224",
+      "timestamp": "2026-04-15T18:52:24.712955",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.31,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185230",
+      "timestamp": "2026-04-15T18:52:30.088891",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18007,
+      "stop_loss": 1.17918,
+      "take_profit": 1.181405,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185230",
+      "timestamp": "2026-04-15T18:52:30.091796",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.31,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185235",
+      "timestamp": "2026-04-15T18:52:35.466066",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18007,
+      "stop_loss": 1.17918,
+      "take_profit": 1.181405,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185235",
+      "timestamp": "2026-04-15T18:52:35.468822",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.31,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185240",
+      "timestamp": "2026-04-15T18:52:40.885190",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18007,
+      "stop_loss": 1.17918,
+      "take_profit": 1.181405,
+      "rr_ratio": 1.5,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185240",
+      "timestamp": "2026-04-15T18:52:40.887985",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.31,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185246",
+      "timestamp": "2026-04-15T18:52:46.264181",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18005,
+      "stop_loss": 1.17918,
+      "take_profit": 1.1813550000000004,
+      "rr_ratio": 1.5000000000001277,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000001277,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185246",
+      "timestamp": "2026-04-15T18:52:46.266956",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.54,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185251",
+      "timestamp": "2026-04-15T18:52:51.642333",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18005,
+      "stop_loss": 1.17918,
+      "take_profit": 1.1813550000000004,
+      "rr_ratio": 1.5000000000001277,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000001277,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185251",
+      "timestamp": "2026-04-15T18:52:51.645050",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.54,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185257",
+      "timestamp": "2026-04-15T18:52:57.235783",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18005,
+      "stop_loss": 1.17918,
+      "take_profit": 1.1813550000000004,
+      "rr_ratio": 1.5000000000001277,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000001277,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185257",
+      "timestamp": "2026-04-15T18:52:57.238645",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.54,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185302",
+      "timestamp": "2026-04-15T18:53:02.613894",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18005,
+      "stop_loss": 1.17918,
+      "take_profit": 1.1813550000000004,
+      "rr_ratio": 1.5000000000001277,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000001277,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185302",
+      "timestamp": "2026-04-15T18:53:02.616593",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.54,
+      "stop_loss": 0,
+      "take_profit": 0,
+      "rr_ratio": 1.0,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "weak_trigger",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: weak_trigger. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260415_185307",
+      "timestamp": "2026-04-15T18:53:07.993340",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 1.18005,
+      "stop_loss": 1.17918,
+      "take_profit": 1.1813550000000004,
+      "rr_ratio": 1.5000000000001277,
+      "status": "rejected",
+      "acceptance_source": "",
+      "rejection_reason": "market_not_sane",
+      "blocking_filter": "duplicate_blocked",
+      "score_pre_penalty": 0,
+      "score_post_penalty": 0,
+      "final_score": 0,
+      "confidence_bucket": "<60",
+      "factor_contributions": [],
+      "penalties_applied": [],
+      "filters_checked": [
+        {
+          "filter_name": "score_passed",
+          "threshold": 65,
+          "actual_value": null,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: score_passed"
+        },
+        {
+          "filter_name": "mtf_passed",
+          "threshold": 60,
+          "actual_value": 0.0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: mtf_passed"
+        },
+        {
+          "filter_name": "fta_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: fta_passed"
+        },
+        {
+          "filter_name": "session_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: session_passed"
+        },
+        {
+          "filter_name": "asset_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: asset_passed"
+        },
+        {
+          "filter_name": "duplicate_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": true,
+          "reason": "BLOCKED: duplicate_blocked"
+        },
+        {
+          "filter_name": "news_blocked",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": false,
+          "blocks_trade": false,
+          "reason": "BLOCKED: news_blocked"
+        },
+        {
+          "filter_name": "rr_passed",
+          "threshold": 1.1,
+          "actual_value": 1.5000000000001277,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: rr_passed"
+        },
+        {
+          "filter_name": "spread_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: spread_passed"
+        },
+        {
+          "filter_name": "daily_limit_passed",
+          "threshold": 0,
+          "actual_value": 0,
+          "passed": true,
+          "blocks_trade": false,
+          "reason": "PASSED: daily_limit_passed"
+        }
+      ],
+      "summary_short": "Score 0.0 | Blocked by duplicate_blocked",
+      "summary_full": "Rejected with score 0.0. Reason: market_not_sane. Blocking filter: duplicate_blocked. Pre-penalty score: 0.0, penalty: 0.0",
+      "notification_title": "",
+      "notification_body": "",
+      "outcome": "",
+      "outcome_timestamp": "",
+      "mfe_r": 0.0,
+      "mae_r": 0.0,
+      "final_r": 0.0,
+      "time_to_outcome_minutes": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260415_185307",
+      "timestamp": "2026-04-15T18:53:07.996067",
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "session": "New York",
+      "setup_type": "v13_STRUCTURAL",
+      "entry_price": 4800.54,
       "stop_loss": 0,
       "take_profit": 0,
       "rr_ratio": 1.0,
