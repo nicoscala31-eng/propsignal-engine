@@ -314,8 +314,8 @@ export default function HomeScreen() {
       rejected.sort(sortByTime);
       
       // Combine with priority: ACTIVE first, then CLOSED, then REJECTED
-      // Show more signals on homepage
-      const combined = [...active, ...closed, ...rejected].slice(0, 10);
+      // Show preview on homepage (full list in /signals page)
+      const combined = [...active, ...closed, ...rejected].slice(0, 3);
       
       console.log(`✅ Recent Signals: ${active.length} active, ${closed.length} closed, ${rejected.length} rejected → showing ${combined.length}`);
       setRecentSignals(combined);

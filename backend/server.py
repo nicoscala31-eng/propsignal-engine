@@ -1932,13 +1932,19 @@ async def initialize_scanner_v3():
     
     Use this if the scanner failed to initialize during startup.
     This will:
-    1. Initialize the signal generator if not already done
-    2. Start the scanner if not running
-    3. Initialize the outcome tracker
+    1. Initialize the signal snapshot service
+    2. Initialize the signal generator if not already done
+    3. Start the scanner if not running
+    4. Initialize the outcome tracker
     """
     global signal_generator_instance, tracker
     
     try:
+        # Initialize signal snapshot service FIRST
+        from services.signal_snapshot_service import signal_snapshot_service
+        await signal_snapshot_service.initialize()
+        logger.info("✅ Signal Snapshot Service initialized manually")
+        
         # Check if already running
         if signal_generator_instance and signal_generator_instance.is_running:
             return {
