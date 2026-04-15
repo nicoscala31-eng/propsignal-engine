@@ -1511,6 +1511,31 @@ async def reinitialize_provider():
         }
 
 
+@api_router.get("/debug/snapshot-service")
+async def debug_snapshot_service():
+    """
+    DEBUG: Check signal_snapshot_service internal state
+    """
+    from services.signal_snapshot_service import signal_snapshot_service
+    
+    return {
+        "initialized": signal_snapshot_service._loaded,
+        "snapshots_count": len(signal_snapshot_service.snapshots),
+        "snapshots_by_id_count": len(signal_snapshot_service.snapshots_by_id),
+        "snapshots_file": str(signal_snapshot_service.snapshots_file),
+        "max_snapshots": signal_snapshot_service.max_snapshots,
+        "recent_snapshots": [
+            {
+                "id": s.signal_id,
+                "status": s.status,
+                "symbol": s.symbol,
+                "timestamp": s.timestamp
+            }
+            for s in signal_snapshot_service.snapshots[-5:]
+        ] if signal_snapshot_service.snapshots else []
+    }
+
+
 # ==================== DEVICE REGISTRATION ====================
 
 @api_router.post("/register-device")
