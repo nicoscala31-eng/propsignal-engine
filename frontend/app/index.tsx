@@ -128,6 +128,7 @@ export default function HomeScreen() {
   // Scanner status
   const [scannerStatus, setScannerStatus] = useState<ScannerStatus | null>(null);
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [scannerStarting, setScannerStarting] = useState(false);
   
   // Push notifications
   const [pushToken, setPushToken] = useState<string | null>(null);
@@ -238,6 +239,7 @@ export default function HomeScreen() {
     }
   }, []);
 
+  // Moved after fetchScannerStatus
   const fetchRecentSignals = useCallback(async () => {
     try {
       setSignalsError(null);
@@ -326,6 +328,41 @@ export default function HomeScreen() {
       setSignalsError('Cannot load signals');
     }
   }, []);
+
+  // Function to start the scanner when user taps on "STOPPED"
+  const startScanner = useCallback(async () => {
+    if (scannerStarting || scannerStatus?.is_running) return;
+    
+    try {
+      setScannerStarting(true);
+      setScannerError(null);
+      console.log('🚀 Starting scanner...');
+      
+      const response = await fetch(`${API_BASE}/api/scanner/v3/initialize`, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Scanner started:', data);
+        
+        // Update scanner status
+        setScannerStatus({
+          is_running: data.scanner_running ?? true,
+          version: data.version || 'v3.3',
+        });
+      } else {
+        console.log('❌ Failed to start scanner:', response.status);
+        setScannerError('Start failed');
+      }
+    } catch (err: any) {
+      console.log('❌ Scanner start error:', err.message);
+      setScannerError('Start error');
+    } finally {
+      setScannerStarting(false);
+    }
+  }, [scannerStarting, scannerStatus?.is_running]);
 
   // ============================================
   // PUSH NOTIFICATIONS
@@ -495,19 +532,27 @@ export default function HomeScreen() {
       {/* Title */}
       <Text style={styles.mainTitle}>PropSignal Engine</Text>
       
-      {/* Scanner Status Bar */}
-      <View style={styles.scannerBar}>
+      {/* Scanner Status Bar - Clickable when stopped */}
+      <TouchableOpacity 
+        style={styles.scannerBar}
+        onPress={!scannerStatus?.is_running && !scannerStarting ? startScanner : undefined}
+        disabled={scannerStatus?.is_running || scannerStarting}
+        activeOpacity={scannerStatus?.is_running ? 1 : 0.7}
+      >
         <View style={styles.scannerInfo}>
           <View style={[
             styles.scannerDot,
-            { backgroundColor: scannerStatus?.is_running ? '#00ff88' : '#ff4444' }
+            { backgroundColor: scannerStarting ? '#ffaa00' : (scannerStatus?.is_running ? '#00ff88' : '#ff4444') }
           ]} />
           <Text style={styles.scannerText}>
-            Scanner: {scannerError ? scannerError : (scannerStatus?.is_running ? 'ACTIVE' : 'STOPPED')}
+            Scanner: {scannerStarting ? 'STARTING...' : (scannerError ? scannerError : (scannerStatus?.is_running ? 'ACTIVE' : 'STOPPED'))}
           </Text>
+          {!scannerStatus?.is_running && !scannerStarting && (
+            <Text style={styles.tapToStart}>(tap to start)</Text>
+          )}
         </View>
         <Text style={styles.scannerVersion}>{scannerStatus?.version || 'v3'}</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Live Prices */}
       <View style={styles.pricesContainer}>
@@ -845,6 +890,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  tapToStart: {
+    color: '#ffaa00',
+    fontSize: 11,
+    marginLeft: 8,
+    fontStyle: 'italic',
   },
   scannerVersion: {
     color: '#888',
