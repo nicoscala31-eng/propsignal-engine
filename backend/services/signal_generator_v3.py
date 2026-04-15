@@ -1,5 +1,5 @@
 """
-# Signal Generator v10.5 - REBUILD 1775837202
+# Signal Generator v11.0 - STRUCTURAL LOGIC REWRITE
 =============================================================
 
 *** AUTHORIZED PRODUCTION ENGINE ***
@@ -8,8 +8,29 @@
 This is the ONLY engine authorized for production signal generation.
 All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
 
-VERSION 10.0 - COMPLETE REWRITE (April 2026):
-Price-action / structure based scoring, NOT candle-statistics based.
+VERSION 11.0 - STRUCTURAL LOGIC REWRITE (April 2026):
+Price-action / structure based scoring with MONOTONIC score behavior.
+
+=== v11.0 CHANGES FROM v10.5 ===
+CRITICAL FIX: Score 70-79 had 28.6% WR vs 60-69 had 57.1% WR (inverted!)
+
+ROOT CAUSES IDENTIFIED:
+1. M15_STRUCTURE was ALWAYS INVERTED (LOSS had higher scores!)
+   - High M15 score = OVEREXTENSION, not quality
+2. H1_STRUCTURAL_BIAS was inverted in 70-79 range
+   - Strong H1 trend = mature trend, closer to reversal
+3. REJECTION_FAILED_PUSH was inflating scores for losing trades
+
+STRUCTURAL FIXES:
+1. M15 split into:
+   - M15_TREND_QUALITY (actual trend health)
+   - M15_EXTENSION_PENALTY (separate penalty, not score)
+2. H1 MATURITY CHECK added (trend age detection)
+3. DIRECTIONAL_CONTINUATION strengthened
+4. COUNTER_TREND_PENALTY made more granular
+5. RAW_QUALITY_SCORE vs FINAL_TRADE_SCORE separation
+
+GOAL: Monotonic score relationship (higher score = better quality)
 
 === PHILOSOPHY ===
 The engine evaluates trades in 3 levels:
@@ -615,36 +636,40 @@ class SignalGeneratorV3:
     7. All position data properly tracked
     """
     
-    # ==================== v10.0: PRICE-ACTION BASED SCORING ====================
+    # ==================== v11.0: PRICE-ACTION BASED SCORING ====================
     # PRODUCTION-READY: Complete rewrite with structure-based analysis
     # 
     # Philosophy: CONTEXT -> STRUCTURE -> TRIGGER
     # NOT candle-statistics based, but price-action / structure based
     
-    # ==================== BUY WEIGHTS (Total = 100%) ====================
-    # v10.0: Structure-based factors
+    # ==================== BUY WEIGHTS v11.0 (Total = 100%) ====================
+    # M15 structure split into trend_quality (8%) - extension is PENALTY
     WEIGHTS_BUY = {
-        'h1_structural_bias': 20.0,      # H1 Structural Bias
-        'm15_structure_quality': 18.0,   # M15 Structure Quality
-        'm5_trigger_quality': 16.0,      # M5 Trigger Quality
-        'pullback_quality': 14.0,        # Pullback Quality
-        'fta_clean_space': 14.0,         # FTA / Clean Space
-        'directional_continuation': 10.0, # Directional Continuation (BUY only)
-        'session_quality': 5.0,          # Session Quality
-        'market_sanity': 3.0,            # Market Sanity Check
+        'h1_structural_bias': 20.0,        # H1 Structural Bias (with maturity check)
+        'm15_trend_quality': 8.0,          # v11.0: NEW - M15 Trend Quality (split from structure)
+        'm5_trigger_quality': 18.0,        # M5 Trigger Quality (increased)
+        'pullback_quality': 8.0,           # Pullback Quality
+        'fta_clean_space': 12.0,           # FTA / Clean Space
+        'directional_continuation': 14.0,  # v11.0: INCREASED - strongest predictor
+        'session_quality': 14.0,           # Session Quality (increased)
+        'market_sanity': 6.0,              # Market Sanity Check
+        # Total: 100%
+        # PENALTIES APPLIED SEPARATELY:
+        # - m15_extension_penalty
+        # - counter_trend_penalty
     }
     
-    # ==================== SELL WEIGHTS (Total = 100%) ====================
-    # v10.0: Structure-based factors with rejection focus
+    # ==================== SELL WEIGHTS v11.0 (Total = 100%) ====================
     WEIGHTS_SELL = {
-        'h1_structural_bias': 22.0,      # H1 Structural Bias
-        'm15_structure_quality': 20.0,   # M15 Structure Quality
-        'm5_trigger_quality': 16.0,      # M5 Trigger Quality
-        'pullback_quality': 12.0,        # Pullback Quality
-        'rejection_failed_push': 14.0,   # Rejection / Failed Push (SELL only)
-        'fta_clean_space': 10.0,         # FTA / Clean Space
-        'session_quality': 4.0,          # Session Quality
-        'market_sanity': 2.0,            # Market Sanity Check
+        'h1_structural_bias': 20.0,        # H1 Structural Bias (with maturity check)
+        'm15_trend_quality': 8.0,          # v11.0: NEW - M15 Trend Quality (split from structure)
+        'm5_trigger_quality': 18.0,        # M5 Trigger Quality
+        'pullback_quality': 8.0,           # Pullback Quality (reduced from 10)
+        'rejection_failed_push': 14.0,     # Rejection / Failed Push (REQUIRES CONFIRMATION)
+        'fta_clean_space': 12.0,           # FTA / Clean Space
+        'session_quality': 14.0,           # Session Quality (reduced from 16)
+        'market_sanity': 6.0,              # Market Sanity Check
+        # Total: 100% (20+8+18+8+14+12+14+6 = 100)
     }
     
     # Legacy weights for backward compatibility
@@ -2332,10 +2357,13 @@ class SignalGeneratorV3:
             )
             return None
         
-        # ========== 2. M15 STRUCTURE QUALITY (18% BUY / 20% SELL) ==========
-        m15_score, m15_reason = self._score_m15_structure_quality(m15_candles, direction)
-        m15_weight = weights.get('m15_structure_quality', 18)
-        components.append(ScoreComponent("M15 Structure Quality", m15_weight, m15_score, m15_reason))
+        # ========== 2. M15 TREND QUALITY (8% v11.0) ==========
+        m15_score, m15_reason = self._score_m15_trend_quality(m15_candles, direction)
+        m15_weight = weights.get('m15_trend_quality', 8)
+        components.append(ScoreComponent("M15 Trend Quality", m15_weight, m15_score, m15_reason))
+        
+        # ========== v11.0: Calculate M15 Extension Penalty (SEPARATE) ==========
+        m15_extension_penalty, m15_extension_reason = self._calculate_m15_extension_penalty(m15_candles, direction)
         
         # ========== 3. M5 TRIGGER QUALITY (16% BUY / 16% SELL) ==========
         trigger_score, trigger_reason = self._score_m5_trigger_quality(m5_candles, direction)
@@ -2443,14 +2471,48 @@ class SignalGeneratorV3:
             return None
         
         # ========== CALCULATE BASE SCORE ==========
-        final_score = sum(c.weighted_score for c in components)
+        raw_quality_score = sum(c.weighted_score for c in components)
         
-        # Store preliminary score for reference
-        preliminary_score = final_score
+        # Store raw score for audit
+        preliminary_score = raw_quality_score
         
         # Get key scores for later use
         h1_score_val = h1_score
-        mtf_score_val = m15_score  # Use M15 structure as MTF proxy
+        mtf_score_val = m15_score  # Use M15 trend quality as MTF proxy
+        
+        # ========== v11.0: APPLY PENALTIES (SEPARATE FROM SCORE) ==========
+        total_penalties = 0
+        penalty_details = []
+        
+        # v11.0: M15 Extension Penalty
+        if m15_extension_penalty != 0:
+            total_penalties += abs(m15_extension_penalty)
+            penalty_details.append(f"M15_ext:{m15_extension_penalty}")
+            logger.info(f"📉 [v11.0 PENALTY] M15 Extension: {m15_extension_penalty} ({m15_extension_reason})")
+        
+        # v11.0: Counter-Trend Penalty (from direction analysis)
+        # Check if this is a counter-trend trade
+        h1_trend = self._get_trend(h1_candles[-20:]) if len(h1_candles) >= 20 else 0
+        is_counter_trend = (direction == "BUY" and h1_trend < -0.05) or (direction == "SELL" and h1_trend > 0.05)
+        
+        counter_trend_penalty = 0
+        if is_counter_trend:
+            h1_abs = abs(h1_trend)
+            if h1_abs >= 0.35:
+                counter_trend_penalty = -18  # Strong H1
+            elif h1_abs >= 0.15:
+                counter_trend_penalty = -10  # Moderate H1
+            else:
+                counter_trend_penalty = -5   # Weak H1
+            
+            total_penalties += abs(counter_trend_penalty)
+            penalty_details.append(f"counter_trend:{counter_trend_penalty}")
+            logger.info(f"📉 [v11.0 PENALTY] Counter-Trend: {counter_trend_penalty} (H1 trend={h1_trend:.3f})")
+        
+        # Calculate final score
+        final_score = raw_quality_score + m15_extension_penalty + counter_trend_penalty
+        
+        logger.info(f"📊 [v11.0 SCORE] raw_quality={raw_quality_score:.1f}, penalties={total_penalties:.1f}, final={final_score:.1f}")
         
         # ========== v10.0: FTA BONUS ==========
         fta_bonus = 0
@@ -3367,76 +3429,195 @@ class SignalGeneratorV3:
     
     def _score_m15_structure_quality(self, m15: List, direction: str) -> Tuple[float, str]:
         """
-        v10.0: M15 Structure Quality scoring
-        
-        Evaluates structure quality on M15:
-        - HH + HL sequence (BUY) or LH + LL sequence (SELL)
-        - Price vs EMA20
-        - No broken swing in last 8 candles
+        v11.0: DEPRECATED - Replaced by _score_m15_trend_quality
+        This function now delegates to the new implementation.
         """
-        if len(m15) < 40:
+        return self._score_m15_trend_quality(m15, direction)
+    
+    def _score_m15_trend_quality(self, m15: List, direction: str) -> Tuple[float, str]:
+        """
+        v11.0: M15 TREND QUALITY scoring (SEPARATED from extension risk)
+        
+        This measures ACTUAL TREND HEALTH, not overextension.
+        
+        Calcolo:
+        - EMA20 e EMA50 su M15
+        - slope EMA20 e EMA50 sulle ultime 5 candele
+        - close attuale rispetto a EMA20/EMA50
+        - struttura HH/HL per BUY, LH/LL per SELL sulle ultime 12 candele
+        
+        Score 0-100:
+        BUY:
+        - 100 se: EMA20>EMA50, slope EMA20>+0.03 ATR, slope EMA50>+0.015 ATR,
+                  close>EMA20, almeno 2 HH e 2 HL nelle ultime 12 candle
+        - 75 se mancano 1-2 condizioni
+        - 50 se struttura mista
+        - 25 se struttura opposta
+        
+        SELL speculare.
+        """
+        if len(m15) < 50:
             return 50, "Insufficient M15 data"
         
+        # Calculate EMAs
         ema20 = calculate_ema(m15, 20)
-        swing_highs = get_recent_swing_highs(m15[-40:], count=3, lookback=2)
-        swing_lows = get_recent_swing_lows(m15[-40:], count=3, lookback=2)
+        ema50 = calculate_ema(m15, 50)
+        
+        # Calculate ATR for slope normalization
+        atr_m15 = calculate_atr(m15, 14) if len(m15) >= 14 else 0.001
+        
+        # Calculate EMA slopes over last 5 candles
+        ema20_values = [calculate_ema(m15[:i+1], 20) for i in range(len(m15)-5, len(m15))]
+        ema50_values = [calculate_ema(m15[:i+1], 50) for i in range(len(m15)-5, len(m15))]
+        
+        ema20_slope = (ema20_values[-1] - ema20_values[0]) / (5 * atr_m15) if atr_m15 > 0 else 0
+        ema50_slope = (ema50_values[-1] - ema50_values[0]) / (5 * atr_m15) if atr_m15 > 0 else 0
         
         current_price = m15[-1].get('close', 0)
+        
+        # Get swing points for structure analysis
+        swing_highs = get_recent_swing_highs(m15[-12:], count=4, lookback=2)
+        swing_lows = get_recent_swing_lows(m15[-12:], count=4, lookback=2)
         
         conditions_met = 0
         details = []
         
         if direction == "BUY":
-            # Condition 1: HH + HL sequence
-            has_hh = len(swing_highs) >= 2 and swing_highs[-1].price > swing_highs[-2].price
-            has_hl = len(swing_lows) >= 2 and swing_lows[-1].price > swing_lows[-2].price
-            if has_hh and has_hl:
+            # Condition 1: EMA20 > EMA50
+            if ema20 > ema50:
                 conditions_met += 1
-                details.append("HH+HL")
-            elif has_hh or has_hl:
-                details.append("Partial structure")
+                details.append("EMA20>50")
             
-            # Condition 2: Price above EMA20
+            # Condition 2: EMA20 slope > +0.03 ATR per candle
+            if ema20_slope > 0.03:
+                conditions_met += 1
+                details.append(f"EMA20_slope+")
+            
+            # Condition 3: EMA50 slope > +0.015 ATR per candle
+            if ema50_slope > 0.015:
+                conditions_met += 1
+                details.append(f"EMA50_slope+")
+            
+            # Condition 4: Close > EMA20
             if current_price > ema20:
                 conditions_met += 1
                 details.append("P>EMA20")
             
-            # Condition 3: No broken swing low in last 8 candles
-            if len(swing_lows) >= 1:
-                last_swing_low = swing_lows[-1].price
-                recent_lows = [c.get('low', float('inf')) for c in m15[-8:]]
-                if min(recent_lows) >= last_swing_low * 0.9995:  # Small buffer
-                    conditions_met += 1
-                    details.append("SL intact")
-        else:  # SELL
-            # Condition 1: LH + LL sequence
-            has_lh = len(swing_highs) >= 2 and swing_highs[-1].price < swing_highs[-2].price
-            has_ll = len(swing_lows) >= 2 and swing_lows[-1].price < swing_lows[-2].price
-            if has_lh and has_ll:
-                conditions_met += 1
-                details.append("LH+LL")
-            elif has_lh or has_ll:
-                details.append("Partial structure")
+            # Condition 5: At least 2 HH and 2 HL in last 12 candles
+            hh_count = 0
+            hl_count = 0
+            for i in range(1, len(swing_highs)):
+                if swing_highs[i].price > swing_highs[i-1].price:
+                    hh_count += 1
+            for i in range(1, len(swing_lows)):
+                if swing_lows[i].price > swing_lows[i-1].price:
+                    hl_count += 1
             
-            # Condition 2: Price below EMA20
+            if hh_count >= 2 and hl_count >= 2:
+                conditions_met += 1
+                details.append(f"HH{hh_count}+HL{hl_count}")
+            elif hh_count >= 1 or hl_count >= 1:
+                details.append(f"Partial({hh_count}HH,{hl_count}HL)")
+                
+        else:  # SELL
+            # Condition 1: EMA20 < EMA50
+            if ema20 < ema50:
+                conditions_met += 1
+                details.append("EMA20<50")
+            
+            # Condition 2: EMA20 slope < -0.03 ATR per candle
+            if ema20_slope < -0.03:
+                conditions_met += 1
+                details.append(f"EMA20_slope-")
+            
+            # Condition 3: EMA50 slope < -0.015 ATR per candle
+            if ema50_slope < -0.015:
+                conditions_met += 1
+                details.append(f"EMA50_slope-")
+            
+            # Condition 4: Close < EMA20
             if current_price < ema20:
                 conditions_met += 1
                 details.append("P<EMA20")
             
-            # Condition 3: No broken swing high in last 8 candles
-            if len(swing_highs) >= 1:
-                last_swing_high = swing_highs[-1].price
-                recent_highs = [c.get('high', 0) for c in m15[-8:]]
-                if max(recent_highs) <= last_swing_high * 1.0005:  # Small buffer
-                    conditions_met += 1
-                    details.append("SH intact")
+            # Condition 5: At least 2 LH and 2 LL in last 12 candles
+            lh_count = 0
+            ll_count = 0
+            for i in range(1, len(swing_highs)):
+                if swing_highs[i].price < swing_highs[i-1].price:
+                    lh_count += 1
+            for i in range(1, len(swing_lows)):
+                if swing_lows[i].price < swing_lows[i-1].price:
+                    ll_count += 1
+            
+            if lh_count >= 2 and ll_count >= 2:
+                conditions_met += 1
+                details.append(f"LH{lh_count}+LL{ll_count}")
+            elif lh_count >= 1 or ll_count >= 1:
+                details.append(f"Partial({lh_count}LH,{ll_count}LL)")
         
-        # Score mapping
-        score_map = {3: 100, 2: 80, 1: 65, 0: 25}
+        # Score mapping: 5=100, 4=85, 3=70, 2=55, 1=40, 0=25
+        score_map = {5: 100, 4: 85, 3: 70, 2: 55, 1: 40, 0: 25}
         score = score_map.get(conditions_met, 25)
-        reason = f"M15 Structure {conditions_met}/3 ({', '.join(details)})"
+        
+        reason = f"M15 Trend Quality {conditions_met}/5 ({', '.join(details)})"
+        
+        logger.info(f"📊 [M15 TREND v11.0] {direction}: conditions={conditions_met}/5, score={score}")
+        logger.info(f"📊 [M15 TREND v11.0] EMA20_slope={ema20_slope:.4f}, EMA50_slope={ema50_slope:.4f}")
         
         return score, reason
+    
+    def _calculate_m15_extension_penalty(self, m15: List, direction: str) -> Tuple[float, str]:
+        """
+        v11.0: M15 EXTENSION RISK (SEPARATE PENALTY)
+        
+        Measures if price is overextended from mean (vulnerability to reversal).
+        
+        Calcolo:
+        extension_ratio = abs(close - EMA20_M15) / ATR_M15
+        
+        Penalty:
+        - ratio <= 0.8 → penalty 0
+        - 0.8 < ratio <= 1.2 → penalty -3
+        - 1.2 < ratio <= 1.6 → penalty -7
+        - 1.6 < ratio <= 2.0 → penalty -12
+        - ratio > 2.0 → penalty -18
+        
+        Returns: (penalty_value, reason)
+        """
+        if len(m15) < 20:
+            return 0, "Insufficient data"
+        
+        ema20 = calculate_ema(m15, 20)
+        atr = calculate_atr(m15, 14) if len(m15) >= 14 else 0.001
+        current_price = m15[-1].get('close', 0)
+        
+        # Calculate extension ratio
+        extension = abs(current_price - ema20)
+        extension_ratio = extension / atr if atr > 0 else 0
+        
+        # Determine penalty
+        if extension_ratio <= 0.8:
+            penalty = 0
+            level = "normal"
+        elif extension_ratio <= 1.2:
+            penalty = -3
+            level = "slightly_extended"
+        elif extension_ratio <= 1.6:
+            penalty = -7
+            level = "extended"
+        elif extension_ratio <= 2.0:
+            penalty = -12
+            level = "overextended"
+        else:
+            penalty = -18
+            level = "severely_overextended"
+        
+        reason = f"Extension {extension_ratio:.2f}x ATR ({level})"
+        
+        logger.info(f"📊 [M15 EXTENSION v11.0] {direction}: ratio={extension_ratio:.2f}, penalty={penalty} ({level})")
+        
+        return penalty, reason
     
     def _score_m5_trigger_quality(self, m5: List, direction: str) -> Tuple[float, str]:
         """
