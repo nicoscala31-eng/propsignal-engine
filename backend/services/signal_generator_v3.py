@@ -2528,37 +2528,89 @@ class SignalGeneratorV3:
         
         logger.info(f"📊 [v13 FINAL] raw={raw_quality_score:.1f} + align={alignment_adjustment:+d} + ct={counter_trend_penalty} = {final_score:.1f}")
         
-        # ==================== ACCEPTANCE LOGIC ====================
-        # <65 → reject
-        # 65-79 → needs confirmation (2/3 of: H1>=60, M15>=70, M5>=75)
-        # >=80 → strong accept
+        # ==================== v13.1: HIGH MOMENTUM OVERRIDE ====================
+        # Detect trade with extreme momentum that should NOT be rejected just for M15 weakness
+        # Conditions:
+        # - M5 Trigger >= 90 (very strong entry signal)
+        # - Clean Space >= 1.5 ATR (plenty of room to TP)
+        # - H1 Bias >= 55 (context is at least decent)
+        # - M15 Context >= 25 (not completely out of context - LIMITATION)
         
-        if final_score < self.V13_MIN_ACCEPT:  # <65
+        high_momentum = (
+            m5_trigger_score >= 90 and
+            clean_space_atr >= 1.5 and
+            h1_score >= 55
+        )
+        
+        # LIMITATION: Prevent override if M15 is completely broken
+        if m15_context_score < 25:
+            high_momentum = False
+            logger.info(f"📊 [v13.1] High momentum disabled: M15={m15_context_score:.0f} < 25 (out of context)")
+        
+        override_triggered = False
+        override_reason = None
+        
+        v13_log['high_momentum'] = high_momentum
+        v13_log['override_triggered'] = False
+        v13_log['override_reason'] = None
+        
+        logger.info(f"📊 [v13.1] High Momentum Check: M5≥90:{m5_trigger_score>=90}, FTA≥1.5ATR:{clean_space_atr>=1.5}, H1≥55:{h1_score>=55} → {high_momentum}")
+        
+        # ==================== ACCEPTANCE LOGIC ====================
+        # Priority 1: final_score >= 65 → accept
+        # Priority 2: high_momentum override → accept (if score 50-64)
+        # Priority 3: reject
+        
+        accepted = False
+        
+        if final_score >= self.V13_MIN_ACCEPT:  # >= 65
+            # Standard acceptance path
+            if final_score >= self.V13_STRONG_ACCEPT:  # >= 80
+                accepted = True
+                logger.info(f"✅ [v13] Strong accept: score {final_score:.1f} >= {self.V13_STRONG_ACCEPT}")
+            else:  # 65-79 needs confirmation
+                confirm_count = sum([
+                    1 if h1_score >= self.V13_CONFIRM_H1_MIN else 0,      # H1 >= 60
+                    1 if m15_context_score >= self.V13_CONFIRM_M15_MIN else 0,  # M15 >= 70
+                    1 if m5_trigger_score >= self.V13_CONFIRM_M5_MIN else 0    # M5 >= 75
+                ])
+                
+                if confirm_count >= 2:
+                    accepted = True
+                    logger.info(f"✅ [v13] Score {final_score:.1f} with {confirm_count}/3 confirmations → ACCEPTED")
+                else:
+                    # Check if high momentum can save it
+                    if high_momentum:
+                        accepted = True
+                        override_triggered = True
+                        override_reason = "high_momentum_override_65_79"
+                        v13_log['override_triggered'] = True
+                        v13_log['override_reason'] = override_reason
+                        logger.info(f"🚀 [v13.1] HIGH MOMENTUM OVERRIDE: Score {final_score:.1f} accepted despite {confirm_count}/3 confirms (M5={m5_trigger_score}, FTA_ATR={clean_space_atr:.1f})")
+                    else:
+                        v13_log['rejection_reason'] = "confirmation_failed"
+                        self._record_rejection("confirmation_failed")
+                        logger.info(f"🚫 [v13] {asset.value} {direction}: Score {final_score:.1f} needs 2/3 confirm, got {confirm_count}/3")
+                        logger.info(f"  H1>={self.V13_CONFIRM_H1_MIN}: {h1_score>=self.V13_CONFIRM_H1_MIN}, M15>={self.V13_CONFIRM_M15_MIN}: {m15_context_score>=self.V13_CONFIRM_M15_MIN}, M5>={self.V13_CONFIRM_M5_MIN}: {m5_trigger_score>=self.V13_CONFIRM_M5_MIN}")
+                        self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, stop_loss, take_profit_1, rr_ratio)
+                        return None
+        
+        elif high_momentum:
+            # Score < 65 but high momentum detected → OVERRIDE
+            accepted = True
+            override_triggered = True
+            override_reason = "high_momentum_override_sub_65"
+            v13_log['override_triggered'] = True
+            v13_log['override_reason'] = override_reason
+            logger.info(f"🚀 [v13.1] HIGH MOMENTUM OVERRIDE: Score {final_score:.1f} < 65 but accepted! (M5={m5_trigger_score}, FTA_ATR={clean_space_atr:.1f}, H1={h1_score})")
+        
+        else:
+            # No override, reject
             v13_log['rejection_reason'] = "score_too_low"
             self._record_rejection("confidence_low")
-            logger.info(f"🚫 [v13] {asset.value} {direction}: Score {final_score:.1f} < {self.V13_MIN_ACCEPT}")
+            logger.info(f"🚫 [v13] {asset.value} {direction}: Score {final_score:.1f} < {self.V13_MIN_ACCEPT} (no override)")
             self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, stop_loss, take_profit_1, rr_ratio)
             return None
-        
-        elif final_score < self.V13_STRONG_ACCEPT:  # 65-79 needs confirmation
-            confirm_count = sum([
-                1 if h1_score >= self.V13_CONFIRM_H1_MIN else 0,      # H1 >= 60
-                1 if m15_context_score >= self.V13_CONFIRM_M15_MIN else 0,  # M15 >= 70
-                1 if m5_trigger_score >= self.V13_CONFIRM_M5_MIN else 0    # M5 >= 75
-            ])
-            
-            if confirm_count < 2:
-                v13_log['rejection_reason'] = "confirmation_failed"
-                self._record_rejection("confirmation_failed")
-                logger.info(f"🚫 [v13] {asset.value} {direction}: Score {final_score:.1f} needs 2/3 confirm, got {confirm_count}/3")
-                logger.info(f"  H1>={self.V13_CONFIRM_H1_MIN}: {h1_score>=self.V13_CONFIRM_H1_MIN}, M15>={self.V13_CONFIRM_M15_MIN}: {m15_context_score>=self.V13_CONFIRM_M15_MIN}, M5>={self.V13_CONFIRM_M5_MIN}: {m5_trigger_score>=self.V13_CONFIRM_M5_MIN}")
-                self._log_candidate_audit_v13(asset.value, direction, session_name, v13_log, entry_price, stop_loss, take_profit_1, rr_ratio)
-                return None
-            
-            logger.info(f"✅ [v13] Score {final_score:.1f} with {confirm_count}/3 confirmations → ACCEPTED")
-        
-        else:  # >=80 strong accept
-            logger.info(f"✅ [v13] Strong accept: score {final_score:.1f} >= {self.V13_STRONG_ACCEPT}")
         
         v13_log['accepted'] = True
         
@@ -3645,6 +3697,9 @@ class SignalGeneratorV3:
         logger.info(f"  counter_trend_penalty: {v13_log.get('counter_trend_penalty')}")
         logger.info(f"  raw_quality_score: {v13_log.get('raw_quality_score')}")
         logger.info(f"  final_score: {v13_log.get('final_score')}")
+        logger.info(f"  high_momentum: {v13_log.get('high_momentum')}")
+        logger.info(f"  override_triggered: {v13_log.get('override_triggered')}")
+        logger.info(f"  override_reason: {v13_log.get('override_reason')}")
         logger.info(f"  accepted: {v13_log.get('accepted')}")
         logger.info(f"  rejection_reason: {v13_log.get('rejection_reason')}")
         
