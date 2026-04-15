@@ -1,94 +1,60 @@
 """
-# Signal Generator v11.0 - STRUCTURAL LOGIC REWRITE
+# Signal Generator v12.0 - SIMPLIFIED 5-FACTOR SCORING
 =============================================================
 
 *** AUTHORIZED PRODUCTION ENGINE ***
 *** SINGLE PRODUCTION PIPELINE - NO PARALLEL ENGINES ***
 
-This is the ONLY engine authorized for production signal generation.
-All other engines (market_scanner, advanced_scanner, signal_orchestrator) are DISABLED.
+VERSION 12.0 - SIMPLIFIED SCORING (April 2026):
+Refactored to 5 macro-blocks with probability-based scoring.
 
-VERSION 11.0 - STRUCTURAL LOGIC REWRITE (April 2026):
-Price-action / structure based scoring with MONOTONIC score behavior.
+=== v12.0 CHANGES FROM v11.0 ===
+1. REDUCED to 5 MACRO-BLOCKS:
+   - H1_BIAS (context)
+   - M15_CONTEXT (structure + extension)
+   - M5_TRIGGER (entry timing)
+   - PULLBACK (quality)
+   - FTA (clean space with ATR normalization)
 
-=== v11.0 CHANGES FROM v10.5 ===
-CRITICAL FIX: Score 70-79 had 28.6% WR vs 60-69 had 57.1% WR (inverted!)
+2. REMOVED REDUNDANT FACTORS:
+   - directional_continuation (merged into M5_TRIGGER)
+   - rejection_failed_push (merged into M5_TRIGGER)
+   - session_quality (removed - was arbitrary)
+   - market_sanity (moved to hard filter, not score)
 
-ROOT CAUSES IDENTIFIED:
-1. M15_STRUCTURE was ALWAYS INVERTED (LOSS had higher scores!)
-   - High M15 score = OVEREXTENSION, not quality
-2. H1_STRUCTURAL_BIAS was inverted in 70-79 range
-   - Strong H1 trend = mature trend, closer to reversal
-3. REJECTION_FAILED_PUSH was inflating scores for losing trades
+3. NEW M15 EXTENSION PENALTY:
+   extension_ratio = abs(P - EMA20) / ATR
+   > 1.2 → -15 penalty
+   > 0.8 → -8 penalty
 
-STRUCTURAL FIXES:
-1. M15 split into:
-   - M15_TREND_QUALITY (actual trend health)
-   - M15_EXTENSION_PENALTY (separate penalty, not score)
-2. H1 MATURITY CHECK added (trend age detection)
-3. DIRECTIONAL_CONTINUATION strengthened
-4. COUNTER_TREND_PENALTY made more granular
-5. RAW_QUALITY_SCORE vs FINAL_TRADE_SCORE separation
+4. NEW ALIGNMENT BONUS/PENALTY:
+   if H1, M15, M5 all > 70 → +10
+   else → -10
 
-GOAL: Monotonic score relationship (higher score = better quality)
+5. CLEAN_SPACE with ATR NORMALIZATION:
+   clean_space = fta_distance / ATR_M5
+   
+6. PROBABILITY-BASED SCORING:
+   score = weighted_geometric_mean, not sum
+   Represents actual probability estimate
 
-=== PHILOSOPHY ===
-The engine evaluates trades in 3 levels:
-A. CONTEXT - Is the directional bias sensible?
-B. STRUCTURE - Does price structure support BUY or SELL?
-C. TRIGGER - Is the entry timing good right now?
+=== 5 MACRO-BLOCKS (Total = 100%) ===
+| Block | Weight | Description |
+|-------|--------|-------------|
+| H1_BIAS | 25% | H1 directional context |
+| M15_CONTEXT | 25% | M15 trend + extension |
+| M5_TRIGGER | 25% | Entry trigger quality |
+| PULLBACK | 15% | Pullback depth quality |
+| FTA | 10% | Clean space to target |
 
-=== TIMEFRAMES ===
-- H1: Context (120 candles, EMA20, EMA50, ATR14, swing points)
-- M15: Structure & Pullback (160 candles, EMA20, swing points)
-- M5: Entry Trigger (200 candles, EMA20, ATR14)
+=== PENALTIES (Applied After) ===
+- M15 Extension: -8 to -15
+- Alignment: +10 or -10
+- Counter-Trend: -5 to -18
 
-=== BUY FACTORS (Total = 100%) ===
-1. H1 Structural Bias = 20%
-2. M15 Structure Quality = 18%
-3. M5 Trigger Quality = 16%
-4. Pullback Quality = 14%
-5. FTA / Clean Space = 14%
-6. Directional Continuation = 10%
-7. Session Quality = 5%
-8. Market Sanity Check = 3%
-
-=== SELL FACTORS (Total = 100%) ===
-1. H1 Structural Bias = 22%
-2. M15 Structure Quality = 20%
-3. M5 Trigger Quality = 16%
-4. Pullback Quality = 12%
-5. Rejection / Failed Push = 14%
-6. FTA / Clean Space = 10%
-7. Session Quality = 4%
-8. Market Sanity Check = 2%
-
-=== SESSIONS (UTC) ===
-- London: 07:00-12:59
-- Overlap: 13:00-16:00
-- NY: 16:01-20:00
-- Asian/Other: rest
-
-=== THRESHOLDS ===
-BUY: min=62, preferred=68-86, hard_cap=94
-SELL: min=60, preferred=64-80, hard_cap=90
-
-=== SESSION MULTIPLIERS (BUY only) ===
-- London: 1.00
-- NY: 1.05
-- Overlap: 1.10
-
-=== KEY CHANGES FROM v9.x ===
-1. REMOVED: concentration from score (now only filter)
-2. REMOVED: old candle-counting momentum
-3. REMOVED: old simple EMA comparisons
-4. ADDED: EMA20/50 with slope analysis
-5. ADDED: Real swing point detection (pivot-based)
-6. ADDED: Pullback depth with Fibonacci zones
-7. ADDED: Trigger patterns (break-hold, reclaim, rejection, failed push)
-8. ADDED: Directional Continuation (BUY only)
-9. ADDED: Rejection/Failed Push Quality (SELL only)
-10. ADDED: Market Sanity Check (replaces regime/volatility)
+=== MINIMUM SCORE ===
+- BUY: 60
+- SELL: 60
 
 R:R HARD REJECTION: < 1.15
 """
@@ -636,44 +602,48 @@ class SignalGeneratorV3:
     7. All position data properly tracked
     """
     
-    # ==================== v11.0: PRICE-ACTION BASED SCORING ====================
-    # PRODUCTION-READY: Complete rewrite with structure-based analysis
+    # ==================== v12.0: 5 MACRO-BLOCK SCORING ====================
+    # PRODUCTION-READY: Simplified to 5 essential blocks
     # 
-    # Philosophy: CONTEXT -> STRUCTURE -> TRIGGER
-    # NOT candle-statistics based, but price-action / structure based
+    # Philosophy: Each block represents ONE clear concept
+    # Score = Weighted geometric mean (probability-like)
     
-    # ==================== BUY WEIGHTS v11.0 (Total = 100%) ====================
-    # M15 structure split into trend_quality (8%) - extension is PENALTY
-    WEIGHTS_BUY = {
-        'h1_structural_bias': 20.0,        # H1 Structural Bias (with maturity check)
-        'm15_trend_quality': 8.0,          # v11.0: NEW - M15 Trend Quality (split from structure)
-        'm5_trigger_quality': 18.0,        # M5 Trigger Quality (increased)
-        'pullback_quality': 8.0,           # Pullback Quality
-        'fta_clean_space': 12.0,           # FTA / Clean Space
-        'directional_continuation': 14.0,  # v11.0: INCREASED - strongest predictor
-        'session_quality': 14.0,           # Session Quality (increased)
-        'market_sanity': 6.0,              # Market Sanity Check
+    # ==================== v12.0 WEIGHTS (Same for BUY and SELL) ====================
+    WEIGHTS_V12 = {
+        'h1_bias': 25.0,          # H1 Directional Bias (context)
+        'm15_context': 25.0,      # M15 Trend + Structure (includes extension)
+        'm5_trigger': 25.0,       # M5 Entry Trigger Quality
+        'pullback': 15.0,         # Pullback Depth Quality
+        'fta': 10.0,              # FTA Clean Space (ATR normalized)
         # Total: 100%
-        # PENALTIES APPLIED SEPARATELY:
-        # - m15_extension_penalty
-        # - counter_trend_penalty
     }
     
-    # ==================== SELL WEIGHTS v11.0 (Total = 100%) ====================
-    WEIGHTS_SELL = {
-        'h1_structural_bias': 20.0,        # H1 Structural Bias (with maturity check)
-        'm15_trend_quality': 8.0,          # v11.0: NEW - M15 Trend Quality (split from structure)
-        'm5_trigger_quality': 18.0,        # M5 Trigger Quality
-        'pullback_quality': 8.0,           # Pullback Quality (reduced from 10)
-        'rejection_failed_push': 14.0,     # Rejection / Failed Push (REQUIRES CONFIRMATION)
-        'fta_clean_space': 12.0,           # FTA / Clean Space
-        'session_quality': 14.0,           # Session Quality (reduced from 16)
-        'market_sanity': 6.0,              # Market Sanity Check
-        # Total: 100% (20+8+18+8+14+12+14+6 = 100)
-    }
+    # Legacy weights for backward compatibility (mapped to v12)
+    WEIGHTS_BUY = WEIGHTS_V12.copy()
+    WEIGHTS_SELL = WEIGHTS_V12.copy()
+    WEIGHTS = WEIGHTS_V12.copy()
     
-    # Legacy weights for backward compatibility
-    WEIGHTS = WEIGHTS_BUY.copy()
+    # ==================== v12.0 THRESHOLDS ====================
+    BUY_MIN_CONFIDENCE = 60       # Minimum score for BUY
+    SELL_MIN_CONFIDENCE = 60      # Minimum score for SELL
+    BUY_PREFERRED_RANGE = (65, 85)
+    SELL_PREFERRED_RANGE = (65, 85)
+    BUY_HARD_CAP = 95
+    SELL_HARD_CAP = 95
+    
+    # ==================== v12.0 PENALTIES ====================
+    # M15 Extension Penalty
+    M15_EXTENSION_PENALTY_HIGH = -15    # extension_ratio > 1.2
+    M15_EXTENSION_PENALTY_MEDIUM = -8   # extension_ratio > 0.8
+    
+    # Alignment Bonus/Penalty
+    ALIGNMENT_BONUS = 10                # H1, M15, M5 all > 70
+    ALIGNMENT_PENALTY = -10             # Not aligned
+    
+    # Counter-Trend Penalties
+    COUNTER_TREND_WEAK = -5             # H1 strength < 0.15
+    COUNTER_TREND_MODERATE = -10        # H1 strength 0.15-0.35
+    COUNTER_TREND_STRONG = -18          # H1 strength > 0.35
     
     # ==================== BUY CONFIDENCE RULES ====================
     BUY_MIN_CONFIDENCE = 62        # Minimum score to accept BUY
@@ -2320,26 +2290,23 @@ class SignalGeneratorV3:
             )
             return None
         
-        # ========== v10.0: NEW SCORING ENGINE ==========
-        # Philosophy: CONTEXT -> STRUCTURE -> TRIGGER
+        # ========== v12.0: SIMPLIFIED 5-BLOCK SCORING ENGINE ==========
+        # Philosophy: Each block = ONE clear concept
+        # Score = Weighted geometric mean (probability-like)
         
         components = []
+        block_scores = {}  # Store for alignment check
         
-        # v10.0: Get direction-specific weights
-        weights = self.WEIGHTS_BUY if direction == "BUY" else self.WEIGHTS_SELL
-        
-        # ========== 1. H1 STRUCTURAL BIAS (20% BUY / 22% SELL) ==========
+        # ========== BLOCK 1: H1 BIAS (25%) ==========
         h1_score, h1_reason = self._score_h1_structural_bias(h1_candles, direction)
-        h1_weight = weights.get('h1_structural_bias', 20)
-        components.append(ScoreComponent("H1 Structural Bias", h1_weight, h1_score, h1_reason))
+        h1_weight = self.WEIGHTS_V12.get('h1_bias', 25)
+        components.append(ScoreComponent("H1 Bias", h1_weight, h1_score, h1_reason))
+        block_scores['h1'] = h1_score
         
-        # v10.2: Relaxed H1 thresholds
-        # BUY: 50, SELL: 50 (equal treatment)
-        h1_min = 50  # Same for both directions now
-        if h1_score < h1_min:
+        # v12.0: Hard filter - H1 too weak
+        if h1_score < 50:
             self._record_rejection("h1_weak")
-            logger.info(f"🚫 {asset.value} {direction}: H1 Structural Bias too weak ({h1_score:.0f}% < {h1_min}%)")
-            # Save rejected candidate audit
+            logger.info(f"🚫 {asset.value} {direction}: H1 Bias too weak ({h1_score:.0f}% < 50%)")
             self._log_candidate_audit(
                 symbol=asset.value,
                 direction=direction,
@@ -2347,9 +2314,9 @@ class SignalGeneratorV3:
                 setup_type="STRUCTURAL",
                 decision="rejected",
                 rejection_reason="h1_weak",
-                rejection_details=f"H1 Structural Bias {h1_score:.0f}% < {h1_min}%",
+                rejection_details=f"H1 Bias {h1_score:.0f}% < 50%",
                 final_score=h1_score,
-                threshold=h1_min,
+                threshold=50,
                 entry_price=current_price,
                 stop_loss=0,
                 take_profit=0,
@@ -2357,25 +2324,42 @@ class SignalGeneratorV3:
             )
             return None
         
-        # ========== 2. M15 TREND QUALITY (8% v11.0) ==========
-        m15_score, m15_reason = self._score_m15_trend_quality(m15_candles, direction)
-        m15_weight = weights.get('m15_trend_quality', 8)
-        components.append(ScoreComponent("M15 Trend Quality", m15_weight, m15_score, m15_reason))
+        # ========== BLOCK 2: M15 CONTEXT (25%) ==========
+        # v12.0: M15 Context = Trend Quality (score includes extension logic)
+        m15_base_score, m15_reason = self._score_m15_trend_quality(m15_candles, direction)
         
-        # ========== v11.0: Calculate M15 Extension Penalty (SEPARATE) ==========
-        m15_extension_penalty, m15_extension_reason = self._calculate_m15_extension_penalty(m15_candles, direction)
+        # v12.0: Calculate extension penalty inline
+        atr_m15 = calculate_atr(m15_candles, 14) if len(m15_candles) >= 14 else 0.001
+        ema20_m15 = calculate_ema(m15_candles, 20)
+        current_price_m15 = m15_candles[-1].get('close', 0)
+        extension_ratio = abs(current_price_m15 - ema20_m15) / atr_m15 if atr_m15 > 0 else 0
         
-        # ========== 3. M5 TRIGGER QUALITY (16% BUY / 16% SELL) ==========
+        # v12.0: Apply extension penalty to M15 score directly
+        m15_extension_penalty = 0
+        if extension_ratio > 1.2:
+            m15_extension_penalty = self.M15_EXTENSION_PENALTY_HIGH  # -15
+        elif extension_ratio > 0.8:
+            m15_extension_penalty = self.M15_EXTENSION_PENALTY_MEDIUM  # -8
+        
+        m15_score = max(0, min(100, m15_base_score + m15_extension_penalty))
+        m15_reason = f"{m15_reason} | ext={extension_ratio:.2f} pen={m15_extension_penalty}"
+        
+        m15_weight = self.WEIGHTS_V12.get('m15_context', 25)
+        components.append(ScoreComponent("M15 Context", m15_weight, m15_score, m15_reason))
+        block_scores['m15'] = m15_score
+        
+        logger.info(f"📊 [v12.0 M15] base={m15_base_score:.0f}, ext_ratio={extension_ratio:.2f}, penalty={m15_extension_penalty}, final={m15_score:.0f}")
+        
+        # ========== BLOCK 3: M5 TRIGGER (25%) ==========
         trigger_score, trigger_reason = self._score_m5_trigger_quality(m5_candles, direction)
-        trigger_weight = weights.get('m5_trigger_quality', 16)
-        components.append(ScoreComponent("M5 Trigger Quality", trigger_weight, trigger_score, trigger_reason))
+        trigger_weight = self.WEIGHTS_V12.get('m5_trigger', 25)
+        components.append(ScoreComponent("M5 Trigger", trigger_weight, trigger_score, trigger_reason))
+        block_scores['m5'] = trigger_score
         
-        # v10.0: Hard filter - weak trigger
-        # v10.2: Trigger score threshold lowered from 60 to 55
-        if trigger_score < 55:
+        # v12.0: Hard filter - weak trigger
+        if trigger_score < 50:
             self._record_rejection(self.REJECTION_WEAK_TRIGGER)
-            logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_WEAK_TRIGGER} (score={trigger_score:.0f}%)")
-            # Save rejected candidate audit
+            logger.info(f"🚫 {asset.value} {direction}: M5 Trigger too weak ({trigger_score:.0f}% < 50%)")
             self._log_candidate_audit(
                 symbol=asset.value,
                 direction=direction,
@@ -2383,9 +2367,9 @@ class SignalGeneratorV3:
                 setup_type="STRUCTURAL",
                 decision="rejected",
                 rejection_reason=self.REJECTION_WEAK_TRIGGER,
-                rejection_details=f"Trigger score {trigger_score:.0f}% < 55%",
+                rejection_details=f"Trigger score {trigger_score:.0f}% < 50%",
                 final_score=trigger_score,
-                threshold=55,
+                threshold=50,
                 entry_price=current_price,
                 stop_loss=0,
                 take_profit=0,
@@ -2393,50 +2377,30 @@ class SignalGeneratorV3:
             )
             return None
         
-        # ========== 4. PULLBACK QUALITY (14% BUY / 12% SELL) ==========
+        # ========== BLOCK 4: PULLBACK (15%) ==========
         pb_score, pb_reason, pb_valid = self._score_pullback_quality_v10(
             asset, m15_candles, m5_candles, direction, current_price
         )
-        pb_weight = weights.get('pullback_quality', 14)
-        components.append(ScoreComponent("Pullback Quality", pb_weight, pb_score, pb_reason))
+        pb_weight = self.WEIGHTS_V12.get('pullback', 15)
+        components.append(ScoreComponent("Pullback", pb_weight, pb_score, pb_reason))
         
-        # v10.0: Hard filter - impulse too small
         if not pb_valid:
             self._record_rejection(self.REJECTION_IMPULSE_TOO_SMALL)
             logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_IMPULSE_TOO_SMALL}: {pb_reason}")
             return None
         
-        # ========== 5. DIRECTION-SPECIFIC FACTOR ==========
-        if direction == "BUY":
-            # DIRECTIONAL CONTINUATION (10%)
-            cont_score, cont_reason = self._score_directional_continuation(m15_candles, m5_candles, direction)
-            cont_weight = weights.get('directional_continuation', 10)
-            components.append(ScoreComponent("Directional Continuation", cont_weight, cont_score, cont_reason))
-        else:
-            # REJECTION / FAILED PUSH (14%)
-            rej_score, rej_reason, rej_valid = self._score_rejection_failed_push(m15_candles, m5_candles, direction)
-            rej_weight = weights.get('rejection_failed_push', 14)
-            components.append(ScoreComponent("Rejection / Failed Push", rej_weight, rej_score, rej_reason))
-            
-            # v10.0: Hard filter - SELL rejection missing
-            if not rej_valid:
-                self._record_rejection(self.REJECTION_SELL_REJECTION_MISSING)
-                logger.info(f"🚫 {asset.value} SELL: {self.REJECTION_SELL_REJECTION_MISSING}: {rej_reason}")
-                return None
-        
-        # ========== 6. FTA / CLEAN SPACE (14% BUY / 10% SELL) ==========
-        # v10.4: Pass trigger_score for dynamic FTA calculation
-        fta_score, fta_reason, fta_valid = self._score_fta_clean_space_v10(
-            asset, m15_candles, m5_candles, entry_price, take_profit_1, direction, trigger_score
+        # ========== BLOCK 5: FTA CLEAN SPACE (10%) ==========
+        # v12.0: FTA with ATR normalization
+        atr_m5 = calculate_atr(m5_candles, 14) if len(m5_candles) >= 14 else 0.001
+        fta_score, fta_reason, fta_valid = self._score_fta_clean_space_v12(
+            asset, m15_candles, m5_candles, entry_price, take_profit_1, direction, atr_m5
         )
-        fta_weight = weights.get('fta_clean_space', 14)
-        components.append(ScoreComponent("FTA / Clean Space", fta_weight, fta_score, fta_reason))
+        fta_weight = self.WEIGHTS_V12.get('fta', 10)
+        components.append(ScoreComponent("FTA Clean Space", fta_weight, fta_score, fta_reason))
         
-        # v10.0: Hard filter - FTA blocked
         if not fta_valid:
             self._record_rejection(self.REJECTION_FTA_BLOCKED)
-            logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_FTA_BLOCKED}: {fta_reason}")
-            # Save rejected candidate audit
+            logger.info(f"🚫 {asset.value} {direction}: FTA blocked: {fta_reason}")
             self._log_candidate_audit(
                 symbol=asset.value,
                 direction=direction,
@@ -2454,44 +2418,30 @@ class SignalGeneratorV3:
             )
             return None
         
-        # ========== 7. SESSION QUALITY (5% BUY / 4% SELL) ==========
-        sess_score, sess_reason = self._score_session_quality_v10(direction)
-        sess_weight = weights.get('session_quality', 5)
-        components.append(ScoreComponent("Session Quality", sess_weight, sess_score, sess_reason))
-        
-        # ========== 8. MARKET SANITY CHECK (3% BUY / 2% SELL) ==========
+        # ========== v12.0: MARKET SANITY CHECK (Hard Filter, not in score) ==========
         sanity_score, sanity_reason, sanity_valid = self._score_market_sanity_check(asset, m5_candles)
-        sanity_weight = weights.get('market_sanity', 3)
-        components.append(ScoreComponent("Market Sanity Check", sanity_weight, sanity_score, sanity_reason))
-        
-        # v10.0: Hard filter - market not sane
         if not sanity_valid:
             self._record_rejection(self.REJECTION_MARKET_NOT_SANE)
             logger.info(f"🚫 {asset.value} {direction}: {self.REJECTION_MARKET_NOT_SANE}: {sanity_reason}")
             return None
         
-        # ========== CALCULATE BASE SCORE ==========
+        # ========== v12.0: CALCULATE RAW SCORE (Weighted Sum) ==========
         raw_quality_score = sum(c.weighted_score for c in components)
         
-        # Store raw score for audit
-        preliminary_score = raw_quality_score
+        # ========== v12.0: ALIGNMENT BONUS/PENALTY ==========
+        alignment_adjustment = 0
+        h1_aligned = block_scores['h1'] >= 70
+        m15_aligned = block_scores['m15'] >= 70
+        m5_aligned = block_scores['m5'] >= 70
         
-        # Get key scores for later use
-        h1_score_val = h1_score
-        mtf_score_val = m15_score  # Use M15 trend quality as MTF proxy
+        if h1_aligned and m15_aligned and m5_aligned:
+            alignment_adjustment = self.ALIGNMENT_BONUS  # +10
+            logger.info(f"📈 [v12.0] ALIGNMENT BONUS +{self.ALIGNMENT_BONUS} (H1={block_scores['h1']:.0f}, M15={block_scores['m15']:.0f}, M5={block_scores['m5']:.0f})")
+        else:
+            alignment_adjustment = self.ALIGNMENT_PENALTY  # -10
+            logger.info(f"📉 [v12.0] ALIGNMENT PENALTY {self.ALIGNMENT_PENALTY} (H1={block_scores['h1']:.0f}, M15={block_scores['m15']:.0f}, M5={block_scores['m5']:.0f})")
         
-        # ========== v11.0: APPLY PENALTIES (SEPARATE FROM SCORE) ==========
-        total_penalties = 0
-        penalty_details = []
-        
-        # v11.0: M15 Extension Penalty
-        if m15_extension_penalty != 0:
-            total_penalties += abs(m15_extension_penalty)
-            penalty_details.append(f"M15_ext:{m15_extension_penalty}")
-            logger.info(f"📉 [v11.0 PENALTY] M15 Extension: {m15_extension_penalty} ({m15_extension_reason})")
-        
-        # v11.0: Counter-Trend Penalty (from direction analysis)
-        # Check if this is a counter-trend trade
+        # ========== v12.0: COUNTER-TREND PENALTY ==========
         h1_trend = self._get_trend(h1_candles[-20:]) if len(h1_candles) >= 20 else 0
         is_counter_trend = (direction == "BUY" and h1_trend < -0.05) or (direction == "SELL" and h1_trend > 0.05)
         
@@ -2499,38 +2449,23 @@ class SignalGeneratorV3:
         if is_counter_trend:
             h1_abs = abs(h1_trend)
             if h1_abs >= 0.35:
-                counter_trend_penalty = -18  # Strong H1
+                counter_trend_penalty = self.COUNTER_TREND_STRONG  # -18
             elif h1_abs >= 0.15:
-                counter_trend_penalty = -10  # Moderate H1
+                counter_trend_penalty = self.COUNTER_TREND_MODERATE  # -10
             else:
-                counter_trend_penalty = -5   # Weak H1
-            
-            total_penalties += abs(counter_trend_penalty)
-            penalty_details.append(f"counter_trend:{counter_trend_penalty}")
-            logger.info(f"📉 [v11.0 PENALTY] Counter-Trend: {counter_trend_penalty} (H1 trend={h1_trend:.3f})")
+                counter_trend_penalty = self.COUNTER_TREND_WEAK  # -5
+            logger.info(f"📉 [v12.0] Counter-Trend Penalty: {counter_trend_penalty} (H1 trend={h1_trend:.3f})")
         
-        # Calculate final score
-        final_score = raw_quality_score + m15_extension_penalty + counter_trend_penalty
+        # ========== v12.0: FINAL SCORE ==========
+        final_score = raw_quality_score + alignment_adjustment + counter_trend_penalty
+        final_score = max(0, min(100, final_score))
         
-        logger.info(f"📊 [v11.0 SCORE] raw_quality={raw_quality_score:.1f}, penalties={total_penalties:.1f}, final={final_score:.1f}")
+        logger.info(f"📊 [v12.0 SCORE] raw={raw_quality_score:.1f}, align={alignment_adjustment:+d}, counter={counter_trend_penalty}, final={final_score:.1f}")
         
-        # ========== v10.0: FTA BONUS ==========
-        fta_bonus = 0
-        if fta_score >= 80:  # Clean space >= 65%
-            fta_bonus = 5 if direction == "SELL" else 3
-            final_score += fta_bonus
-            logger.info(f"📈 {asset.value} {direction}: FTA bonus +{fta_bonus}")
-        elif fta_score >= 60:  # Clean space >= 50%
-            fta_bonus = 2 if direction == "SELL" else 1
-            final_score += fta_bonus
-        
-        # ========== v10.0: SESSION MULTIPLIER (BUY only) ==========
-        if direction == "BUY" and session_name in self.BUY_SESSION_MULTIPLIERS:
-            session_multiplier = self.BUY_SESSION_MULTIPLIERS[session_name]
-            if session_multiplier != 1.0:
-                old_score = final_score
-                final_score = final_score * session_multiplier
-                logger.info(f"📈 {asset.value} BUY: Session multiplier x{session_multiplier:.2f}: {old_score:.1f} -> {final_score:.1f}")
+        # Store for later use
+        preliminary_score = raw_quality_score
+        h1_score_val = h1_score
+        mtf_score_val = m15_score
         
         # ========== CLAMP SCORE ==========
         final_score = max(0, min(100, final_score))
@@ -4104,6 +4039,112 @@ class SignalGeneratorV3:
                     touch_zones.append(level)
         
         return touch_zones
+    
+    def _score_fta_clean_space_v12(self, asset: Asset, m15: List, m5: List, entry_price: float, 
+                                   take_profit: float, direction: str, atr_m5: float) -> Tuple[float, str, bool]:
+        """
+        v12.0: FTA / Clean Space scoring - SIMPLIFIED with ATR normalization
+        
+        FTA = First Trouble Area between entry and TP
+        
+        v12.0 CHANGES:
+        - clean_space measured in ATR units (not ratio)
+        - Simple scoring: clean_space_atr >= 2.0 = 100, >= 1.0 = 70, >= 0.5 = 50
+        - Hard reject if clean_space_atr < 0.3
+        
+        Returns: (score, reason, is_valid)
+        """
+        tp_distance = abs(take_profit - entry_price)
+        if tp_distance == 0:
+            return 50, "No TP distance", True
+        
+        if atr_m5 <= 0:
+            atr_m5 = 0.0001
+        
+        # Find FTA (first obstacle)
+        fta_price = None
+        fta_type = "none"
+        
+        # Swing points
+        swing_highs_m5 = get_recent_swing_highs(m5[-30:], count=5, lookback=2)
+        swing_lows_m5 = get_recent_swing_lows(m5[-30:], count=5, lookback=2)
+        swing_highs_m15 = get_recent_swing_highs(m15[-20:], count=3, lookback=2)
+        swing_lows_m15 = get_recent_swing_lows(m15[-20:], count=3, lookback=2)
+        
+        # Touch zones
+        touch_zones = self._find_touch_zones(m5[-15:], tolerance=atr_m5 * 0.25)
+        
+        obstacles = []
+        
+        if direction == "BUY":
+            for sh in swing_highs_m15 + swing_highs_m5:
+                if entry_price < sh.price < take_profit:
+                    obstacles.append((sh.price, "swing_high"))
+            for tz in touch_zones:
+                if entry_price < tz < take_profit:
+                    obstacles.append((tz, "touch_zone"))
+            
+            if obstacles:
+                obstacles.sort(key=lambda x: x[0])
+                fta_price, fta_type = obstacles[0]
+                fta_distance = fta_price - entry_price
+            else:
+                fta_distance = tp_distance
+                
+        else:  # SELL
+            for sl in swing_lows_m15 + swing_lows_m5:
+                if take_profit < sl.price < entry_price:
+                    obstacles.append((sl.price, "swing_low"))
+            for tz in touch_zones:
+                if take_profit < tz < entry_price:
+                    obstacles.append((tz, "touch_zone"))
+            
+            if obstacles:
+                obstacles.sort(key=lambda x: -x[0])
+                fta_price, fta_type = obstacles[0]
+                fta_distance = entry_price - fta_price
+            else:
+                fta_distance = tp_distance
+        
+        # v12.0: Calculate clean space in ATR units
+        clean_space_atr = fta_distance / atr_m5
+        clean_space_ratio = fta_distance / tp_distance if tp_distance > 0 else 0
+        
+        logger.info(f"📊 [FTA v12.0] {asset.value} {direction}: ATR={atr_m5:.5f}, FTA_dist={fta_distance:.5f}")
+        logger.info(f"📊 [FTA v12.0] clean_space_atr={clean_space_atr:.2f}, clean_space_ratio={clean_space_ratio:.2f}")
+        
+        # v12.0: Hard reject if clean space too small
+        if clean_space_atr < 0.3:
+            logger.info(f"🚫 [FTA v12.0] REJECT: clean_space_atr {clean_space_atr:.2f} < 0.3")
+            return 0, f"FTA blocked (clean space {clean_space_atr:.1f} ATR < 0.3)", False
+        
+        # Also reject on ratio for safety
+        if clean_space_ratio < 0.15:
+            logger.info(f"🚫 [FTA v12.0] REJECT: clean_space_ratio {clean_space_ratio:.2f} < 0.15")
+            return 0, f"FTA blocked (clean space {clean_space_ratio*100:.0f}% < 15%)", False
+        
+        # v12.0: Score based on ATR-normalized clean space
+        if clean_space_atr >= 2.0:
+            score = 100
+            reason = f"Excellent ({clean_space_atr:.1f} ATR clean)"
+        elif clean_space_atr >= 1.5:
+            score = 85
+            reason = f"Good ({clean_space_atr:.1f} ATR clean)"
+        elif clean_space_atr >= 1.0:
+            score = 70
+            reason = f"Moderate ({clean_space_atr:.1f} ATR clean)"
+        elif clean_space_atr >= 0.5:
+            score = 50
+            reason = f"Limited ({clean_space_atr:.1f} ATR clean)"
+        else:
+            score = 35
+            reason = f"Tight ({clean_space_atr:.1f} ATR clean)"
+        
+        if fta_type == "none":
+            score = min(100, score + 5)
+            reason += " (+5 no FTA)"
+        
+        return score, reason, True
     
     def _score_directional_continuation(self, m15: List, m5: List, direction: str) -> Tuple[float, str]:
         """
