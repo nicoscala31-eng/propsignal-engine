@@ -31,6 +31,9 @@ from services.market_data_fetch_engine import market_data_fetch_engine
 from services.market_data_cache import market_data_cache
 from services.device_storage_service import device_storage
 from services.rejected_trade_tracker import rejected_trade_tracker
+from services.pattern_engine import pattern_engine, PatternType, Session as PatternSession
+from services.pattern_tracker import pattern_tracker
+from services.pattern_signal_generator import pattern_signal_generator, OperationMode
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
@@ -3738,6 +3741,215 @@ async def get_tracking_debug():
             "active_simulations": len(rejected_trade_tracker.active_simulations) if hasattr(rejected_trade_tracker, 'active_simulations') else 0,
             "completed_simulations": len(rejected_trade_tracker.completed_simulations) if hasattr(rejected_trade_tracker, 'completed_simulations') else 0,
             "stats": rejected_trade_tracker.stats if hasattr(rejected_trade_tracker, 'stats') else {}
+        }
+    }
+
+
+# ==================== PATTERN ENGINE V1.0 ENDPOINTS ====================
+
+@api_router.get("/pattern/status")
+async def get_pattern_status():
+    """Get Pattern Signal Generator status"""
+    return pattern_signal_generator.get_status()
+
+
+@api_router.post("/pattern/start")
+async def start_pattern_engine(mode: str = "forward_test"):
+    """
+    Start the Pattern Signal Generator
+    
+    Modes:
+    - forward_test: Track patterns without sending notifications (default)
+    - live: Send real notifications
+    """
+    try:
+        if mode == "live":
+            pattern_signal_generator.set_mode(OperationMode.LIVE)
+        else:
+            pattern_signal_generator.set_mode(OperationMode.FORWARD_TEST)
+        
+        await pattern_signal_generator.start()
+        
+        return {
+            "status": "success",
+            "message": f"Pattern Engine started in {mode} mode",
+            "mode": mode
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pattern/stop")
+async def stop_pattern_engine():
+    """Stop the Pattern Signal Generator"""
+    await pattern_signal_generator.stop()
+    return {"status": "success", "message": "Pattern Engine stopped"}
+
+
+@api_router.post("/pattern/mode/{mode}")
+async def set_pattern_mode(mode: str):
+    """
+    Change Pattern Engine mode
+    
+    - forward_test: No notifications, track only
+    - live: Send real notifications
+    """
+    if mode == "live":
+        pattern_signal_generator.enable_live_mode()
+    elif mode == "forward_test":
+        pattern_signal_generator.enable_forward_test()
+    else:
+        raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
+    
+    return {"status": "success", "mode": mode}
+
+
+@api_router.get("/pattern/performance")
+async def get_pattern_performance():
+    """
+    Get Pattern Engine performance statistics (Anti-Illusion System)
+    
+    Shows:
+    - Overall performance
+    - Performance by pattern type
+    - Performance by session
+    - Executed vs simulated comparison
+    """
+    return pattern_signal_generator.get_performance()
+
+
+@api_router.get("/audit/pattern-performance")
+async def audit_pattern_performance(pattern_type: str = None):
+    """
+    Audit endpoint for pattern performance analysis.
+    
+    Required for anti-illusion system: compares executed vs not executed patterns.
+    """
+    if pattern_type:
+        return pattern_tracker.get_pattern_performance(pattern_type)
+    return pattern_tracker.get_all_performance()
+
+
+@api_router.get("/pattern/tracker/status")
+async def get_pattern_tracker_status():
+    """Get Pattern Tracker status"""
+    return pattern_tracker.get_status()
+
+
+@api_router.get("/pattern/tracker/pending")
+async def get_pending_patterns():
+    """Get all pending (active) tracked patterns"""
+    return {
+        "count": len(pattern_tracker.pending_patterns),
+        "patterns": [p.to_dict() for p in pattern_tracker.pending_patterns.values()]
+    }
+
+
+@api_router.get("/pattern/tracker/completed")
+async def get_completed_patterns(limit: int = 50):
+    """Get completed patterns"""
+    patterns = pattern_tracker.completed_patterns[-limit:]
+    return {
+        "count": len(patterns),
+        "patterns": [p.to_dict() for p in patterns]
+    }
+
+
+@api_router.get("/pattern/scan/test/{symbol}")
+async def test_pattern_scan(symbol: str):
+    """
+    Test pattern detection on a symbol (debugging endpoint)
+    
+    Returns detected patterns without executing them.
+    """
+    try:
+        asset = Asset(symbol)
+    except:
+        raise HTTPException(status_code=400, detail=f"Invalid symbol: {symbol}")
+    
+    # Get candle data
+    candles_h1 = market_data_cache.get_candles(asset, Timeframe.H1)
+    candles_m15 = market_data_cache.get_candles(asset, Timeframe.M15)
+    candles_m5 = market_data_cache.get_candles(asset, Timeframe.M5)
+    
+    if not candles_m5:
+        return {"error": "No candle data available"}
+    
+    # Get current price
+    price_data = market_data_cache.get_price(asset)
+    current_price = price_data.mid if price_data else 0
+    
+    if current_price <= 0:
+        return {"error": "No price data available"}
+    
+    # Build context
+    context = pattern_engine.build_market_context(
+        symbol=symbol,
+        candles_h1=candles_h1 or [],
+        candles_m15=candles_m15 or [],
+        candles_m5=candles_m5 or [],
+        current_price=current_price
+    )
+    
+    # Scan patterns
+    patterns = pattern_engine.scan_all_patterns(
+        symbol=symbol,
+        candles_h1=candles_h1 or [],
+        candles_m15=candles_m15 or [],
+        candles_m5=candles_m5 or [],
+        current_price=current_price
+    )
+    
+    return {
+        "symbol": symbol,
+        "timestamp": datetime.utcnow().isoformat(),
+        "current_price": current_price,
+        "session": context.session.value,
+        "data_valid": context.data_valid,
+        "validation_error": context.validation_error,
+        "trends": {
+            "h1": {
+                "direction": context.trend_h1.direction.value,
+                "strength": context.trend_h1.strength,
+                "hh": context.trend_h1.hh_count,
+                "hl": context.trend_h1.hl_count,
+                "lh": context.trend_h1.lh_count,
+                "ll": context.trend_h1.ll_count
+            },
+            "m15": {
+                "direction": context.trend_m15.direction.value,
+                "strength": context.trend_m15.strength
+            },
+            "m5": {
+                "direction": context.trend_m5.direction.value,
+                "strength": context.trend_m5.strength
+            }
+        },
+        "indicators": {
+            "atr_m5": context.atr_m5,
+            "atr_h1": context.atr_h1,
+            "ema20_m5": context.ema20_m5,
+            "ema50_m5": context.ema50_m5
+        },
+        "patterns_detected": len(patterns),
+        "patterns": [p.to_dict() for p in patterns]
+    }
+
+
+@api_router.get("/pattern/config")
+async def get_pattern_config():
+    """Get Pattern Engine configuration"""
+    from services.pattern_engine import DEFAULT_CONFIG
+    from dataclasses import asdict
+    
+    return {
+        "engine_config": asdict(DEFAULT_CONFIG),
+        "generator_config": {
+            "mode": pattern_signal_generator.config.mode.value,
+            "scan_interval": pattern_signal_generator.config.scan_interval,
+            "allowed_assets": pattern_signal_generator.config.allowed_assets,
+            "duplicate_window_minutes": pattern_signal_generator.config.duplicate_window_minutes,
+            "min_confidence": pattern_signal_generator.config.min_confidence
         }
     }
 
