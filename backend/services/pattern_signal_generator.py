@@ -1,24 +1,25 @@
 """
-Pattern Signal Generator V1.0 - Orchestrator
-=============================================
+Pattern Signal Generator V2.0 - Orchestrator with Advanced Tracking
+====================================================================
+
+IMPROVEMENTS OVER V1:
+- Logs ALL active patterns simultaneously (not just primary)
+- Uses PatternTrackerV2 for comprehensive edge measurement
+- Pattern combination tracking
+- Pattern count quality analysis
 
 Orchestrates:
 1. Market data fetching (reuses existing infrastructure)
 2. Pattern detection via PatternEngine
-3. Signal validation
-4. Notification sending (reuses push_notification_service)
-5. Outcome tracking via PatternTracker
+3. ALL PATTERNS logged for each trade
+4. Signal validation
+5. Notification sending (reuses push_notification_service)
+6. Outcome tracking via PatternTrackerV2
 
 Modes:
 - LIVE: Sends real notifications
 - FORWARD_TEST: Tracks patterns without sending notifications
 - BACKTEST: Replay historical data
-
-Integration:
-- Uses market_data_cache for data
-- Uses push_notification_service for notifications
-- Uses pattern_engine for detection
-- Uses pattern_tracker for tracking
 """
 
 import asyncio
@@ -32,8 +33,8 @@ import json
 from models import Asset, Timeframe
 from services.market_data_cache import market_data_cache
 from services.market_validator import market_validator
-from services.pattern_engine import pattern_engine, PatternDetection, Session
-from services.pattern_tracker import pattern_tracker, TrackedPattern
+from services.pattern_engine import pattern_engine, PatternDetection, Session, PatternType
+from services.pattern_tracker_v2 import pattern_tracker_v2, PATTERN_TYPES
 from services.push_notification_service import push_service
 
 logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ class PatternSignalGenerator:
     # ==================== LIFECYCLE ====================
     
     async def start(self):
-        """Start the generator"""
+        """Start the generator with V2 tracker"""
         if self.is_running:
             logger.warning("Generator already running")
             return
@@ -108,21 +109,23 @@ class PatternSignalGenerator:
         self.is_running = True
         self.start_time = datetime.utcnow()
         
-        # Initialize tracker
-        await pattern_tracker.initialize()
+        # Initialize V2 tracker
+        await pattern_tracker_v2.initialize()
         
-        # Start tracker loop
-        await pattern_tracker.start()
+        # Start V2 tracker loop
+        await pattern_tracker_v2.start()
         
         # Start scanner loop
         self._scanner_task = asyncio.create_task(self._run_scanner_loop())
         
         logger.info("="*60)
-        logger.info("🚀 PATTERN SIGNAL GENERATOR V1.0 STARTED")
+        logger.info("🚀 PATTERN SIGNAL GENERATOR V2.0 STARTED")
         logger.info(f"   Mode: {self.config.mode.value}")
         logger.info(f"   Assets: {self.config.allowed_assets}")
         logger.info(f"   Scan interval: {self.config.scan_interval}s")
         logger.info(f"   Duplicate window: {self.config.duplicate_window_minutes}m")
+        logger.info("   📊 TRACKING: ALL patterns simultaneously")
+        logger.info("   📈 ANALYSIS: Per-pattern + Combinations + Pattern Count")
         if self.config.mode == OperationMode.FORWARD_TEST:
             logger.info("   ⚠️ FORWARD TEST MODE - No notifications will be sent")
         logger.info("="*60)
@@ -138,9 +141,9 @@ class PatternSignalGenerator:
             except asyncio.CancelledError:
                 pass
         
-        await pattern_tracker.stop()
+        await pattern_tracker_v2.stop()
         
-        logger.info("Pattern Signal Generator stopped")
+        logger.info("Pattern Signal Generator V2.0 stopped")
     
     # ==================== SCANNER LOOP ====================
     
@@ -185,7 +188,7 @@ class PatternSignalGenerator:
                 logger.error(f"Error scanning {asset_str}: {e}")
     
     async def _scan_asset(self, asset: Asset, session: Session):
-        """Scan single asset for patterns"""
+        """Scan single asset for ALL patterns"""
         # Get candle data
         candles_h1 = market_data_cache.get_candles(asset, Timeframe.H1)
         candles_m15 = market_data_cache.get_candles(asset, Timeframe.M15)
@@ -208,8 +211,8 @@ class PatternSignalGenerator:
         if current_price <= 0:
             return
         
-        # Scan for patterns
-        patterns = pattern_engine.scan_all_patterns(
+        # Build context for pattern detection
+        context = pattern_engine.build_market_context(
             symbol=asset.value,
             candles_h1=candles_h1,
             candles_m15=candles_m15,
@@ -217,12 +220,118 @@ class PatternSignalGenerator:
             current_price=current_price
         )
         
-        # Process detected patterns
-        for pattern in patterns:
-            await self._process_pattern(asset, pattern, session)
+        # Scan for ALL patterns
+        detected_patterns = pattern_engine.scan_all_patterns(
+            symbol=asset.value,
+            candles_h1=candles_h1,
+            candles_m15=candles_m15,
+            candles_m5=candles_m5,
+            current_price=current_price
+        )
+        
+        if not detected_patterns:
+            return
+        
+        # Collect ALL active patterns
+        all_pattern_flags = {pt: False for pt in PATTERN_TYPES}
+        primary_pattern = None
+        best_confidence = 0
+        best_pattern = None
+        
+        for pattern in detected_patterns:
+            pt = pattern.pattern_type
+            all_pattern_flags[pt] = True
+            
+            # Track best pattern by confidence
+            if pattern.confidence > best_confidence:
+                best_confidence = pattern.confidence
+                best_pattern = pattern
+                primary_pattern = pt
+        
+        # Process the best pattern (but log ALL active patterns)
+        if best_pattern:
+            await self._process_pattern_v2(
+                asset=asset,
+                pattern=best_pattern,
+                session=session,
+                all_patterns=all_pattern_flags,
+                primary_pattern=primary_pattern,
+                context=context
+            )
     
-    # ==================== PATTERN PROCESSING ====================
+    # ==================== PATTERN PROCESSING V2 ====================
     
+    async def _process_pattern_v2(self, asset: Asset, pattern: PatternDetection, 
+                                   session: Session, all_patterns: Dict[str, bool],
+                                   primary_pattern: str, context):
+        """
+        Process detected pattern with FULL pattern logging.
+        
+        Args:
+            all_patterns: Dict of ALL patterns {pattern_name: active_bool}
+            primary_pattern: The main trigger pattern
+        """
+        self.stats['patterns_detected'] += 1
+        
+        # Count active patterns
+        active_count = sum(1 for v in all_patterns.values() if v)
+        active_names = [k for k, v in all_patterns.items() if v]
+        
+        # Track pattern types
+        for pt, active in all_patterns.items():
+            if active:
+                if pt not in self.stats['by_pattern_type']:
+                    self.stats['by_pattern_type'][pt] = 0
+                self.stats['by_pattern_type'][pt] += 1
+        
+        # Check for duplicates
+        dup_key = f"{asset.value}_{pattern.direction}_{'+'.join(sorted(active_names))}"
+        if self._is_duplicate(dup_key):
+            self.stats['duplicates_blocked'] += 1
+            logger.debug(f"[PATTERN V2] Duplicate blocked: {dup_key}")
+            return
+        
+        # Check minimum confidence
+        if pattern.confidence < self.config.min_confidence:
+            logger.debug(f"[PATTERN V2] Low confidence: {pattern.confidence}")
+            return
+        
+        # Mark as not duplicate
+        self.last_signals[dup_key] = datetime.utcnow()
+        
+        # Track using V2 tracker (logs ALL patterns)
+        executed = self.config.mode == OperationMode.LIVE
+        
+        trade_id = await pattern_tracker_v2.track_trade(
+            symbol=asset.value,
+            direction=pattern.direction,
+            patterns=all_patterns,  # ALL patterns logged!
+            primary_pattern=primary_pattern,
+            entry_price=pattern.entry_price,
+            stop_loss=pattern.stop_loss,
+            take_profit=pattern.take_profit,
+            atr=context.atr_m5,
+            session=session.value,
+            trend_h1=context.trend_h1.direction.value,
+            trend_m15=context.trend_m15.direction.value,
+            confidence=pattern.confidence,
+            executed=executed
+        )
+        
+        self.signal_count += 1
+        
+        # Send notification if LIVE mode
+        if self.config.mode == OperationMode.LIVE:
+            await self._send_notification(asset, pattern, active_names)
+            self.stats['signals_sent'] += 1
+        
+        logger.info(f"[PATTERN V2] ✅ {asset.value} {pattern.direction} | "
+                   f"Patterns: {active_names} ({active_count} active) | "
+                   f"Primary: {primary_pattern} | "
+                   f"Confidence: {pattern.confidence:.1f} | "
+                   f"Mode: {self.config.mode.value}")
+    
+    # Keep old method for compatibility
     async def _process_pattern(self, asset: Asset, pattern: PatternDetection, session: Session):
         """Process a detected pattern"""
         self.stats['patterns_detected'] += 1
@@ -302,12 +411,15 @@ class PatternSignalGenerator:
     
     # ==================== NOTIFICATIONS ====================
     
-    async def _send_notification(self, asset: Asset, pattern: PatternDetection):
-        """Send push notification for pattern signal"""
+    async def _send_notification(self, asset: Asset, pattern: PatternDetection, 
+                                  active_patterns: List[str] = None):
+        """Send push notification for pattern signal with all active patterns"""
         try:
+            active_str = ", ".join(active_patterns) if active_patterns else pattern.pattern_type
+            
             title = f"📊 {asset.value} {pattern.direction}"
             body = (
-                f"{pattern.pattern_type.replace('_', ' ').title()}\n"
+                f"Patterns: {active_str}\n"
                 f"Entry: {pattern.entry_price:.5f}\n"
                 f"SL: {pattern.stop_loss:.5f}\n"
                 f"TP: {pattern.take_profit:.5f}\n"
@@ -319,6 +431,8 @@ class PatternSignalGenerator:
                 'symbol': asset.value,
                 'direction': pattern.direction,
                 'pattern_type': pattern.pattern_type,
+                'active_patterns': ",".join(active_patterns) if active_patterns else pattern.pattern_type,
+                'pattern_count': str(len(active_patterns)) if active_patterns else "1",
                 'entry': str(pattern.entry_price),
                 'sl': str(pattern.stop_loss),
                 'tp': str(pattern.take_profit),
@@ -332,7 +446,8 @@ class PatternSignalGenerator:
                 data=data
             )
             
-            logger.info(f"[PATTERN] Notification sent: {asset.value} {pattern.direction}")
+            logger.info(f"[PATTERN V2] Notification sent: {asset.value} {pattern.direction} | "
+                       f"Patterns: {active_patterns}")
             
         except Exception as e:
             logger.error(f"Error sending notification: {e}")
@@ -341,7 +456,7 @@ class PatternSignalGenerator:
     
     async def update_prices(self):
         """
-        Update tracker with current prices.
+        Update tracker V2 with current prices.
         Called from market data engine.
         """
         for asset_str in self.config.allowed_assets:
@@ -352,7 +467,7 @@ class PatternSignalGenerator:
                 if price_data:
                     mid = price_data.mid if price_data else 0
                     if mid > 0:
-                        await pattern_tracker.update_price(asset_str, mid)
+                        await pattern_tracker_v2.update_price(asset_str, mid)
             except Exception as e:
                 logger.error(f"Error updating price for {asset_str}: {e}")
     
@@ -362,7 +477,7 @@ class PatternSignalGenerator:
         """Change operation mode"""
         old_mode = self.config.mode
         self.config.mode = mode
-        logger.info(f"[PATTERN] Mode changed: {old_mode.value} -> {mode.value}")
+        logger.info(f"[PATTERN V2] Mode changed: {old_mode.value} -> {mode.value}")
     
     def enable_live_mode(self):
         """Enable live notifications"""
@@ -381,7 +496,7 @@ class PatternSignalGenerator:
             uptime = (datetime.utcnow() - self.start_time).total_seconds()
         
         return {
-            'version': 'Pattern Engine V1.0',
+            'version': 'Pattern Engine V2.0',
             'is_running': self.is_running,
             'mode': self.config.mode.value,
             'uptime_seconds': uptime,
@@ -394,12 +509,20 @@ class PatternSignalGenerator:
                 'min_confidence': self.config.min_confidence
             },
             'statistics': self.stats,
-            'tracker_status': pattern_tracker.get_status()
+            'tracker_status': pattern_tracker_v2.get_status()
         }
     
     def get_performance(self) -> Dict:
-        """Get performance statistics"""
-        return pattern_tracker.get_all_performance()
+        """
+        Get FULL performance statistics from V2 tracker.
+        
+        Includes:
+        - Performance by individual pattern
+        - Performance by pattern combination
+        - Performance by pattern count (1, 2, 3+)
+        - Recommendations
+        """
+        return pattern_tracker_v2.get_full_analysis()
 
 
 # Global instance - starts in FORWARD_TEST mode by default

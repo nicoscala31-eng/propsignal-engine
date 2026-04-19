@@ -33,6 +33,7 @@ from services.device_storage_service import device_storage
 from services.rejected_trade_tracker import rejected_trade_tracker
 from services.pattern_engine import pattern_engine, PatternType, Session as PatternSession
 from services.pattern_tracker import pattern_tracker
+from services.pattern_tracker_v2 import pattern_tracker_v2
 from services.pattern_signal_generator import pattern_signal_generator, OperationMode
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
@@ -3821,38 +3822,67 @@ async def get_pattern_performance():
 @api_router.get("/audit/pattern-performance")
 async def audit_pattern_performance(pattern_type: str = None):
     """
-    Audit endpoint for pattern performance analysis.
+    ANTI-ILLUSION SYSTEM - Real edge measurement.
     
-    Required for anti-illusion system: compares executed vs not executed patterns.
+    Returns FULL pattern performance analysis:
+    - Overall performance
+    - Performance by individual pattern
+    - Performance by pattern combination
+    - Performance by pattern count (1, 2, 3+)
+    - Recommendations based on data
+    
+    Use pattern_type parameter to filter by specific pattern.
     """
     if pattern_type:
-        return pattern_tracker.get_pattern_performance(pattern_type)
-    return pattern_tracker.get_all_performance()
+        return pattern_tracker_v2.get_pattern_performance(pattern_type)
+    return pattern_tracker_v2.get_full_analysis()
 
 
 @api_router.get("/pattern/tracker/status")
 async def get_pattern_tracker_status():
-    """Get Pattern Tracker status"""
-    return pattern_tracker.get_status()
+    """Get Pattern Tracker V2 status"""
+    return pattern_tracker_v2.get_status()
 
 
 @api_router.get("/pattern/tracker/pending")
 async def get_pending_patterns():
     """Get all pending (active) tracked patterns"""
     return {
-        "count": len(pattern_tracker.pending_patterns),
-        "patterns": [p.to_dict() for p in pattern_tracker.pending_patterns.values()]
+        "count": len(pattern_tracker_v2.pending_trades),
+        "patterns": [p.to_dict() for p in pattern_tracker_v2.pending_trades.values()]
     }
 
 
 @api_router.get("/pattern/tracker/completed")
 async def get_completed_patterns(limit: int = 50):
     """Get completed patterns"""
-    patterns = pattern_tracker.completed_patterns[-limit:]
+    patterns = pattern_tracker_v2.completed_trades[-limit:]
     return {
         "count": len(patterns),
         "patterns": [p.to_dict() for p in patterns]
     }
+
+
+@api_router.get("/pattern/combinations")
+async def get_pattern_combinations():
+    """
+    Get performance by pattern combinations.
+    
+    Shows which combinations of patterns (e.g., trend+pullback) 
+    have the best edge.
+    """
+    return pattern_tracker_v2.get_combination_performance()
+
+
+@api_router.get("/pattern/by-count")
+async def get_pattern_count_analysis():
+    """
+    Get performance by number of active patterns.
+    
+    Shows if 1 pattern, 2 patterns, or 3+ patterns 
+    correlate with better performance.
+    """
+    return pattern_tracker_v2.get_pattern_count_analysis()
 
 
 @api_router.get("/pattern/scan/test/{symbol}")
