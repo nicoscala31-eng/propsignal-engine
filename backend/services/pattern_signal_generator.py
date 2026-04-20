@@ -1,20 +1,23 @@
 """
-Pattern Signal Generator V2.0 - Orchestrator with Advanced Tracking
-====================================================================
+Pattern Signal Generator V3.0 - Edge Validator
+===============================================
 
-IMPROVEMENTS OVER V1:
-- Logs ALL active patterns simultaneously (not just primary)
-- Uses PatternTrackerV2 for comprehensive edge measurement
-- Pattern combination tracking
-- Pattern count quality analysis
+IMPROVEMENTS OVER V2:
+- Entry Validation with real-world constraints
+- Rejected Pattern Tracking (simulates would-have-been outcomes)
+- Market State Engine (CLOSED/LOW_VOL/TRANSITION/ACTIVE)
+- Real Execution Simulation (spread, slippage, entry at candle close)
+- Anti-Overfitting Check (compares last 20 vs previous 20 trades)
+- Real Confidence (based on historical performance, not pattern detection)
 
 Orchestrates:
 1. Market data fetching (reuses existing infrastructure)
 2. Pattern detection via PatternEngine
-3. ALL PATTERNS logged for each trade
-4. Signal validation
-5. Notification sending (reuses push_notification_service)
-6. Outcome tracking via PatternTrackerV2
+3. Entry validation via EntryValidator
+4. Rejected pattern tracking (for simulation)
+5. ALL PATTERNS logged for each trade
+6. Notification sending (reuses push_notification_service)
+7. Outcome tracking via PatternTrackerV2
 
 Modes:
 - LIVE: Sends real notifications
@@ -35,6 +38,7 @@ from services.market_data_cache import market_data_cache
 from services.market_validator import market_validator
 from services.pattern_engine import pattern_engine, PatternDetection, Session, PatternType
 from services.pattern_tracker_v2 import pattern_tracker_v2, PATTERN_TYPES
+from services.pattern_entry_validator import entry_validator, market_state_engine, MarketState
 from services.push_notification_service import push_service
 
 logger = logging.getLogger(__name__)
@@ -101,13 +105,16 @@ class PatternSignalGenerator:
     # ==================== LIFECYCLE ====================
     
     async def start(self):
-        """Start the generator with V2 tracker"""
+        """Start the generator with V2 tracker and Entry Validator"""
         if self.is_running:
             logger.warning("Generator already running")
             return
         
         self.is_running = True
         self.start_time = datetime.utcnow()
+        
+        # Initialize Entry Validator
+        await entry_validator.initialize()
         
         # Initialize V2 tracker
         await pattern_tracker_v2.initialize()
@@ -119,13 +126,15 @@ class PatternSignalGenerator:
         self._scanner_task = asyncio.create_task(self._run_scanner_loop())
         
         logger.info("="*60)
-        logger.info("🚀 PATTERN SIGNAL GENERATOR V2.0 STARTED")
+        logger.info("🚀 PATTERN SIGNAL GENERATOR V3.0 STARTED")
         logger.info(f"   Mode: {self.config.mode.value}")
         logger.info(f"   Assets: {self.config.allowed_assets}")
         logger.info(f"   Scan interval: {self.config.scan_interval}s")
-        logger.info(f"   Duplicate window: {self.config.duplicate_window_minutes}m")
         logger.info("   📊 TRACKING: ALL patterns simultaneously")
         logger.info("   📈 ANALYSIS: Per-pattern + Combinations + Pattern Count")
+        logger.info("   ✅ ENTRY VALIDATION: Enabled")
+        logger.info("   🔄 REJECTED SIMULATION: Enabled")
+        logger.info("   📉 ANTI-OVERFITTING: Enabled")
         if self.config.mode == OperationMode.FORWARD_TEST:
             logger.info("   ⚠️ FORWARD TEST MODE - No notifications will be sent")
         logger.info("="*60)
@@ -259,13 +268,19 @@ class PatternSignalGenerator:
                 context=context
             )
     
-    # ==================== PATTERN PROCESSING V2 ====================
+    # ==================== PATTERN PROCESSING V3 (with Entry Validation) ====================
     
     async def _process_pattern_v2(self, asset: Asset, pattern: PatternDetection, 
                                    session: Session, all_patterns: Dict[str, bool],
                                    primary_pattern: str, context):
         """
-        Process detected pattern with FULL pattern logging.
+        Process detected pattern with Entry Validation and FULL pattern logging.
+        
+        V3 Flow:
+        1. Detect patterns (done by caller)
+        2. VALIDATE ENTRY (new)
+        3. If rejected -> track as rejected (but simulate outcome)
+        4. If valid -> track and optionally send notification
         
         Args:
             all_patterns: Dict of ALL patterns {pattern_name: active_bool}
@@ -288,18 +303,70 @@ class PatternSignalGenerator:
         dup_key = f"{asset.value}_{pattern.direction}_{'+'.join(sorted(active_names))}"
         if self._is_duplicate(dup_key):
             self.stats['duplicates_blocked'] += 1
-            logger.debug(f"[PATTERN V2] Duplicate blocked: {dup_key}")
-            return
-        
-        # Check minimum confidence
-        if pattern.confidence < self.config.min_confidence:
-            logger.debug(f"[PATTERN V2] Low confidence: {pattern.confidence}")
+            logger.debug(f"[PATTERN V3] Duplicate blocked: {dup_key}")
             return
         
         # Mark as not duplicate
         self.last_signals[dup_key] = datetime.utcnow()
         
-        # Track using V2 tracker (logs ALL patterns)
+        # Get current spread
+        price_data = market_data_cache.get_price(asset)
+        spread = price_data.spread if price_data else 0.00010  # Default 1 pip
+        
+        # Get M5 candles for entry validation
+        candles_m5 = market_data_cache.get_candles(asset, Timeframe.M5) or []
+        
+        # ========== ENTRY VALIDATION (NEW in V3) ==========
+        validation = entry_validator.validate_entry(
+            pattern_type=primary_pattern,
+            direction=pattern.direction,
+            entry_price=pattern.entry_price,
+            stop_loss=pattern.stop_loss,
+            take_profit=pattern.take_profit,
+            confidence=pattern.confidence,
+            candles=candles_m5,
+            spread=spread,
+            atr=context.atr_m5,
+            symbol=asset.value
+        )
+        
+        # Track validation stats
+        if 'entry_validations' not in self.stats:
+            self.stats['entry_validations'] = {'valid': 0, 'rejected': 0, 'by_reason': {}}
+        
+        if not validation.is_valid:
+            # ========== REJECTED ENTRY ==========
+            self.stats['entry_validations']['rejected'] += 1
+            
+            # Track rejection reason
+            reason = validation.reason
+            if reason not in self.stats['entry_validations']['by_reason']:
+                self.stats['entry_validations']['by_reason'][reason] = 0
+            self.stats['entry_validations']['by_reason'][reason] += 1
+            
+            # Track rejected pattern (for simulation)
+            await entry_validator.track_rejected_pattern(
+                pattern_type=primary_pattern,
+                direction=pattern.direction,
+                symbol=asset.value,
+                entry_price=pattern.entry_price,
+                stop_loss=pattern.stop_loss,
+                take_profit=pattern.take_profit,
+                confidence=pattern.confidence,
+                rejection_reason=reason,
+                market_state=validation.market_state,
+                atr=context.atr_m5,
+                spread=spread
+            )
+            
+            logger.info(f"[PATTERN V3] ❌ Entry REJECTED: {asset.value} {pattern.direction} | "
+                       f"Reason: {reason} | Real Confidence: {validation.real_confidence:.1f}")
+            return
+        
+        # ========== VALID ENTRY ==========
+        self.stats['entry_validations']['valid'] += 1
+        
+        # Use ADJUSTED levels (with slippage/spread)
         executed = self.config.mode == OperationMode.LIVE
         
         trade_id = await pattern_tracker_v2.track_trade(
@@ -307,28 +374,35 @@ class PatternSignalGenerator:
             direction=pattern.direction,
             patterns=all_patterns,  # ALL patterns logged!
             primary_pattern=primary_pattern,
-            entry_price=pattern.entry_price,
-            stop_loss=pattern.stop_loss,
-            take_profit=pattern.take_profit,
+            entry_price=validation.adjusted_entry,  # Use adjusted entry
+            stop_loss=validation.adjusted_sl,       # Use adjusted SL
+            take_profit=validation.adjusted_tp,     # Use adjusted TP
             atr=context.atr_m5,
             session=session.value,
             trend_h1=context.trend_h1.direction.value,
             trend_m15=context.trend_m15.direction.value,
-            confidence=pattern.confidence,
+            confidence=validation.real_confidence,  # Use REAL confidence
             executed=executed
         )
         
         self.signal_count += 1
         
+        # Update pattern performance history
+        entry_validator.update_pattern_performance(
+            pattern_type=primary_pattern,
+            won=False,  # Will be updated when trade closes
+            final_r=0   # Will be updated when trade closes
+        )
+        
         # Send notification if LIVE mode
         if self.config.mode == OperationMode.LIVE:
-            await self._send_notification(asset, pattern, active_names)
+            await self._send_notification(asset, pattern, active_names, validation)
             self.stats['signals_sent'] += 1
         
-        logger.info(f"[PATTERN V2] ✅ {asset.value} {pattern.direction} | "
+        logger.info(f"[PATTERN V3] ✅ Entry VALID: {asset.value} {pattern.direction} | "
                    f"Patterns: {active_names} ({active_count} active) | "
-                   f"Primary: {primary_pattern} | "
-                   f"Confidence: {pattern.confidence:.1f} | "
+                   f"Real Confidence: {validation.real_confidence:.1f} | "
+                   f"Real R:R: {validation.real_rr:.2f} | "
                    f"Mode: {self.config.mode.value}")
     
     # Keep old method for compatibility
@@ -412,33 +486,61 @@ class PatternSignalGenerator:
     # ==================== NOTIFICATIONS ====================
     
     async def _send_notification(self, asset: Asset, pattern: PatternDetection, 
-                                  active_patterns: List[str] = None):
-        """Send push notification for pattern signal with all active patterns"""
+                                  active_patterns: List[str] = None,
+                                  validation = None):
+        """Send push notification for pattern signal with all active patterns and validation data"""
         try:
             active_str = ", ".join(active_patterns) if active_patterns else pattern.pattern_type
             
-            title = f"📊 {asset.value} {pattern.direction}"
-            body = (
-                f"Patterns: {active_str}\n"
-                f"Entry: {pattern.entry_price:.5f}\n"
-                f"SL: {pattern.stop_loss:.5f}\n"
-                f"TP: {pattern.take_profit:.5f}\n"
-                f"R:R: {pattern.risk_reward:.2f}"
-            )
-            
-            data = {
-                'type': 'PATTERN_SIGNAL',
-                'symbol': asset.value,
-                'direction': pattern.direction,
-                'pattern_type': pattern.pattern_type,
-                'active_patterns': ",".join(active_patterns) if active_patterns else pattern.pattern_type,
-                'pattern_count': str(len(active_patterns)) if active_patterns else "1",
-                'entry': str(pattern.entry_price),
-                'sl': str(pattern.stop_loss),
-                'tp': str(pattern.take_profit),
-                'rr': str(pattern.risk_reward),
-                'confidence': str(pattern.confidence)
-            }
+            # Use validation data if available
+            if validation:
+                title = f"📊 {asset.value} {pattern.direction}"
+                body = (
+                    f"Patterns: {active_str}\n"
+                    f"Entry: {validation.adjusted_entry:.5f}\n"
+                    f"SL: {validation.adjusted_sl:.5f}\n"
+                    f"TP: {validation.adjusted_tp:.5f}\n"
+                    f"R:R: {validation.real_rr:.2f}\n"
+                    f"Confidence: {validation.real_confidence:.0f}%"
+                )
+                
+                data = {
+                    'type': 'PATTERN_SIGNAL',
+                    'symbol': asset.value,
+                    'direction': pattern.direction,
+                    'pattern_type': pattern.pattern_type,
+                    'active_patterns': ",".join(active_patterns) if active_patterns else pattern.pattern_type,
+                    'pattern_count': str(len(active_patterns)) if active_patterns else "1",
+                    'entry': str(validation.adjusted_entry),
+                    'sl': str(validation.adjusted_sl),
+                    'tp': str(validation.adjusted_tp),
+                    'rr': str(validation.real_rr),
+                    'confidence': str(validation.real_confidence),
+                    'market_state': validation.market_state
+                }
+            else:
+                title = f"📊 {asset.value} {pattern.direction}"
+                body = (
+                    f"Patterns: {active_str}\n"
+                    f"Entry: {pattern.entry_price:.5f}\n"
+                    f"SL: {pattern.stop_loss:.5f}\n"
+                    f"TP: {pattern.take_profit:.5f}\n"
+                    f"R:R: {pattern.risk_reward:.2f}"
+                )
+                
+                data = {
+                    'type': 'PATTERN_SIGNAL',
+                    'symbol': asset.value,
+                    'direction': pattern.direction,
+                    'pattern_type': pattern.pattern_type,
+                    'active_patterns': ",".join(active_patterns) if active_patterns else pattern.pattern_type,
+                    'pattern_count': str(len(active_patterns)) if active_patterns else "1",
+                    'entry': str(pattern.entry_price),
+                    'sl': str(pattern.stop_loss),
+                    'tp': str(pattern.take_profit),
+                    'rr': str(pattern.risk_reward),
+                    'confidence': str(pattern.confidence)
+                }
             
             await push_service.send_to_all(
                 title=title,
@@ -446,8 +548,7 @@ class PatternSignalGenerator:
                 data=data
             )
             
-            logger.info(f"[PATTERN V2] Notification sent: {asset.value} {pattern.direction} | "
-                       f"Patterns: {active_patterns}")
+            logger.info(f"[PATTERN V3] Notification sent: {asset.value} {pattern.direction}")
             
         except Exception as e:
             logger.error(f"Error sending notification: {e}")
@@ -456,8 +557,7 @@ class PatternSignalGenerator:
     
     async def update_prices(self):
         """
-        Update tracker V2 with current prices.
-        Called from market data engine.
+        Update tracker V2 and rejected patterns with current prices.
         """
         for asset_str in self.config.allowed_assets:
             try:
@@ -467,7 +567,10 @@ class PatternSignalGenerator:
                 if price_data:
                     mid = price_data.mid if price_data else 0
                     if mid > 0:
+                        # Update tracked trades
                         await pattern_tracker_v2.update_price(asset_str, mid)
+                        # Update rejected pattern simulations
+                        await entry_validator.update_prices_for_rejections(asset_str, mid)
             except Exception as e:
                 logger.error(f"Error updating price for {asset_str}: {e}")
     
@@ -496,12 +599,13 @@ class PatternSignalGenerator:
             uptime = (datetime.utcnow() - self.start_time).total_seconds()
         
         return {
-            'version': 'Pattern Engine V2.0',
+            'version': 'Pattern Engine V3.0 (Edge Validator)',
             'is_running': self.is_running,
             'mode': self.config.mode.value,
             'uptime_seconds': uptime,
             'scan_count': self.scan_count,
             'signal_count': self.signal_count,
+            'market_state': market_state_engine.current_state.value,
             'config': {
                 'scan_interval': self.config.scan_interval,
                 'allowed_assets': self.config.allowed_assets,
@@ -509,20 +613,36 @@ class PatternSignalGenerator:
                 'min_confidence': self.config.min_confidence
             },
             'statistics': self.stats,
-            'tracker_status': pattern_tracker_v2.get_status()
+            'tracker_status': pattern_tracker_v2.get_status(),
+            'entry_validation': {
+                'enabled': True,
+                'rejected_patterns': len(entry_validator.rejected_patterns),
+                'pattern_history': len(entry_validator.pattern_history)
+            }
         }
     
     def get_performance(self) -> Dict:
         """
-        Get FULL performance statistics from V2 tracker.
+        Get FULL performance statistics from V3 engine.
         
         Includes:
         - Performance by individual pattern
         - Performance by pattern combination
         - Performance by pattern count (1, 2, 3+)
+        - Rejected pattern analysis
+        - Anti-overfitting status
         - Recommendations
         """
-        return pattern_tracker_v2.get_full_analysis()
+        tracker_analysis = pattern_tracker_v2.get_full_analysis()
+        validator_report = entry_validator.get_full_validation_report()
+        
+        return {
+            'version': '3.0',
+            'report_generated': datetime.utcnow().isoformat(),
+            'tracker_analysis': tracker_analysis,
+            'entry_validation': validator_report,
+            'note': 'EDGE VALIDATOR - Compares executed vs rejected pattern performance'
+        }
 
 
 # Global instance - starts in FORWARD_TEST mode by default

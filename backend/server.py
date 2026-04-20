@@ -35,6 +35,7 @@ from services.pattern_engine import pattern_engine, PatternType, Session as Patt
 from services.pattern_tracker import pattern_tracker
 from services.pattern_tracker_v2 import pattern_tracker_v2
 from services.pattern_signal_generator import pattern_signal_generator, OperationMode
+from services.pattern_entry_validator import entry_validator, market_state_engine
 from engines.prop_rule_engine import prop_rule_engine
 from engines.mtf_bias_engine import mtf_bias_engine
 from providers.provider_manager import provider_manager
@@ -3883,6 +3884,62 @@ async def get_pattern_count_analysis():
     correlate with better performance.
     """
     return pattern_tracker_v2.get_pattern_count_analysis()
+
+
+# ==================== ENTRY VALIDATOR ENDPOINTS ====================
+
+@api_router.get("/pattern/market-state")
+async def get_market_state():
+    """Get current market state (CLOSED/LOW_VOL/TRANSITION/ACTIVE)"""
+    return {
+        "state": market_state_engine.current_state.value,
+        "can_trade": market_state_engine.should_trade()[0],
+        "reason": market_state_engine.should_trade()[1]
+    }
+
+
+@api_router.get("/pattern/rejected")
+async def get_rejected_patterns(limit: int = 50):
+    """Get patterns that were rejected by entry validation"""
+    await entry_validator.initialize()
+    patterns = entry_validator.rejected_patterns[-limit:]
+    return {
+        "count": len(patterns),
+        "patterns": [p.to_dict() for p in patterns]
+    }
+
+
+@api_router.get("/pattern/rejected/stats")
+async def get_rejected_stats():
+    """
+    Get statistics on rejected patterns.
+    
+    Shows what we would have captured if we ignored the filters.
+    """
+    await entry_validator.initialize()
+    return entry_validator.get_rejected_stats()
+
+
+@api_router.get("/pattern/validation-report")
+async def get_validation_report():
+    """
+    Get full Entry Validator report.
+    
+    Compares executed vs rejected pattern performance.
+    """
+    await entry_validator.initialize()
+    return entry_validator.get_full_validation_report()
+
+
+@api_router.get("/pattern/history")
+async def get_pattern_history():
+    """
+    Get historical performance by pattern type.
+    
+    Used for real confidence calculation and anti-overfitting.
+    """
+    await entry_validator.initialize()
+    return entry_validator.get_pattern_history_stats()
 
 
 @api_router.get("/pattern/scan/test/{symbol}")
