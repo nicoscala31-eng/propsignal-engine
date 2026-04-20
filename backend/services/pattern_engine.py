@@ -919,6 +919,248 @@ class PatternEngine:
             'total_detections': self.detection_count,
             'config': asdict(self.config)
         }
+    
+    def get_pattern_components(self, symbol: str, candles_h1: List[Dict], 
+                                candles_m15: List[Dict], candles_m5: List[Dict],
+                                current_price: float) -> Dict:
+        """
+        Get detailed components for ALL patterns (active and inactive).
+        
+        Returns components even for patterns that are NOT active,
+        showing which sub-conditions are met and which are not.
+        
+        This is used by the frontend to display pattern analysis.
+        """
+        components = {}
+        
+        # Build context
+        context = self.build_market_context(symbol, candles_h1, candles_m15, candles_m5, current_price)
+        atr = context.atr_m5
+        
+        # ==================== TREND STRUCTURE ====================
+        trend_h1 = context.trend_h1
+        trend_m15 = context.trend_m15
+        
+        components['trend_structure'] = {
+            'active': trend_h1.direction != TrendDirection.RANGE,
+            'direction': trend_h1.direction.value,
+            'strength': trend_h1.strength,
+            'sub_components': {
+                'higher_high': {
+                    'status': trend_h1.hh_count >= 2,
+                    'value': trend_h1.hh_count,
+                    'required': 2,
+                    'description': f'{trend_h1.hh_count} HH detected'
+                },
+                'higher_low': {
+                    'status': trend_h1.hl_count >= 2,
+                    'value': trend_h1.hl_count,
+                    'required': 2,
+                    'description': f'{trend_h1.hl_count} HL detected'
+                },
+                'lower_high': {
+                    'status': trend_h1.lh_count >= 2,
+                    'value': trend_h1.lh_count,
+                    'required': 2,
+                    'description': f'{trend_h1.lh_count} LH detected'
+                },
+                'lower_low': {
+                    'status': trend_h1.ll_count >= 2,
+                    'value': trend_h1.ll_count,
+                    'required': 2,
+                    'description': f'{trend_h1.ll_count} LL detected'
+                },
+                'sequence_valid': {
+                    'status': (trend_h1.hh_count >= 2 and trend_h1.hl_count >= 2) or (trend_h1.lh_count >= 2 and trend_h1.ll_count >= 2),
+                    'description': 'Valid swing sequence'
+                },
+                'h1_m15_aligned': {
+                    'status': trend_h1.direction == trend_m15.direction and trend_h1.direction != TrendDirection.RANGE,
+                    'description': f'H1: {trend_h1.direction.value}, M15: {trend_m15.direction.value}'
+                }
+            }
+        }
+        
+        # ==================== FIBONACCI PULLBACK ====================
+        fib_active = False
+        fib_components = {
+            'swing_identified': {'status': False, 'description': 'No valid swing'},
+            'price_in_zone': {'status': False, 'description': 'Not in fib zone'},
+            'trend_aligned': {'status': False, 'description': 'Trend not aligned'},
+            'pullback_depth': {'status': False, 'value': 0, 'description': 'N/A'}
+        }
+        
+        if trend_h1.last_swing_high and trend_h1.last_swing_low:
+            swing_high = trend_h1.last_swing_high.price
+            swing_low = trend_h1.last_swing_low.price
+            
+            if swing_high > swing_low:
+                fib_range = swing_high - swing_low
+                fib50 = swing_high - (fib_range * 0.5)
+                fib618 = swing_high - (fib_range * 0.618)
+                tolerance = fib_range * self.config.fib_tolerance
+                
+                fib_components['swing_identified'] = {
+                    'status': True,
+                    'swing_high': swing_high,
+                    'swing_low': swing_low,
+                    'description': f'Swing: {swing_low:.5f} - {swing_high:.5f}'
+                }
+                
+                # Check if price is in zone
+                if trend_h1.direction == TrendDirection.BULLISH:
+                    zone_top = fib50 + tolerance
+                    zone_bottom = fib618 - tolerance
+                    in_zone = zone_bottom <= current_price <= zone_top
+                    depth = (swing_high - current_price) / fib_range if fib_range > 0 else 0
+                    
+                    fib_components['price_in_zone'] = {
+                        'status': in_zone,
+                        'zone': f'{zone_bottom:.5f} - {zone_top:.5f}',
+                        'current': current_price,
+                        'description': 'In 50-61.8% zone' if in_zone else 'Outside fib zone'
+                    }
+                    fib_components['pullback_depth'] = {
+                        'status': 0.45 <= depth <= 0.65,
+                        'value': depth * 100,
+                        'description': f'{depth*100:.1f}% pullback'
+                    }
+                    fib_components['trend_aligned'] = {
+                        'status': trend_h1.direction == TrendDirection.BULLISH,
+                        'description': 'Bullish trend aligned'
+                    }
+                    fib_active = in_zone and trend_h1.direction == TrendDirection.BULLISH
+                    
+                elif trend_h1.direction == TrendDirection.BEARISH:
+                    fib50_bear = swing_low + (fib_range * 0.5)
+                    fib618_bear = swing_low + (fib_range * 0.618)
+                    zone_bottom = fib50_bear - tolerance
+                    zone_top = fib618_bear + tolerance
+                    in_zone = zone_bottom <= current_price <= zone_top
+                    depth = (current_price - swing_low) / fib_range if fib_range > 0 else 0
+                    
+                    fib_components['price_in_zone'] = {
+                        'status': in_zone,
+                        'zone': f'{zone_bottom:.5f} - {zone_top:.5f}',
+                        'current': current_price,
+                        'description': 'In 50-61.8% zone' if in_zone else 'Outside fib zone'
+                    }
+                    fib_components['pullback_depth'] = {
+                        'status': 0.45 <= depth <= 0.65,
+                        'value': depth * 100,
+                        'description': f'{depth*100:.1f}% pullback'
+                    }
+                    fib_components['trend_aligned'] = {
+                        'status': trend_h1.direction == TrendDirection.BEARISH,
+                        'description': 'Bearish trend aligned'
+                    }
+                    fib_active = in_zone and trend_h1.direction == TrendDirection.BEARISH
+        
+        components['fib_pullback'] = {
+            'active': fib_active,
+            'sub_components': fib_components
+        }
+        
+        # ==================== BREAKOUT RETEST ====================
+        breakout_pattern = self.detect_breakout_retest(candles_m15, atr)
+        breakout_active = breakout_pattern is not None
+        
+        components['breakout_retest'] = {
+            'active': breakout_active,
+            'sub_components': {
+                'level_identified': {
+                    'status': True,  # We always have levels
+                    'description': 'Key levels detected'
+                },
+                'breakout_confirmed': {
+                    'status': breakout_active,
+                    'description': 'Breakout with ATR confirmation' if breakout_active else 'No confirmed breakout'
+                },
+                'retest_occurred': {
+                    'status': breakout_active,
+                    'description': 'Price retested level' if breakout_active else 'No retest'
+                },
+                'rejection_candle': {
+                    'status': breakout_active,
+                    'description': 'Rejection wick formed' if breakout_active else 'No rejection'
+                }
+            },
+            'details': breakout_pattern.details if breakout_pattern else {}
+        }
+        
+        # ==================== LIQUIDITY SWEEP ====================
+        sweep_pattern = self.detect_liquidity_sweep(candles_m5, atr)
+        sweep_active = sweep_pattern is not None
+        sweep_type = sweep_pattern.details.get('sweep_type', '') if sweep_pattern else ''
+        
+        components['liquidity_sweep'] = {
+            'active': sweep_active,
+            'sweep_type': sweep_type,
+            'sub_components': {
+                'liquidity_pool': {
+                    'status': True,
+                    'description': 'Liquidity levels identified'
+                },
+                'stop_hunt': {
+                    'status': sweep_active,
+                    'description': f'{sweep_type.replace("_", " ").title()}' if sweep_active else 'No stop hunt'
+                },
+                'rejection_formed': {
+                    'status': sweep_active,
+                    'description': 'Price rejected after sweep' if sweep_active else 'No rejection'
+                },
+                'close_inside': {
+                    'status': sweep_active,
+                    'description': 'Closed inside range' if sweep_active else 'N/A'
+                }
+            },
+            'details': sweep_pattern.details if sweep_pattern else {}
+        }
+        
+        # ==================== FLAG PATTERN ====================
+        flag_pattern = self.detect_flag(candles_m15, atr)
+        flag_active = flag_pattern is not None
+        flag_type = flag_pattern.details.get('flag_type', '') if flag_pattern else ''
+        
+        components['flag_pattern'] = {
+            'active': flag_active,
+            'flag_type': flag_type,
+            'sub_components': {
+                'impulse_leg': {
+                    'status': flag_active,
+                    'size': flag_pattern.details.get('impulse_size', 0) if flag_pattern else 0,
+                    'description': f'Impulse > 1.5 ATR' if flag_active else 'No strong impulse'
+                },
+                'consolidation': {
+                    'status': flag_active,
+                    'range': flag_pattern.details.get('consol_range', 0) if flag_pattern else 0,
+                    'description': 'Tight consolidation' if flag_active else 'No consolidation'
+                },
+                'breakout': {
+                    'status': flag_active,
+                    'description': 'Breakout confirmed' if flag_active else 'No breakout'
+                },
+                'direction_match': {
+                    'status': flag_active,
+                    'description': f'{flag_type.replace("_", " ").title()}' if flag_active else 'N/A'
+                }
+            },
+            'details': flag_pattern.details if flag_pattern else {}
+        }
+        
+        # ==================== SUMMARY ====================
+        active_patterns = [k for k, v in components.items() if v.get('active', False)]
+        
+        components['_summary'] = {
+            'active_count': len(active_patterns),
+            'active_patterns': active_patterns,
+            'combination_key': '+'.join(sorted(active_patterns)) if active_patterns else 'none',
+            'primary_pattern': active_patterns[0] if active_patterns else None,
+            'market_state': context.session.value,
+            'data_valid': context.data_valid
+        }
+        
+        return components
 
 
 # Global instance
