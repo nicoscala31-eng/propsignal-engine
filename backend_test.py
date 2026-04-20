@@ -1,277 +1,268 @@
 #!/usr/bin/env python3
 """
-Backend API Testing Script for PropSignal Engine
-Testing Signal Feed API - Include REJECTED signals in feed
+Backend API Testing for Pattern UI Backend endpoints and Pattern Engine integration
+Testing the NEW Pattern UI Backend endpoints as requested in review.
 """
 
 import requests
 import json
 import sys
-from typing import Dict, List, Any
+from datetime import datetime
 
-# Backend URL from environment
-BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com"
-API_BASE = f"{BACKEND_URL}/api"
+# Backend URL from frontend .env
+BACKEND_URL = "https://eurusd-alerts.preview.emergentagent.com/api"
 
-def test_signal_feed_rejected_signals():
-    """Test the /api/signals/feed endpoint fix for including REJECTED signals"""
+def test_endpoint(method, endpoint, expected_status=200, data=None):
+    """Test an API endpoint and return response"""
+    url = f"{BACKEND_URL}{endpoint}"
+    print(f"\n🔍 Testing {method} {endpoint}")
     
-    print("🔍 TESTING SIGNAL FEED API - REJECTED SIGNALS INCLUSION")
+    try:
+        if method == "GET":
+            response = requests.get(url, timeout=30)
+        elif method == "POST":
+            response = requests.post(url, json=data, timeout=30)
+        else:
+            print(f"❌ Unsupported method: {method}")
+            return None
+            
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == expected_status:
+            try:
+                json_data = response.json()
+                print(f"   ✅ SUCCESS - Response received")
+                return json_data
+            except:
+                print(f"   ✅ SUCCESS - Non-JSON response")
+                return response.text
+        else:
+            print(f"   ❌ FAILED - Expected {expected_status}, got {response.status_code}")
+            try:
+                error_data = response.json()
+                print(f"   Error: {error_data}")
+            except:
+                print(f"   Error: {response.text}")
+            return None
+            
+    except requests.exceptions.RequestException as e:
+        print(f"   ❌ REQUEST FAILED: {e}")
+        return None
+
+def validate_pattern_components_response(data, symbol):
+    """Validate pattern components response structure"""
+    print(f"   📊 Validating pattern components for {symbol}:")
+    
+    required_fields = ['active_count', 'active_patterns', 'primary_pattern', 'factor_contributions']
+    for field in required_fields:
+        if field not in data:
+            print(f"   ❌ Missing required field: {field}")
+            return False
+        print(f"   ✅ {field}: {data[field]}")
+    
+    # Validate factor_contributions structure
+    factor_contributions = data.get('factor_contributions', [])
+    if not isinstance(factor_contributions, list):
+        print(f"   ❌ factor_contributions should be array")
+        return False
+        
+    if len(factor_contributions) != 5:
+        print(f"   ❌ Expected 5 patterns in factor_contributions, got {len(factor_contributions)}")
+        return False
+        
+    expected_patterns = ['trend_structure', 'fib_pullback', 'breakout_retest', 'liquidity_sweep', 'flag_pattern']
+    for i, factor in enumerate(factor_contributions):
+        if not isinstance(factor, dict):
+            print(f"   ❌ factor_contributions[{i}] should be object")
+            return False
+            
+        required_factor_fields = ['factor_key', 'factor_name', 'status', 'reason']
+        for field in required_factor_fields:
+            if field not in factor:
+                print(f"   ❌ Missing field in factor_contributions[{i}]: {field}")
+                return False
+                
+        if factor['factor_key'] not in expected_patterns:
+            print(f"   ❌ Unexpected factor_key: {factor['factor_key']}")
+            return False
+            
+        if factor['status'] not in ['pass', 'fail']:
+            print(f"   ❌ Invalid status: {factor['status']}")
+            return False
+            
+        print(f"   ✅ Pattern {factor['factor_key']}: {factor['status']} - {factor['reason']}")
+    
+    return True
+
+def validate_signal_feed_response(data):
+    """Validate signal feed response structure"""
+    print(f"   📊 Validating signal feed response:")
+    
+    if not isinstance(data, dict):
+        print(f"   ❌ Signal feed should be object")
+        return False
+        
+    if 'signals' not in data:
+        print(f"   ❌ Missing 'signals' field")
+        return False
+        
+    signals = data['signals']
+    if not isinstance(signals, list):
+        print(f"   ❌ signals should be array")
+        return False
+        
+    print(f"   ✅ Signal count: {len(signals)}")
+    print(f"   ✅ Total count: {data.get('count', 'N/A')}")
+    
+    if len(signals) > 0:
+        # Check first signal structure
+        signal = signals[0]
+        required_fields = ['signal_id', 'symbol', 'direction', 'status']
+        for field in required_fields:
+            if field not in signal:
+                print(f"   ❌ Missing field in signal: {field}")
+                return False
+        print(f"   ✅ Signal structure validated")
+        print(f"   ✅ Sample signal: {signal['symbol']} {signal['direction']} - {signal['status']}")
+        
+        # Check for active, rejected, and closed signals
+        statuses = [s['status'] for s in signals]
+        unique_statuses = set(statuses)
+        print(f"   ✅ Signal statuses found: {list(unique_statuses)}")
+    
+    return True
+
+def validate_feed_stats_response(data):
+    """Validate feed stats response structure"""
+    print(f"   📊 Validating feed stats response:")
+    
+    required_fields = ['accepted', 'rejected', 'active', 'closed']
+    for field in required_fields:
+        if field not in data:
+            print(f"   ❌ Missing required field: {field}")
+            return False
+        print(f"   ✅ {field}: {data[field]}")
+    
+    return True
+
+def main():
+    """Run all pattern endpoint tests"""
+    print("🚀 PATTERN UI BACKEND ENDPOINTS TESTING")
     print("=" * 60)
     
-    results = {
-        "tests_passed": 0,
-        "tests_failed": 0,
-        "critical_issues": [],
-        "test_details": []
-    }
+    test_results = []
     
-    # Test 1: status=all - Should return ALL statuses (active, closed, rejected)
-    print("\n1. Testing status=all - Should return ALL statuses")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed?status=all&limit=200", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            signals = data.get('signals', [])
-            
-            # Count signals by status
-            status_counts = {}
-            for signal in signals:
-                status = signal.get('status', 'unknown')
-                status_counts[status] = status_counts.get(status, 0) + 1
-            
-            print(f"   ✅ Response received: {len(signals)} total signals")
-            print(f"   📊 Status breakdown: {status_counts}")
-            
-            # Check if rejected signals are present
-            rejected_count = status_counts.get('rejected', 0)
-            if rejected_count > 0:
-                print(f"   ✅ CRITICAL: Found {rejected_count} REJECTED signals")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"status=all returns {rejected_count} rejected signals")
-            else:
-                print(f"   ❌ CRITICAL: NO REJECTED signals found in status=all")
-                results["tests_failed"] += 1
-                results["critical_issues"].append("status=all does not return rejected signals")
-                
-            # Verify all three statuses are present
-            expected_statuses = ['active', 'closed', 'rejected']
-            missing_statuses = [s for s in expected_statuses if s not in status_counts]
-            if not missing_statuses:
-                print(f"   ✅ All expected statuses present: {list(status_counts.keys())}")
-            else:
-                print(f"   ⚠️  Missing statuses: {missing_statuses}")
-                
+    # Test 1: GET /api/pattern/components/{symbol} for EURUSD
+    print("\n📋 TEST 1: Pattern Components for EURUSD")
+    eurusd_data = test_endpoint("GET", "/pattern/components/EURUSD")
+    if eurusd_data:
+        if validate_pattern_components_response(eurusd_data, "EURUSD"):
+            test_results.append("✅ EURUSD pattern components")
         else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"status=all endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"status=all endpoint exception: {str(e)}")
+            test_results.append("❌ EURUSD pattern components validation failed")
+    else:
+        test_results.append("❌ EURUSD pattern components endpoint failed")
     
-    # Test 2: status=rejected - Should return ONLY rejected signals
-    print("\n2. Testing status=rejected - Should return ONLY rejected signals")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed?status=rejected&limit=50", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            signals = data.get('signals', [])
-            
-            print(f"   ✅ Response received: {len(signals)} signals")
-            
-            # Verify all signals have status "rejected"
-            non_rejected = [s for s in signals if s.get('status') != 'rejected']
-            if not non_rejected:
-                print(f"   ✅ All {len(signals)} signals have status 'rejected'")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"status=rejected returns only rejected signals ({len(signals)} found)")
-                
-                # Check for rejection_reason field
-                signals_with_reason = [s for s in signals if 'rejection_reason' in s]
-                print(f"   📋 Signals with rejection_reason: {len(signals_with_reason)}/{len(signals)}")
-                
-            else:
-                print(f"   ❌ Found {len(non_rejected)} non-rejected signals in rejected feed")
-                results["tests_failed"] += 1
-                results["critical_issues"].append(f"status=rejected contains non-rejected signals")
-                
+    # Test 2: GET /api/pattern/components/{symbol} for XAUUSD
+    print("\n📋 TEST 2: Pattern Components for XAUUSD")
+    xauusd_data = test_endpoint("GET", "/pattern/components/XAUUSD")
+    if xauusd_data:
+        if validate_pattern_components_response(xauusd_data, "XAUUSD"):
+            test_results.append("✅ XAUUSD pattern components")
         else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"status=rejected endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"status=rejected endpoint exception: {str(e)}")
+            test_results.append("❌ XAUUSD pattern components validation failed")
+    else:
+        test_results.append("❌ XAUUSD pattern components endpoint failed")
     
-    # Test 3: status=active - Should return only active signals
-    print("\n3. Testing status=active - Should return only active signals")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed?status=active&limit=50", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            signals = data.get('signals', [])
-            
-            print(f"   ✅ Response received: {len(signals)} signals")
-            
-            # Verify all signals have status "active"
-            non_active = [s for s in signals if s.get('status') != 'active']
-            if not non_active:
-                print(f"   ✅ All {len(signals)} signals have status 'active'")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"status=active returns only active signals ({len(signals)} found)")
-            else:
-                print(f"   ❌ Found {len(non_active)} non-active signals in active feed")
-                results["tests_failed"] += 1
-                results["critical_issues"].append(f"status=active contains non-active signals")
-                
-        else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"status=active endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"status=active endpoint exception: {str(e)}")
+    # Test 3: GET /api/pattern/status
+    print("\n📋 TEST 3: Pattern Engine Status")
+    status_data = test_endpoint("GET", "/pattern/status")
+    if status_data:
+        print(f"   📊 Pattern Engine Status: {status_data}")
+        test_results.append("✅ Pattern engine status")
+    else:
+        test_results.append("❌ Pattern engine status failed")
     
-    # Test 4: status=closed - Should return only closed signals
-    print("\n4. Testing status=closed - Should return only closed signals")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed?status=closed&limit=50", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            signals = data.get('signals', [])
-            
-            print(f"   ✅ Response received: {len(signals)} signals")
-            
-            # Verify all signals have status "closed"
-            non_closed = [s for s in signals if s.get('status') != 'closed']
-            if not non_closed:
-                print(f"   ✅ All {len(signals)} signals have status 'closed'")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"status=closed returns only closed signals ({len(signals)} found)")
-            else:
-                print(f"   ❌ Found {len(non_closed)} non-closed signals in closed feed")
-                results["tests_failed"] += 1
-                results["critical_issues"].append(f"status=closed contains non-closed signals")
-                
-        else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"status=closed endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"status=closed endpoint exception: {str(e)}")
+    # Test 4: GET /api/pattern/market-state
+    print("\n📋 TEST 4: Pattern Market State")
+    market_state_data = test_endpoint("GET", "/pattern/market-state")
+    if market_state_data:
+        print(f"   📊 Market State: {market_state_data}")
+        test_results.append("✅ Pattern market state")
+    else:
+        test_results.append("❌ Pattern market state failed")
     
-    # Test 5: Pagination with rejected signals - Verify rejected signals appear with higher offset
-    print("\n5. Testing pagination - Verify rejected signals appear with higher offset")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed?status=all&limit=50&offset=130", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            signals = data.get('signals', [])
-            
-            print(f"   ✅ Response received: {len(signals)} signals with offset=130")
-            
-            # Count rejected signals in this page
-            rejected_in_page = [s for s in signals if s.get('status') == 'rejected']
-            print(f"   📊 Rejected signals in this page: {len(rejected_in_page)}")
-            
-            if len(rejected_in_page) > 0:
-                print(f"   ✅ Found {len(rejected_in_page)} rejected signals with offset=130")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"Pagination works: {len(rejected_in_page)} rejected signals at offset=130")
-            else:
-                print(f"   ⚠️  No rejected signals found at offset=130 (may be normal depending on data)")
-                
+    # Test 5: GET /api/signals/feed
+    print("\n📋 TEST 5: Signals Feed")
+    feed_data = test_endpoint("GET", "/signals/feed")
+    if feed_data:
+        if validate_signal_feed_response(feed_data):
+            test_results.append("✅ Signals feed")
         else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"Pagination endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"Pagination endpoint exception: {str(e)}")
+            test_results.append("❌ Signals feed validation failed")
+    else:
+        test_results.append("❌ Signals feed endpoint failed")
     
-    # Test 6: /api/signals/feed/stats - Should show correct counts
-    print("\n6. Testing /api/signals/feed/stats - Should show correct counts")
-    try:
-        response = requests.get(f"{API_BASE}/signals/feed/stats", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            
-            print(f"   ✅ Stats response received")
-            print(f"   📊 Stats data: {json.dumps(data, indent=2)}")
-            
-            # Check if rejected count is present and > 0
-            rejected_count = data.get('rejected', 0)
-            if rejected_count > 0:
-                print(f"   ✅ CRITICAL: Stats show {rejected_count} rejected signals")
-                results["tests_passed"] += 1
-                results["test_details"].append(f"Stats endpoint shows {rejected_count} rejected signals")
-            else:
-                print(f"   ❌ CRITICAL: Stats show 0 rejected signals")
-                results["tests_failed"] += 1
-                results["critical_issues"].append("Stats endpoint shows 0 rejected signals")
-                
+    # Test 6: GET /api/signals/feed/stats
+    print("\n📋 TEST 6: Signals Feed Stats")
+    stats_data = test_endpoint("GET", "/signals/feed/stats")
+    if stats_data:
+        if validate_feed_stats_response(stats_data):
+            test_results.append("✅ Signals feed stats")
         else:
-            print(f"   ❌ API Error: {response.status_code} - {response.text}")
-            results["tests_failed"] += 1
-            results["critical_issues"].append(f"Stats endpoint failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"   ❌ Exception: {str(e)}")
-        results["tests_failed"] += 1
-        results["critical_issues"].append(f"Stats endpoint exception: {str(e)}")
+            test_results.append("❌ Signals feed stats validation failed")
+    else:
+        test_results.append("❌ Signals feed stats endpoint failed")
+    
+    # Additional Pattern Engine Tests
+    print("\n📋 ADDITIONAL TESTS: Pattern Engine Integration")
+    
+    # Test 7: Pattern Engine Configuration
+    print("\n📋 TEST 7: Pattern Engine Configuration")
+    config_data = test_endpoint("GET", "/pattern/config")
+    if config_data:
+        print(f"   📊 Pattern Config: {config_data}")
+        test_results.append("✅ Pattern engine config")
+    else:
+        test_results.append("❌ Pattern engine config failed")
+    
+    # Test 8: Pattern Performance
+    print("\n📋 TEST 8: Pattern Performance")
+    perf_data = test_endpoint("GET", "/pattern/performance")
+    if perf_data:
+        print(f"   📊 Pattern Performance: {perf_data}")
+        test_results.append("✅ Pattern performance")
+    else:
+        test_results.append("❌ Pattern performance failed")
+    
+    # Test 9: Pattern Tracker Status
+    print("\n📋 TEST 9: Pattern Tracker Status")
+    tracker_data = test_endpoint("GET", "/pattern/tracker/status")
+    if tracker_data:
+        print(f"   📊 Pattern Tracker: {tracker_data}")
+        test_results.append("✅ Pattern tracker status")
+    else:
+        test_results.append("❌ Pattern tracker status failed")
     
     # Summary
     print("\n" + "=" * 60)
-    print("🎯 SIGNAL FEED REJECTED SIGNALS TEST SUMMARY")
-    print("=" * 60)
-    print(f"✅ Tests Passed: {results['tests_passed']}")
-    print(f"❌ Tests Failed: {results['tests_failed']}")
-    
-    if results["critical_issues"]:
-        print(f"\n🚨 CRITICAL ISSUES FOUND:")
-        for issue in results["critical_issues"]:
-            print(f"   - {issue}")
-    
-    if results["test_details"]:
-        print(f"\n📋 TEST DETAILS:")
-        for detail in results["test_details"]:
-            print(f"   - {detail}")
-    
-    return results
-
-def main():
-    """Main test execution"""
-    print("🚀 PropSignal Engine Backend API Testing")
-    print("Testing Signal Feed API - REJECTED signals inclusion")
+    print("📊 PATTERN UI BACKEND TESTING SUMMARY")
     print("=" * 60)
     
-    # Test signal feed rejected signals functionality
-    results = test_signal_feed_rejected_signals()
+    passed = sum(1 for result in test_results if result.startswith("✅"))
+    total = len(test_results)
     
-    # Overall result
-    total_tests = results["tests_passed"] + results["tests_failed"]
-    success_rate = (results["tests_passed"] / total_tests * 100) if total_tests > 0 else 0
+    for result in test_results:
+        print(result)
     
-    print(f"\n🏆 OVERALL RESULT: {results['tests_passed']}/{total_tests} tests passed ({success_rate:.1f}%)")
+    print(f"\n🎯 OVERALL RESULT: {passed}/{total} tests passed ({passed/total*100:.1f}%)")
     
-    if results["critical_issues"]:
-        print("❌ CRITICAL ISSUES REQUIRE IMMEDIATE ATTENTION")
-        return False
-    else:
-        print("✅ ALL CRITICAL TESTS PASSED")
+    if passed == total:
+        print("🎉 ALL PATTERN ENDPOINT TESTS PASSED!")
         return True
+    else:
+        print("⚠️  SOME PATTERN ENDPOINT TESTS FAILED")
+        return False
 
 if __name__ == "__main__":
     success = main()

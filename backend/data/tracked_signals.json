@@ -9774,8 +9774,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1650.0,
-      "time_in_drawdown_seconds": 2490.0,
+      "time_in_profit_seconds": 1680.0,
+      "time_in_drawdown_seconds": 3000.0,
       "peak_r_before_reversal": 0.5544835596823049
     },
     {
@@ -9853,8 +9853,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1650.0,
-      "time_in_drawdown_seconds": 2490.0,
+      "time_in_profit_seconds": 1680.0,
+      "time_in_drawdown_seconds": 3000.0,
       "peak_r_before_reversal": 0.5544835596823049
     },
     {
@@ -9932,8 +9932,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1650.0,
-      "time_in_drawdown_seconds": 2460.0,
+      "time_in_profit_seconds": 1680.0,
+      "time_in_drawdown_seconds": 2970.0,
       "peak_r_before_reversal": 0.5544835596823049
     },
     {
@@ -10011,8 +10011,8 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1650.0,
-      "time_in_drawdown_seconds": 2460.0,
+      "time_in_profit_seconds": 1680.0,
+      "time_in_drawdown_seconds": 2970.0,
       "peak_r_before_reversal": 0.5544835596823049
     },
     {
@@ -10091,7 +10091,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1140.0,
-      "time_in_drawdown_seconds": 2940.0,
+      "time_in_drawdown_seconds": 3480.0,
       "peak_r_before_reversal": 0.4116073633260399
     },
     {
@@ -10170,7 +10170,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 1140.0,
-      "time_in_drawdown_seconds": 2940.0,
+      "time_in_drawdown_seconds": 3480.0,
       "peak_r_before_reversal": 0.4116073633260399
     },
     {
@@ -10248,7 +10248,7 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1110.0,
+      "time_in_profit_seconds": 1650.0,
       "time_in_drawdown_seconds": 540.0,
       "peak_r_before_reversal": 0.7765262369518057
     },
@@ -10327,7 +10327,7 @@
       "breakeven_possible": false,
       "partial_profit_possible": false,
       "trailing_would_improve": false,
-      "time_in_profit_seconds": 1110.0,
+      "time_in_profit_seconds": 1650.0,
       "time_in_drawdown_seconds": 540.0,
       "peak_r_before_reversal": 0.7765262369518057
     },
@@ -10392,8 +10392,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.00015999999999993797,
-      "max_adverse_excursion": 0.00042999999999993044,
-      "highest_price_seen": 1.17542,
+      "max_adverse_excursion": 0.0006800000000000139,
+      "highest_price_seen": 1.17567,
       "lowest_price_seen": 1.17483,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -10407,7 +10407,7 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 330.0,
-      "time_in_drawdown_seconds": 180.0,
+      "time_in_drawdown_seconds": 720.0,
       "peak_r_before_reversal": 0.1126760563379687
     },
     {
@@ -10471,8 +10471,8 @@
       "entry_triggered_at": null,
       "closed_at": null,
       "max_favorable_excursion": 0.00017999999999984695,
-      "max_adverse_excursion": 0.00041000000000002146,
-      "highest_price_seen": 1.17542,
+      "max_adverse_excursion": 0.000660000000000105,
+      "highest_price_seen": 1.17567,
       "lowest_price_seen": 1.17483,
       "final_outcome": null,
       "pips_gained": 0.0,
@@ -10486,9 +10486,325 @@
       "partial_profit_possible": false,
       "trailing_would_improve": false,
       "time_in_profit_seconds": 330.0,
-      "time_in_drawdown_seconds": 180.0,
+      "time_in_drawdown_seconds": 720.0,
       "peak_r_before_reversal": 0.1285714285712926
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260420_063939",
+      "timestamp": "2026-04-20T06:39:39.681185",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4788.35,
+      "stop_loss": 4796.528972321428,
+      "take_profit_1": 4776.081541517859,
+      "take_profit_2": 4770.356260892859,
+      "confidence_score": 75.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 4796.53",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 75.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 100,
+            "contribution": 30.0,
+            "reason": "H1 Bias 5/5 (P<EMA20, EMA20<50, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=0.40 pen=0"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 65.4% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.8ATR (Limited)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.9200000000000728,
+      "highest_price_seen": 4789.27,
+      "lowest_price_seen": 4788.35,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 150.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "XAUUSD_SELL_20260420_063945",
+      "timestamp": "2026-04-20T06:39:45.378167",
+      "asset": "XAUUSD",
+      "direction": "SELL",
+      "entry_price": 4788.35,
+      "stop_loss": 4796.528972321428,
+      "take_profit_1": 4776.081541517859,
+      "take_profit_2": 4770.356260892859,
+      "confidence_score": 75.0,
+      "confidence_level": "GOOD",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Above 4796.53",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 75.0,
+        "confidence": "GOOD",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 100,
+            "contribution": 30.0,
+            "reason": "H1 Bias 5/5 (P<EMA20, EMA20<50, Slope-, LH, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "M15 Trend 3/5 (EMA20<50, Slope50-, P<EMA20) | ext=0.40 pen=0"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "Rejection (good SELL trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 65.4% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 50,
+            "contribution": 5.0,
+            "reason": "FTA 0.8ATR (Limited)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.9200000000000728,
+      "highest_price_seen": 4789.27,
+      "lowest_price_seen": 4788.35,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 150.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260420_064140",
+      "timestamp": "2026-04-20T06:41:40.134448",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.17561,
+      "stop_loss": 1.1746699999999999,
+      "take_profit_1": 1.1770200000000002,
+      "take_profit_2": 1.1776780000000004,
+      "confidence_score": 59.0,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Below 1.17467",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 59.0,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P>EMA20, Slope+, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 40,
+            "contribution": 12.0,
+            "reason": "M15 Trend 2/5 (EMA20>50, P>EMA20) | ext=0.60 pen=0"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "EMA20 Reclaim (good BUY trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 25.2% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.5ATR (Moderate)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 1.17561,
+      "lowest_price_seen": 1.17561,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.0
+    },
+    {
+      "signal_id": "EURUSD_BUY_20260420_064145",
+      "timestamp": "2026-04-20T06:41:45.735864",
+      "asset": "EURUSD",
+      "direction": "BUY",
+      "entry_price": 1.17561,
+      "stop_loss": 1.1746699999999999,
+      "take_profit_1": 1.1770200000000002,
+      "take_profit_2": 1.1776780000000004,
+      "confidence_score": 59.0,
+      "confidence_level": "ACCEPTABLE",
+      "setup_type": "Technical Setup [Structural SL]",
+      "session": "Asian",
+      "invalidation": "Below 1.17467",
+      "risk_reward": 1.5,
+      "score_breakdown": {
+        "final_score": 59.0,
+        "confidence": "ACCEPTABLE",
+        "breakdown": [
+          {
+            "factor": "H1_BIAS",
+            "weight": 30,
+            "score": 60,
+            "contribution": 18.0,
+            "reason": "H1 Bias 3/5 (P>EMA20, Slope+, NotExt)"
+          },
+          {
+            "factor": "M15_CONTEXT",
+            "weight": 30,
+            "score": 40,
+            "contribution": 12.0,
+            "reason": "M15 Trend 2/5 (EMA20>50, P>EMA20) | ext=0.60 pen=0"
+          },
+          {
+            "factor": "M5_TRIGGER",
+            "weight": 20,
+            "score": 75,
+            "contribution": 15.0,
+            "reason": "EMA20 Reclaim (good BUY trigger)"
+          },
+          {
+            "factor": "PULLBACK_QUALITY",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "Pullback 25.2% (Good zone)"
+          },
+          {
+            "factor": "FTA_CLEAN_SPACE",
+            "weight": 10,
+            "score": 70,
+            "contribution": 7.0,
+            "reason": "FTA 1.5ATR (Moderate)"
+          }
+        ]
+      },
+      "status": "generated",
+      "notified_at": null,
+      "entry_triggered_at": null,
+      "closed_at": null,
+      "max_favorable_excursion": 0.0,
+      "max_adverse_excursion": 0.0,
+      "highest_price_seen": 1.17561,
+      "lowest_price_seen": 1.17561,
+      "final_outcome": null,
+      "pips_gained": 0.0,
+      "pips_lost": 0.0,
+      "time_to_outcome_seconds": 0.0,
+      "moved_favorable_before_fail": false,
+      "reached_half_r": false,
+      "reached_one_r": false,
+      "reached_two_r": false,
+      "breakeven_possible": false,
+      "partial_profit_possible": false,
+      "trailing_would_improve": false,
+      "time_in_profit_seconds": 0.0,
+      "time_in_drawdown_seconds": 30.0,
+      "peak_r_before_reversal": 0.0
     }
   ],
-  "saved_at": "2026-04-20T06:33:30.925468"
+  "saved_at": "2026-04-20T06:42:03.311715"
 }
