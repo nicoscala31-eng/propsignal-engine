@@ -320,6 +320,53 @@ class PushNotificationService:
             channel_id="alerts"
         )
     
+    async def send_to_all(
+        self,
+        title: str,
+        body: str,
+        data: Optional[Dict[str, Any]] = None,
+        sound: str = "default",
+        badge: int = 1,
+        channel_id: str = "signals"
+    ) -> List[PushResult]:
+        """
+        Send notification to ALL registered devices.
+        
+        This is a convenience wrapper that fetches all device tokens
+        and sends the notification to all of them.
+        
+        Args:
+            title: Notification title
+            body: Notification body
+            data: Custom data payload
+            sound: Sound to play
+            badge: Badge count
+            channel_id: Android notification channel
+        
+        Returns:
+            List of PushResult for each device
+        """
+        from services.device_storage_service import device_storage
+        
+        # Get all registered push tokens
+        tokens = await device_storage.get_all_push_tokens()
+        
+        if not tokens:
+            logger.warning("No registered devices to send notification to")
+            return []
+        
+        logger.info(f"📤 Sending notification to {len(tokens)} devices: {title}")
+        
+        return await self.send_to_all_devices(
+            tokens=tokens,
+            title=title,
+            body=body,
+            data=data,
+            sound=sound,
+            badge=badge,
+            channel_id=channel_id
+        )
+    
     def get_stats(self) -> Dict[str, int]:
         """Get push notification statistics"""
         return {

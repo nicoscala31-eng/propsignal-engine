@@ -32,6 +32,10 @@ interface SignalFeedItem {
   confidence_bucket: string;
   outcome: string;
   final_r: number;
+  // NEW: Pattern V3 data
+  primary_pattern?: string;
+  active_patterns?: string[];
+  pattern_count?: number;
 }
 
 interface FeedStats {
@@ -192,20 +196,24 @@ export default function SignalsScreen() {
           </View>
         </View>
 
-        {/* Score & Session */}
+        {/* Score & Session / Pattern Info */}
         <View style={styles.scoreRow}>
           <View style={styles.scoreContainer}>
-            <Text style={styles.scoreLabel}>Score</Text>
+            <Text style={styles.scoreLabel}>{item.pattern_count ? 'Patterns' : 'Score'}</Text>
             <Text style={[
               styles.scoreValue,
-              { color: item.score >= 70 ? '#00ff88' : item.score >= 60 ? '#ffaa00' : '#ff4444' }
+              { color: item.pattern_count ? '#00aaff' : (item.score >= 70 ? '#00ff88' : item.score >= 60 ? '#ffaa00' : '#ff4444') }
             ]}>
-              {item.score.toFixed(1)}
+              {item.pattern_count ? item.pattern_count : item.score.toFixed(1)}
             </Text>
           </View>
           <View style={styles.sessionContainer}>
             <Text style={styles.sessionLabel}>{item.session}</Text>
-            <Text style={styles.setupType}>{item.setup_type}</Text>
+            <Text style={styles.setupType}>
+              {item.primary_pattern 
+                ? item.primary_pattern.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                : item.setup_type}
+            </Text>
           </View>
           <View style={styles.rrContainer}>
             <Text style={styles.rrLabel}>R:R</Text>

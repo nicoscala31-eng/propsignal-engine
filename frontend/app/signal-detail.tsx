@@ -42,6 +42,12 @@ interface SignalDetail {
     prop_rule_safety: number;
     total: number;
   };
+  // NEW: Pattern V3 data
+  pattern_data?: {
+    primary_pattern?: string;
+    active_patterns?: string[];
+    pattern_count?: number;
+  };
   success_probability?: number;
   failure_probability?: number;
   expected_duration_minutes?: number;
@@ -315,8 +321,38 @@ export default function SignalDetailScreen() {
           </View>
         </View>
 
-        {/* Score Breakdown */}
-        {signal.score_breakdown && (
+        {/* Pattern Analysis (replaces legacy Score Breakdown) */}
+        {signal.pattern_data && signal.pattern_data.active_patterns && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pattern Analysis</Text>
+            
+            {signal.pattern_data.primary_pattern && (
+              <View style={styles.scoreItem}>
+                <Text style={styles.scoreLabel}>Primary Pattern</Text>
+                <Text style={[styles.scoreValue, { color: '#00ff88' }]}>
+                  {signal.pattern_data.primary_pattern.replace(/_/g, ' ').toUpperCase()}
+                </Text>
+              </View>
+            )}
+            
+            <View style={styles.scoreItem}>
+              <Text style={styles.scoreLabel}>Active Patterns</Text>
+              <Text style={styles.scoreValue}>{signal.pattern_data.pattern_count || 0}</Text>
+            </View>
+            
+            {signal.pattern_data.active_patterns.map((pattern, index) => (
+              <View key={index} style={styles.scoreItem}>
+                <Text style={styles.scoreLabel}>
+                  <Text style={{ color: '#00ff88' }}>✓</Text> {pattern.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Text>
+                <Text style={[styles.scoreValue, { color: '#00ff88' }]}>ACTIVE</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Legacy Score Breakdown (fallback) */}
+        {signal.score_breakdown && !signal.pattern_data && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quality Score: {signal.confidence_score.toFixed(0)}/100</Text>
             

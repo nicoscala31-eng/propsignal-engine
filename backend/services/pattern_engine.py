@@ -1163,5 +1163,136 @@ class PatternEngine:
         return components
 
 
+# ==================== FRONTEND COMPATIBILITY ====================
+
+def pattern_to_factor_contributions(components: Dict) -> List[Dict]:
+    """
+    Convert pattern components to factor_contributions format for frontend compatibility.
+    
+    This allows the existing frontend UI to display pattern data without changes to layout.
+    
+    Returns array of:
+    {
+        "factor_key": "trend_structure",
+        "factor_name": "Trend Structure",
+        "raw_value": 100 or 0,
+        "normalized_value": 100 or 0,
+        "weight_pct": 20,
+        "score_contribution": 20 or 0,
+        "status": "pass" or "fail",
+        "reason": "HH+HL sequence detected"
+    }
+    """
+    factors = []
+    
+    # Pattern name mappings for display
+    PATTERN_NAMES = {
+        'trend_structure': 'Trend Structure',
+        'fib_pullback': 'Fibonacci Pullback',
+        'breakout_retest': 'Breakout Retest',
+        'liquidity_sweep': 'Liquidity Sweep',
+        'flag_pattern': 'Flag Pattern'
+    }
+    
+    PATTERN_WEIGHTS = {
+        'trend_structure': 25,
+        'fib_pullback': 20,
+        'breakout_retest': 20,
+        'liquidity_sweep': 20,
+        'flag_pattern': 15
+    }
+    
+    for pattern_key in ['trend_structure', 'fib_pullback', 'breakout_retest', 'liquidity_sweep', 'flag_pattern']:
+        pattern_data = components.get(pattern_key, {})
+        is_active = pattern_data.get('active', False)
+        sub_components = pattern_data.get('sub_components', {})
+        
+        # Build reason from sub-components
+        active_subs = []
+        for sub_key, sub_val in sub_components.items():
+            if sub_val.get('status', False):
+                desc = sub_val.get('description', sub_key.replace('_', ' ').title())
+                if desc and desc != 'N/A':
+                    active_subs.append(desc)
+        
+        reason = " | ".join(active_subs[:3]) if active_subs else "Pattern not detected"
+        weight = PATTERN_WEIGHTS.get(pattern_key, 20)
+        
+        factors.append({
+            "factor_key": pattern_key,
+            "factor_name": PATTERN_NAMES.get(pattern_key, pattern_key.replace('_', ' ').title()),
+            "raw_value": 100 if is_active else 0,
+            "normalized_value": 100 if is_active else 0,
+            "weight_pct": weight,
+            "score_contribution": weight if is_active else 0,
+            "status": "pass" if is_active else "fail",
+            "reason": reason
+        })
+    
+    return factors
+
+
+def pattern_to_sub_components(components: Dict) -> Dict[str, List[Dict]]:
+    """
+    Extract detailed sub-components for each pattern.
+    
+    Returns dict like:
+    {
+        "trend_structure": [
+            {"name": "Higher High", "active": true, "description": "HH detected"},
+            {"name": "Higher Low", "active": true, "description": "HL detected"},
+        ],
+        ...
+    }
+    """
+    result = {}
+    
+    SUB_COMPONENT_NAMES = {
+        # Trend Structure
+        'hh': 'Higher High',
+        'hl': 'Higher Low', 
+        'lh': 'Lower High',
+        'll': 'Lower Low',
+        'trend_alignment': 'Trend Alignment',
+        # Fib Pullback
+        'impulse_leg': 'Impulse Leg',
+        'fib_zone': 'Fibonacci Zone',
+        'entry_in_zone': 'Entry in Zone',
+        'trend_direction': 'Trend Direction',
+        # Breakout Retest
+        'level_identified': 'Level Identified',
+        'breakout': 'Breakout',
+        'retest': 'Retest',
+        'confirmation': 'Confirmation',
+        # Liquidity Sweep
+        'liquidity_pool': 'Liquidity Pool',
+        'stop_hunt': 'Stop Hunt',
+        'rejection_formed': 'Rejection Formed',
+        'close_inside': 'Close Inside',
+        # Flag
+        'impulse_leg': 'Impulse Leg',
+        'consolidation': 'Consolidation',
+        'flag_breakout': 'Breakout',
+        'direction_match': 'Direction Match'
+    }
+    
+    for pattern_key in ['trend_structure', 'fib_pullback', 'breakout_retest', 'liquidity_sweep', 'flag_pattern']:
+        pattern_data = components.get(pattern_key, {})
+        sub_components = pattern_data.get('sub_components', {})
+        
+        subs = []
+        for sub_key, sub_val in sub_components.items():
+            subs.append({
+                "key": sub_key,
+                "name": SUB_COMPONENT_NAMES.get(sub_key, sub_key.replace('_', ' ').title()),
+                "active": sub_val.get('status', False),
+                "description": sub_val.get('description', '')
+            })
+        
+        result[pattern_key] = subs
+    
+    return result
+
+
 # Global instance
 pattern_engine = PatternEngine()

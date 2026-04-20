@@ -4041,6 +4041,92 @@ async def get_pattern_config():
     }
 
 
+@api_router.get("/pattern/components/{symbol}")
+async def get_pattern_components_for_frontend(symbol: str):
+    """
+    Get pattern components in frontend-compatible format.
+    
+    Returns data structured like factor_contributions for seamless UI integration.
+    Allows existing frontend UI to display pattern data without layout changes.
+    """
+    from services.pattern_engine import pattern_engine, pattern_to_factor_contributions, pattern_to_sub_components
+    
+    try:
+        asset = Asset(symbol)
+    except:
+        raise HTTPException(status_code=400, detail=f"Invalid symbol: {symbol}")
+    
+    # Get candle data
+    candles_h1 = market_data_cache.get_candles(asset, Timeframe.H1)
+    candles_m15 = market_data_cache.get_candles(asset, Timeframe.M15)
+    candles_m5 = market_data_cache.get_candles(asset, Timeframe.M5)
+    
+    if not candles_m5:
+        return {
+            "error": "No candle data available",
+            "factor_contributions": [],
+            "sub_components": {}
+        }
+    
+    # Get current price
+    price_data = market_data_cache.get_price(asset)
+    current_price = price_data.mid if price_data else 0
+    
+    if current_price <= 0:
+        return {
+            "error": "No price data available",
+            "factor_contributions": [],
+            "sub_components": {}
+        }
+    
+    # Build context and get components
+    context = pattern_engine.build_market_context(
+        symbol=symbol,
+        candles_h1=candles_h1 or [],
+        candles_m15=candles_m15 or [],
+        candles_m5=candles_m5 or [],
+        current_price=current_price
+    )
+    
+    components = pattern_engine.get_pattern_components(
+        symbol=symbol,
+        candles_h1=candles_h1 or [],
+        candles_m15=candles_m15 or [],
+        candles_m5=candles_m5 or [],
+        current_price=current_price
+    )
+    
+    # Get summary
+    summary = components.get('_summary', {})
+    
+    # Convert to frontend format
+    factor_contributions = pattern_to_factor_contributions(components)
+    sub_components = pattern_to_sub_components(components)
+    
+    return {
+        "symbol": symbol,
+        "timestamp": datetime.utcnow().isoformat(),
+        "current_price": current_price,
+        "session": context.session.value,
+        "data_valid": context.data_valid,
+        
+        # Pattern summary
+        "active_count": summary.get('active_count', 0),
+        "active_patterns": summary.get('active_patterns', []),
+        "primary_pattern": summary.get('primary_pattern'),
+        "combination_key": summary.get('combination_key', 'none'),
+        
+        # Frontend-compatible format (like old factor_contributions)
+        "factor_contributions": factor_contributions,
+        
+        # Detailed sub-components for each pattern
+        "sub_components": sub_components,
+        
+        # Raw components for advanced display
+        "raw_components": components
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 

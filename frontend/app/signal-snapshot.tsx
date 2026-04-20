@@ -41,6 +41,23 @@ interface FilterCheck {
   reason: string;
 }
 
+// NEW: Pattern sub-component
+interface PatternSubComponent {
+  key: string;
+  name: string;
+  active: boolean;
+  description: string;
+}
+
+// NEW: Pattern data for V3 engine
+interface PatternData {
+  active_count?: number;
+  active_patterns?: string[];
+  primary_pattern?: string;
+  combination_key?: string;
+  sub_components?: { [patternKey: string]: PatternSubComponent[] };
+}
+
 interface SignalSnapshot {
   signal_id: string;
   timestamp: string;
@@ -81,6 +98,8 @@ interface SignalSnapshot {
     final_r: number;
     time_to_outcome_minutes: number;
   } | null;
+  // NEW: Pattern V3 data
+  pattern_data?: PatternData;
 }
 
 // Status colors
@@ -323,8 +342,8 @@ export default function SignalSnapshotScreen() {
           </View>
         </View>
 
-        {/* Factor Contributions */}
-        <CollapsibleSection title="Factor Contributions" defaultOpen={true}>
+        {/* Pattern Analysis (replaces Factor Contributions) */}
+        <CollapsibleSection title="Pattern Analysis" defaultOpen={true}>
           {snapshot.factor_contributions.map((factor, index) => (
             <View key={index} style={styles.factorRow}>
               <View style={styles.factorHeader}>
@@ -337,15 +356,20 @@ export default function SignalSnapshotScreen() {
                     styles.factorStatusText,
                     { color: getStatusColor(factor.status) }
                   ]}>
-                    {factor.status.toUpperCase()}
+                    {factor.status === 'pass' ? 'ACTIVE' : 'INACTIVE'}
                   </Text>
                 </View>
               </View>
               <View style={styles.factorDetails}>
-                <Text style={styles.factorDetail}>
-                  Score: {factor.normalized_value.toFixed(0)}% × {factor.weight_pct}% = 
-                  <Text style={{ color: '#00ff88' }}> +{factor.score_contribution.toFixed(2)}</Text>
-                </Text>
+                {factor.status === 'pass' ? (
+                  <Text style={styles.factorDetail}>
+                    <Text style={{ color: '#00ff88' }}>✓</Text> Pattern detected
+                  </Text>
+                ) : (
+                  <Text style={styles.factorDetail}>
+                    <Text style={{ color: '#ff4444' }}>✗</Text> Not detected
+                  </Text>
+                )}
                 <Text style={styles.factorReason}>{factor.reason}</Text>
               </View>
             </View>
