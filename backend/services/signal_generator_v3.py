@@ -700,23 +700,40 @@ class SignalGeneratorV3:
     
     # ==================== SESSION RULES (UTC) ====================
     # London: 07:00-12:59, Overlap: 13:00-16:00, NY: 16:01-20:00
-    BUY_ALLOWED_SESSIONS = ["London", "London/NY Overlap", "Overlap", "New York"]
+    # V14.0: ONLY NEW YORK allowed (95.3% WR vs others <40%)
+    BUY_ALLOWED_SESSIONS = ["New York"]  # v14.0: DATA-DRIVEN
     
-    # BUY Session Multipliers
+    # BUY Session Multipliers - v14.0 simplified
     BUY_SESSION_MULTIPLIERS = {
-        "London": 1.00,
-        "London/NY Overlap": 1.10,
-        "Overlap": 1.10,
-        "New York": 1.05,
+        "London": 0.0,          # v14.0: BLOCKED
+        "London/NY Overlap": 0.0,  # v14.0: BLOCKED
+        "Overlap": 0.0,         # v14.0: BLOCKED
+        "New York": 1.00,       # v14.0: Only allowed session
     }
     
-    # SELL session rules with extra confirmation
-    SELL_ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "London", "New York"]
+    # ========== V14.0: DIRECTION FILTER ==========
+    # Based on operational data:
+    # - BUY: 51.4% WR, +0.29R expectancy
+    # - SELL: 24.1% WR, -0.40R expectancy
+    # SELL is DISABLED until validated
+    ALLOWED_DIRECTIONS = ["BUY"]  # v14.0: ONLY BUY
+    DIRECTION_BLOCKED_REASON = "direction_blocked_sell_disabled_v14"
+    
+    # SELL session rules - v14.0: ALL BLOCKED
+    SELL_ALLOWED_SESSIONS = []  # v14.0: NO SELL ALLOWED
     # SELL in London/NY requires extra confirmation (reduced requirements)
     SELL_RESTRICTED_SESSIONS = ["London", "New York"]
     SELL_RESTRICTED_MIN_H1 = 55      # v10.2: Reduced from 70 to 55
     SELL_RESTRICTED_MIN_M15 = 65     # Reduced from 75
     SELL_RESTRICTED_MIN_REJECTION = 60  # Reduced from 70
+    
+    # ========== V14.0: TP/SL CONFIGURATION ==========
+    # Based on operational data:
+    # - 57% reach 1R but only 30% reach 1.5R TP
+    # - 78 trades reached 1R then became LOSS
+    # TP changed from 1.5R to 1.0R
+    TARGET_RR = 1.0  # v14.0: Reduced from 1.5R
+    SL_MULTIPLIER = 0.75  # v14.0: Optimized from 1.0
     
     # ==================== REJECTION REASONS (v10.0) ====================
     REJECTION_BUY_SESSION_BLOCKED = "buy_session_blocked"
@@ -822,27 +839,32 @@ class SignalGeneratorV3:
     
     # ALLOWED SESSIONS - v7.0: NY + Overlap ONLY (London blocked!)
     # Data analysis: London = 20.6% WR (-16.69R), NY = 94.3% WR (+47.50R)
-    # London BLOCKED - massive underperformance
-    ALLOWED_SESSIONS = ["London/NY Overlap", "Overlap", "New York"]
+    # ========== V14.0 DATA-DRIVEN SESSION FILTER ==========
+    # Based on operational data analysis:
+    # - New York: 95.3% WR, +1.38R expectancy (ONLY PROFITABLE)
+    # - London: 32.2% WR, -0.19R expectancy (UNPROFITABLE)
+    # - L/NY Overlap: 37.7% WR, -0.06R expectancy (UNPROFITABLE)
+    # - Asian: 11.1% WR, -0.72R expectancy (DISASTROUS)
+    ALLOWED_SESSIONS = ["New York"]  # v14.0: ONLY New York
     
-    # Session priority configuration - v7.0 UPDATED
+    # Session priority configuration - v14.0 DATA-DRIVEN
     SESSION_PRIORITY = {
-        "London": "BLOCKED",          # v7.0: BLOCKED - 20.6% WR disaster
-        "London/NY Overlap": "HIGH",  # Good volume, decent performance  
-        "Overlap": "HIGH",            # Same as above
-        "New York": "HIGH",           # v7.0: UPGRADED - 94.3% WR best session!
-        "Asian": "LOW",               # Not allowed
-        "Sydney": "LOW"               # Not allowed
+        "London": "BLOCKED",          # v14.0: 32.2% WR → BLOCKED
+        "London/NY Overlap": "BLOCKED",  # v14.0: 37.7% WR → BLOCKED for now
+        "Overlap": "BLOCKED",         # v14.0: Same as above
+        "New York": "HIGH",           # v14.0: 95.3% WR → ONLY session
+        "Asian": "BLOCKED",           # v14.0: 11.1% WR → DISASTROUS
+        "Sydney": "BLOCKED"           # Not enough data
     }
     
-    # Session score adjustment (applied to final score) - v7.0 UPDATED
+    # Session score adjustment - v14.0 DATA-DRIVEN
     SESSION_SCORE_ADJUSTMENT = {
-        "London": -999,               # v7.0: BLOCKED
-        "London/NY Overlap": 0,
-        "Overlap": 0,
-        "New York": +5,               # v7.0: BONUS for best session!
-        "Asian": -15,
-        "Sydney": -15
+        "London": -999,               # v14.0: BLOCKED
+        "London/NY Overlap": -999,    # v14.0: BLOCKED for now
+        "Overlap": -999,              # v14.0: BLOCKED for now
+        "New York": 0,                # v14.0: Base session (no adjustment needed)
+        "Asian": -999,                # v14.0: BLOCKED
+        "Sydney": -999                # v14.0: BLOCKED
     }
     
     # SETUP TYPES - SOFT FILTER (penalty instead of block)
@@ -2282,6 +2304,28 @@ class SignalGeneratorV3:
             direction = self._fallback_direction(m5_candles)
             if not direction:
                 return None
+        
+        # ========== V14.0: DIRECTION FILTER (DATA-DRIVEN) ==========
+        # SELL disabled: 24.1% WR vs BUY 51.4% WR
+        if direction not in self.ALLOWED_DIRECTIONS:
+            self._record_rejection("direction_blocked")
+            logger.info(f"🚫 [v14] {asset.value} {direction}: Direction blocked (only {self.ALLOWED_DIRECTIONS} allowed)")
+            self._log_candidate_audit(
+                symbol=asset.value,
+                direction=direction,
+                session=session_name,
+                setup_type="UNKNOWN",
+                decision="rejected",
+                rejection_reason=self.DIRECTION_BLOCKED_REASON,
+                rejection_details=f"{direction} direction disabled in v14 (24.1% WR)",
+                final_score=0,
+                threshold=self.MIN_CONFIDENCE_SCORE,
+                entry_price=current_price,
+                stop_loss=0,
+                take_profit=0,
+                risk_reward=0
+            )
+            return None
         
         # ========== v10.0: Session filter moved to scoring section ==========
         # Session rules are now applied AFTER scoring calculation

@@ -4130,6 +4130,69 @@ async def get_pattern_components_for_frontend(symbol: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+
+# ==================== V14.0 ENTRY OPTIMIZER ENDPOINTS ====================
+
+@app.get("/api/entry-optimizer/status")
+async def get_entry_optimizer_status():
+    """Get Entry Optimizer V14 status and configuration"""
+    from services.entry_optimizer import entry_optimizer
+    return entry_optimizer.get_stats()
+
+
+@app.get("/api/entry-optimizer/comparison")
+async def get_entry_mode_comparison():
+    """
+    Get comparison between entry modes (immediate, delayed, pullback).
+    Requires minimum 30 trades for statistical significance.
+    """
+    from services.entry_optimizer import generate_entry_mode_comparison
+    return generate_entry_mode_comparison()
+
+
+@app.get("/api/entry-optimizer/tracking")
+async def get_entry_tracking_records():
+    """Get all entry tracking records"""
+    from services.entry_optimizer import load_entry_tracking
+    records = load_entry_tracking()
+    return {
+        "total_records": len(records),
+        "records": records[-50:]  # Last 50
+    }
+
+
+@app.get("/api/v14/config")
+async def get_v14_config():
+    """Get V14 data-driven configuration"""
+    from services.signal_generator_v3 import SignalGeneratorV3
+    
+    return {
+        "version": "14.0",
+        "description": "Data-driven configuration based on operational analysis",
+        "filters": {
+            "allowed_directions": SignalGeneratorV3.ALLOWED_DIRECTIONS,
+            "allowed_sessions": SignalGeneratorV3.ALLOWED_SESSIONS,
+            "direction_blocked_reason": SignalGeneratorV3.DIRECTION_BLOCKED_REASON
+        },
+        "tp_sl": {
+            "target_rr": SignalGeneratorV3.TARGET_RR,
+            "sl_multiplier": SignalGeneratorV3.SL_MULTIPLIER,
+            "min_rr_hard_reject": SignalGeneratorV3.MIN_RR_HARD_REJECT
+        },
+        "session_priorities": SignalGeneratorV3.SESSION_PRIORITY,
+        "session_adjustments": SignalGeneratorV3.SESSION_SCORE_ADJUSTMENT,
+        "data_basis": {
+            "buy_wr": "51.4%",
+            "sell_wr": "24.1%",
+            "ny_wr": "95.3%",
+            "london_wr": "32.2%",
+            "asian_wr": "11.1%",
+            "pct_reaching_1r": "57%",
+            "pct_reaching_tp": "30%"
+        }
+    }
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
