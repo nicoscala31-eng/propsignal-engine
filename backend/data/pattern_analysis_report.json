@@ -1,0 +1,335 @@
+{
+  "generated_at": "2026-04-24T09:36:50.810914",
+  "data_summary": {
+    "total_signals_tracked": 379,
+    "wins": 116,
+    "losses": 160,
+    "expired": 106,
+    "resolved": 276,
+    "winrate_overall": 42.028985507246375,
+    "candidates_analyzed": 1000,
+    "accepted_candidates": 361,
+    "rejected_candidates": 639,
+    "acceptance_rate": 36.1,
+    "outcomes_distribution": {
+      "expired": 101,
+      "pending": 643,
+      "win": 110,
+      "loss": 146
+    },
+    "snapshots_count": 1000,
+    "missed_opportunities_count": 1000
+  },
+  "edge_analysis": {
+    "executed_trades": 256,
+    "executed_wins": 110,
+    "executed_losses": 146,
+    "executed_winrate": 42.97,
+    "avg_win_r": 9.488,
+    "avg_loss_r": 1.0,
+    "expectancy_per_trade": 3.5064,
+    "profit_factor": 7.148,
+    "total_r_gained": 1043.64,
+    "total_r_lost": 146.0,
+    "net_r": 897.64,
+    "rejected_simulated": 0,
+    "rejected_would_win": 0,
+    "rejected_would_lose": 0,
+    "rejected_winrate": "N/A",
+    "edge_verdict": "POSITIVE EDGE - System profitable"
+  },
+  "filter_analysis": {
+    "clean_momentum_score_too_low": {
+      "total_blocked": 11,
+      "would_have_won": 0,
+      "would_have_lost": 0,
+      "expired_blocked": 0,
+      "net_effect": 0,
+      "verdict": "NEUTRAL"
+    },
+    "score_too_low": {
+      "total_blocked": 628,
+      "would_have_won": 0,
+      "would_have_lost": 0,
+      "expired_blocked": 0,
+      "net_effect": 0,
+      "verdict": "NEUTRAL"
+    }
+  },
+  "session_analysis": {
+    "London": {
+      "trades": 127,
+      "wins": 38,
+      "losses": 89,
+      "winrate": 29.92,
+      "estimated_expectancy": -0.252,
+      "verdict": "UNPROFITABLE"
+    },
+    "London/NY Overlap": {
+      "trades": 82,
+      "wins": 29,
+      "losses": 53,
+      "winrate": 35.37,
+      "estimated_expectancy": -0.116,
+      "verdict": "UNPROFITABLE"
+    },
+    "New York": {
+      "trades": 41,
+      "wins": 39,
+      "losses": 2,
+      "winrate": 95.12,
+      "estimated_expectancy": 1.378,
+      "verdict": "PROFITABLE"
+    },
+    "Asian": {
+      "trades": 20,
+      "wins": 4,
+      "losses": 16,
+      "winrate": 20.0,
+      "estimated_expectancy": -0.5,
+      "verdict": "UNPROFITABLE"
+    },
+    "Test": {
+      "trades": 6,
+      "wins": 6,
+      "losses": 0,
+      "winrate": 100.0,
+      "estimated_expectancy": 1.5,
+      "verdict": "PROFITABLE"
+    }
+  },
+  "confidence_analysis": {
+    "strong_80_100": {
+      "trades": 52,
+      "wins": 14,
+      "losses": 38,
+      "winrate": 26.92,
+      "expectancy": -0.327,
+      "verdict": "NO EDGE"
+    },
+    "good_70_79": {
+      "trades": 101,
+      "wins": 50,
+      "losses": 51,
+      "winrate": 49.5,
+      "expectancy": 0.238,
+      "verdict": "EDGE"
+    },
+    "acceptable_60_69": {
+      "trades": 123,
+      "wins": 52,
+      "losses": 71,
+      "winrate": 42.28,
+      "expectancy": 0.057,
+      "verdict": "EDGE"
+    }
+  },
+  "asset_analysis": {
+    "EURUSD": {
+      "trades": 58,
+      "wins": 25,
+      "losses": 33,
+      "expired": 51,
+      "winrate": 43.1,
+      "expectancy": 0.078,
+      "verdict": "PROFITABLE"
+    },
+    "XAUUSD": {
+      "trades": 218,
+      "wins": 91,
+      "losses": 127,
+      "expired": 55,
+      "winrate": 41.74,
+      "expectancy": 0.044,
+      "verdict": "PROFITABLE"
+    }
+  },
+  "rejected_analysis": {
+    "total_rejected": 639,
+    "with_simulation": 0,
+    "would_have_won": 0,
+    "would_have_lost": 0,
+    "would_have_winrate": "N/A",
+    "lost_opportunity_r": 0,
+    "main_rejection_reason": "score_too_low",
+    "main_issue_count": 628,
+    "rejection_breakdown": {
+      "clean_momentum_score_too_low": 11,
+      "score_too_low": 628
+    }
+  },
+  "factor_analysis": {
+    "h1_bias": {
+      "pass_count": 46,
+      "fail_count": 6,
+      "pass_winrate": "N/A",
+      "fail_winrate": "N/A",
+      "avg_score": 25.62,
+      "predictive_value": "LOW"
+    },
+    "m15_context": {
+      "pass_count": 22,
+      "fail_count": 30,
+      "pass_winrate": "N/A",
+      "fail_winrate": "N/A",
+      "avg_score": 17.46,
+      "predictive_value": "LOW"
+    },
+    "m5_trigger": {
+      "pass_count": 52,
+      "fail_count": 0,
+      "pass_winrate": "N/A",
+      "fail_winrate": "N/A",
+      "avg_score": 17.77,
+      "predictive_value": "LOW"
+    },
+    "pullback_quality": {
+      "pass_count": 30,
+      "fail_count": 22,
+      "pass_winrate": "N/A",
+      "fail_winrate": "N/A",
+      "avg_score": 6.17,
+      "predictive_value": "LOW"
+    },
+    "fta_clean_space": {
+      "pass_count": 26,
+      "fail_count": 26,
+      "pass_winrate": "N/A",
+      "fail_winrate": "N/A",
+      "avg_score": 6.87,
+      "predictive_value": "LOW"
+    }
+  },
+  "stability_analysis": {
+    "recent_20_winrate": "N/A",
+    "historical_20_winrate": "N/A",
+    "variance_pct": "N/A",
+    "stability_verdict": "N/A"
+  },
+  "systematic_errors": {
+    "errors_found": 5,
+    "errors": [
+      {
+        "type": "SESSION_UNDERPERFORMANCE",
+        "detail": "London: 29.9% winrate (38W/89L)",
+        "severity": "HIGH"
+      },
+      {
+        "type": "SESSION_UNDERPERFORMANCE",
+        "detail": "London/NY Overlap: 35.4% winrate (29W/53L)",
+        "severity": "MEDIUM"
+      },
+      {
+        "type": "SESSION_UNDERPERFORMANCE",
+        "detail": "Asian: 20.0% winrate (4W/16L)",
+        "severity": "HIGH"
+      },
+      {
+        "type": "CONFIDENCE_INVERSION",
+        "detail": "Low confidence (42.3%) outperforms high confidence (26.9%)",
+        "severity": "CRITICAL"
+      },
+      {
+        "type": "HIGH_EXPIRED_RATE",
+        "detail": "106/379 trades expired (28.0%)",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  "final_ranking": {
+    "best_sessions": [
+      {
+        "name": "Test",
+        "trades": 6,
+        "winrate": 100.0,
+        "expectancy": 1.5
+      },
+      {
+        "name": "New York",
+        "trades": 41,
+        "winrate": 95.12,
+        "expectancy": 1.378
+      },
+      {
+        "name": "London/NY Overlap",
+        "trades": 82,
+        "winrate": 35.37,
+        "expectancy": -0.116
+      }
+    ],
+    "worst_sessions": [
+      {
+        "name": "London/NY Overlap",
+        "trades": 82,
+        "winrate": 35.37,
+        "expectancy": -0.116
+      },
+      {
+        "name": "London",
+        "trades": 127,
+        "winrate": 29.92,
+        "expectancy": -0.252
+      },
+      {
+        "name": "Asian",
+        "trades": 20,
+        "winrate": 20.0,
+        "expectancy": -0.5
+      }
+    ],
+    "best_assets": [
+      {
+        "name": "EURUSD",
+        "trades": 58,
+        "winrate": 43.1,
+        "expectancy": 0.078
+      },
+      {
+        "name": "XAUUSD",
+        "trades": 218,
+        "winrate": 41.74,
+        "expectancy": 0.044
+      }
+    ],
+    "worst_assets": [
+      {
+        "name": "EURUSD",
+        "trades": 58,
+        "winrate": 43.1,
+        "expectancy": 0.078
+      },
+      {
+        "name": "XAUUSD",
+        "trades": 218,
+        "winrate": 41.74,
+        "expectancy": 0.044
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "category": "SESSION",
+      "problem": "London has very low winrate (29.9%)",
+      "impact": "Losing 51 net trades",
+      "solution": "Consider removing or restricting London trading"
+    },
+    {
+      "category": "SESSION",
+      "problem": "Asian has very low winrate (20.0%)",
+      "impact": "Losing 12 net trades",
+      "solution": "Consider removing or restricting Asian trading"
+    },
+    {
+      "category": "SCORING",
+      "problem": "High confidence trades underperforming (26.9%)",
+      "impact": "Scoring system may be miscalibrated",
+      "solution": "Review score weighting - high scores should correlate with wins"
+    },
+    {
+      "category": "EXECUTION",
+      "problem": "High expired rate (28.0%)",
+      "impact": "Many trades not reaching TP or SL",
+      "solution": "Review trade duration limits or TP/SL placement"
+    }
+  ]
+}
