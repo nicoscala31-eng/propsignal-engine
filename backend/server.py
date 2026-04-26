@@ -4193,6 +4193,188 @@ async def get_v14_config():
     }
 
 
+# ==================== MATH ENGINE V1.0 ENDPOINTS ====================
+
+@app.get("/api/math-engine/status")
+async def get_math_engine_status():
+    """Get Math Engine status and statistics"""
+    from services.math_engine import math_engine
+    return {
+        "version": "1.0",
+        "description": "Pure Mathematical Trading Engine - Zero subjective interpretation",
+        "statistics": math_engine.get_statistics(),
+        "config": {
+            "candle": {
+                "min_body_ratio": math_engine.MIN_BODY_RATIO,
+                "min_close_position_bull": math_engine.MIN_CLOSE_POSITION_BULL,
+                "max_close_position_bear": math_engine.MAX_CLOSE_POSITION_BEAR
+            },
+            "trend": {
+                "min_sequences": math_engine.MIN_TREND_SEQUENCES
+            },
+            "impulse": {
+                "min_atr_multiple": math_engine.MIN_IMPULSE_ATR_MULTIPLE
+            },
+            "pullback": {
+                "min_ratio": math_engine.PULLBACK_MIN_RATIO,
+                "max_ratio": math_engine.PULLBACK_MAX_RATIO
+            },
+            "session": {
+                "ny_start_italy": math_engine.NY_START_HOUR_ITALY,
+                "ny_end_italy": math_engine.NY_END_HOUR_ITALY
+            },
+            "risk": {
+                "min_rr": math_engine.MIN_RR,
+                "target_rr": math_engine.TARGET_RR,
+                "sl_atr_multiple": math_engine.MIN_SL_ATR_MULTIPLE
+            },
+            "allowed_directions": math_engine.ALLOWED_DIRECTIONS
+        }
+    }
+
+
+@app.get("/api/math-engine/analyze/{symbol}")
+async def math_engine_analyze(symbol: str):
+    """
+    Run Math Engine analysis on a symbol.
+    Returns all calculated values (no interpretation).
+    """
+    from services.math_engine import math_engine
+    from services.market_data_cache import market_data_cache
+    from models import Asset, Timeframe
+    
+    try:
+        asset = Asset(symbol)
+    except:
+        raise HTTPException(status_code=400, detail=f"Invalid symbol: {symbol}")
+    
+    # Get M5 candles
+    candles_m5 = market_data_cache.get_candles(asset, Timeframe.M5)
+    if not candles_m5:
+        return {"error": "No candle data available"}
+    
+    # Get current price
+    price_data = market_data_cache.get_price(asset)
+    current_price = price_data.mid if price_data else 0
+    spread = getattr(price_data, 'spread', 0) if price_data else 0
+    
+    if current_price <= 0:
+        return {"error": "No price data available"}
+    
+    # Convert candles to dict format (handle both dict and object)
+    candles_dict = []
+    for c in candles_m5:
+        if isinstance(c, dict):
+            candles_dict.append(c)
+        else:
+            candles_dict.append({
+                'datetime': getattr(c, 'datetime', ''),
+                'open': getattr(c, 'open', 0),
+                'high': getattr(c, 'high', 0),
+                'low': getattr(c, 'low', 0),
+                'close': getattr(c, 'close', 0)
+            })
+    
+    # Run analysis
+    result = math_engine.analyze(
+        symbol=symbol,
+        candles_m5=candles_dict,
+        current_price=current_price,
+        spread=spread
+    )
+    
+    return {
+        "symbol": symbol,
+        "analysis": {
+            "timestamp": result.timestamp,
+            
+            # OHLC
+            "ohlc": {
+                "open": result.open,
+                "high": result.high,
+                "low": result.low,
+                "close": result.close
+            },
+            
+            # Candle metrics
+            "candle": {
+                "range": result.range,
+                "body_ratio": round(result.body_ratio, 4),
+                "close_position": round(result.close_position, 4),
+                "is_bullish": result.bullish_candle,
+                "is_bearish": result.bearish_candle
+            },
+            
+            # Trend
+            "trend": {
+                "bullish_valid": result.bullish_trend_valid,
+                "bearish_valid": result.bearish_trend_valid,
+                "higher_highs": result.higher_highs,
+                "higher_lows": result.higher_lows
+            },
+            
+            # Impulse
+            "impulse": {
+                "size": result.impulse_size,
+                "atr_multiple": round(result.impulse_atr_multiple, 2),
+                "bullish_valid": result.bullish_impulse
+            },
+            
+            # Pullback
+            "pullback": {
+                "ratio": round(result.pullback_ratio, 4),
+                "in_valid_zone": result.pullback_valid
+            },
+            
+            # Patterns
+            "patterns": {
+                "breakout_retest": result.breakout_retest_valid,
+                "liquidity_sweep": result.liquidity_sweep,
+                "flag": result.flag_valid,
+                "double_bottom": result.double_bottom_valid
+            },
+            
+            # Volatility
+            "volatility": {
+                "atr_14": result.atr_14,
+                "ok": result.volatility_ok
+            },
+            
+            # Session
+            "session": {
+                "hour_italy": result.session_hour_italy,
+                "ny_optimal": result.ny_optimal
+            },
+            
+            # Trade levels
+            "trade_levels": {
+                "entry": result.entry_price,
+                "stop_loss": result.stop_loss,
+                "take_profit": result.take_profit,
+                "rr_ratio": round(result.rr_ratio, 2),
+                "rr_valid": result.rr_valid
+            },
+            
+            # Decision
+            "signal": {
+                "valid": result.signal_valid,
+                "direction": result.direction,
+                "rejection_reasons": result.rejection_reasons
+            }
+        }
+    }
+
+
+@app.get("/api/math-engine/tracking")
+async def get_math_engine_tracking():
+    """Get Math Engine tracking records"""
+    from services.math_engine import math_engine
+    return {
+        "total_records": len(math_engine.tracking_records),
+        "recent_records": math_engine.tracking_records[-50:]
+    }
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
