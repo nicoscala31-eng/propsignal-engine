@@ -4287,44 +4287,16 @@ async def math_engine_analyze(symbol: str):
         "symbol": symbol,
         "analysis": {
             "timestamp": result.timestamp,
+            "session": result.session,
+            "candle_closed": result.candle_closed,
             
-            # OHLC
-            "ohlc": {
-                "open": result.open,
-                "high": result.high,
-                "low": result.low,
-                "close": result.close
-            },
-            
-            # Candle metrics
-            "candle": {
-                "range": result.range,
-                "body_ratio": round(result.body_ratio, 4),
-                "close_position": round(result.close_position, 4),
-                "is_bullish": result.bullish_candle,
-                "is_bearish": result.bearish_candle
-            },
-            
-            # Trend
-            "trend": {
-                "bullish_valid": result.bullish_trend_valid,
-                "bearish_valid": result.bearish_trend_valid,
-                "higher_highs": result.higher_highs,
-                "higher_lows": result.higher_lows
-            },
-            
-            # Impulse
-            "impulse": {
-                "size": result.impulse_size,
-                "atr_multiple": round(result.impulse_atr_multiple, 2),
-                "bullish_valid": result.bullish_impulse
-            },
-            
-            # Pullback
-            "pullback": {
-                "ratio": round(result.pullback_ratio, 4),
-                "in_valid_zone": result.pullback_valid
-            },
+            # Full debug data from result
+            "candle": result.candle,
+            "trend": result.trend,
+            "impulse": result.impulse,
+            "pullback": result.pullback,
+            "volatility": result.volatility,
+            "trade_levels": result.trade_levels,
             
             # Patterns
             "patterns": {
@@ -4334,33 +4306,8 @@ async def math_engine_analyze(symbol: str):
                 "double_bottom": result.double_bottom_valid
             },
             
-            # Volatility
-            "volatility": {
-                "atr_14": result.atr_14,
-                "ok": result.volatility_ok
-            },
-            
-            # Session
-            "session": {
-                "hour_italy": result.session_hour_italy,
-                "ny_optimal": result.ny_optimal
-            },
-            
-            # Trade levels
-            "trade_levels": {
-                "entry": result.entry_price,
-                "stop_loss": result.stop_loss,
-                "take_profit": result.take_profit,
-                "rr_ratio": round(result.rr_ratio, 2),
-                "rr_valid": result.rr_valid
-            },
-            
             # Decision
-            "signal": {
-                "valid": result.signal_valid,
-                "direction": result.direction,
-                "rejection_reasons": result.rejection_reasons
-            }
+            "signal": result.signal
         }
     }
 

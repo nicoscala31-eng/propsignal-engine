@@ -116,20 +116,60 @@ class TrendAnalysis:
 @dataclass
 class ImpulseAnalysis:
     """Impulse leg analysis"""
-    swing_high: float = 0.0
-    swing_low: float = 0.0
+    # Swing points used
+    impulse_low: float = 0.0        # Confirmed swing low
+    impulse_high: float = 0.0       # Confirmed swing high after low
+    impulse_low_index: int = -1
+    impulse_high_index: int = -1
+    
+    # Calculations
     impulse_size: float = 0.0
-    atr_multiple: float = 0.0
+    atr_14: float = 0.0
+    impulse_strength: float = 0.0   # impulse_size / ATR (for audit only)
+    threshold_required: float = 1.5  # Fixed threshold
+    
+    # Validation
     bullish_impulse: bool = False
     bearish_impulse: bool = False
+    has_valid_swings: bool = False
+    
+    # Legacy compatibility
+    @property
+    def swing_high(self) -> float:
+        return self.impulse_high
+    
+    @property
+    def swing_low(self) -> float:
+        return self.impulse_low
+    
+    @property
+    def atr_multiple(self) -> float:
+        return self.impulse_strength
 
 
 @dataclass 
 class PullbackAnalysis:
     """Fibonacci pullback analysis"""
+    # Impulse reference points
+    impulse_high: float = 0.0
+    impulse_low: float = 0.0
+    impulse_size: float = 0.0
+    
+    # Current price
+    current_close: float = 0.0
+    
+    # Pullback calculation
     pullback_depth: float = 0.0
     pullback_ratio: float = 0.0
+    
+    # Thresholds (for tracking)
+    valid_min: float = 0.38
+    valid_max: float = 0.62
+    
+    # Validation
     in_valid_zone: bool = False  # 0.38-0.62
+    has_valid_impulse: bool = False
+    rejection_reason: str = ""
 
 
 @dataclass
@@ -204,72 +244,71 @@ class TradeLevels:
 
 @dataclass
 class SignalResult:
-    """Complete signal analysis result"""
+    """Complete signal analysis result with full debug data"""
     timestamp: str
     symbol: str
+    session: str
+    candle_closed: bool
     
-    # Raw OHLC
-    open: float
-    high: float
-    low: float
-    close: float
+    # Candle data
+    candle: Dict = field(default_factory=dict)
     
-    # Candle metrics
-    range: float
-    body_ratio: float
-    close_position: float
-    bullish_candle: bool
-    bearish_candle: bool
+    # Trend data  
+    trend: Dict = field(default_factory=dict)
     
-    # Trend
-    bullish_trend_valid: bool
-    bearish_trend_valid: bool
-    higher_highs: int
-    higher_lows: int
+    # Impulse data
+    impulse: Dict = field(default_factory=dict)
     
-    # Impulse
-    impulse_size: float
-    impulse_atr_multiple: float
-    bullish_impulse: bool
+    # Pullback data
+    pullback: Dict = field(default_factory=dict)
     
-    # Pullback
-    pullback_ratio: float
-    pullback_valid: bool
-    
-    # Breakout
-    breakout_retest_valid: bool
-    
-    # Liquidity
-    liquidity_sweep: bool
-    
-    # Flag
-    flag_valid: bool
-    
-    # Double Bottom
-    double_bottom_valid: bool
-    
-    # Volatility
-    atr_14: float
-    volatility_ok: bool
-    
-    # Session
-    session_hour_italy: int
-    ny_optimal: bool
+    # Volatility data
+    volatility: Dict = field(default_factory=dict)
     
     # Trade levels
-    entry_price: float
-    stop_loss: float
-    take_profit: float
-    rr_ratio: float
-    rr_valid: bool
+    trade_levels: Dict = field(default_factory=dict)
     
-    # Final decision
-    signal_valid: bool
-    direction: str  # BUY / SELL / NONE
-    rejection_reasons: List[str]
+    # Signal decision
+    signal: Dict = field(default_factory=dict)
+    
+    # Legacy compatibility fields
+    open: float = 0.0
+    high: float = 0.0
+    low: float = 0.0
+    close: float = 0.0
+    range: float = 0.0
+    body_ratio: float = 0.0
+    close_position: float = 0.0
+    bullish_candle: bool = False
+    bearish_candle: bool = False
+    bullish_trend_valid: bool = False
+    bearish_trend_valid: bool = False
+    higher_highs: int = 0
+    higher_lows: int = 0
+    impulse_size: float = 0.0
+    impulse_atr_multiple: float = 0.0
+    bullish_impulse: bool = False
+    pullback_ratio: float = 0.0
+    pullback_valid: bool = False
+    breakout_retest_valid: bool = False
+    liquidity_sweep: bool = False
+    flag_valid: bool = False
+    double_bottom_valid: bool = False
+    atr_14: float = 0.0
+    volatility_ok: bool = False
+    session_hour_italy: int = 0
+    ny_optimal: bool = False
+    entry_price: float = 0.0
+    stop_loss: float = 0.0
+    take_profit: float = 0.0
+    rr_ratio: float = 0.0
+    rr_valid: bool = False
+    signal_valid: bool = False
+    direction: str = "NONE"
+    rejection_reasons: List[str] = field(default_factory=list)
     
     # Outcome (filled later)
-    outcome: str = "pending"  # pending / tp / sl / expired
+    outcome: str = "pending"
     mfe: float = 0.0
     mae: float = 0.0
     outcome_r: float = 0.0
@@ -540,36 +579,75 @@ class MathEngine:
         atr: float
     ) -> ImpulseAnalysis:
         """
-        Analyze impulse leg.
+        Analyze impulse leg using CONFIRMED swings only.
         
-        impulse_size = swing_high - swing_low
-        bullish_impulse = impulse_size >= 1.5 * ATR AND swing_high after swing_low
+        For BUY:
+        1. Find last confirmed swing_low
+        2. Find first confirmed swing_high AFTER that swing_low
+        3. impulse_size = swing_high - swing_low
+        4. bullish_impulse = impulse_size >= 1.5 * ATR
+        
+        impulse_strength = impulse_size / ATR (for audit only, doesn't change decision)
         """
         result = ImpulseAnalysis()
+        result.atr_14 = atr
+        result.threshold_required = self.MIN_IMPULSE_ATR_MULTIPLE
         
         if not swing_highs or not swing_lows or atr <= 0:
+            result.has_valid_swings = False
             return result
         
-        # Get last swing high and low
-        last_high = swing_highs[-1]
+        # Find impulse structure for BULLISH setup:
+        # Last swing_low should have a swing_high AFTER it
+        
+        # Get last confirmed swing low
         last_low = swing_lows[-1]
         
-        result.swing_high = last_high.price
-        result.swing_low = last_low.price
-        result.impulse_size = abs(last_high.price - last_low.price)
-        result.atr_multiple = result.impulse_size / atr if atr > 0 else 0
+        # Find first swing high AFTER the last swing low
+        high_after_low = None
+        for sh in swing_highs:
+            if sh.index > last_low.index:
+                high_after_low = sh
+                break
         
-        # Bullish impulse: swing_high after swing_low AND impulse >= 1.5 ATR
-        result.bullish_impulse = (
-            last_high.index > last_low.index
-            and result.atr_multiple >= self.MIN_IMPULSE_ATR_MULTIPLE
-        )
-        
-        # Bearish impulse: swing_low after swing_high AND impulse >= 1.5 ATR
-        result.bearish_impulse = (
-            last_low.index > last_high.index
-            and result.atr_multiple >= self.MIN_IMPULSE_ATR_MULTIPLE
-        )
+        if high_after_low:
+            # Valid bullish impulse structure found
+            result.has_valid_swings = True
+            result.impulse_low = last_low.price
+            result.impulse_low_index = last_low.index
+            result.impulse_high = high_after_low.price
+            result.impulse_high_index = high_after_low.index
+            result.impulse_size = result.impulse_high - result.impulse_low
+            
+            # Calculate impulse_strength (for audit)
+            result.impulse_strength = result.impulse_size / atr if atr > 0 else 0
+            
+            # Bullish impulse valid: impulse >= 1.5 ATR (threshold NOT changed)
+            result.bullish_impulse = result.impulse_strength >= self.MIN_IMPULSE_ATR_MULTIPLE
+        else:
+            # Try to find bearish structure (low AFTER high)
+            last_high = swing_highs[-1]
+            low_after_high = None
+            for sl in swing_lows:
+                if sl.index > last_high.index:
+                    low_after_high = sl
+                    break
+            
+            if low_after_high:
+                result.has_valid_swings = True
+                result.impulse_high = last_high.price
+                result.impulse_high_index = last_high.index
+                result.impulse_low = low_after_high.price
+                result.impulse_low_index = low_after_high.index
+                result.impulse_size = result.impulse_high - result.impulse_low
+                
+                result.impulse_strength = result.impulse_size / atr if atr > 0 else 0
+                
+                # Bearish impulse valid
+                result.bearish_impulse = result.impulse_strength >= self.MIN_IMPULSE_ATR_MULTIPLE
+            else:
+                # No valid impulse structure
+                result.has_valid_swings = False
         
         return result
     
@@ -577,35 +655,81 @@ class MathEngine:
     
     def analyze_pullback(
         self,
-        current_price: float,
+        current_close: float,
         impulse: ImpulseAnalysis
     ) -> PullbackAnalysis:
         """
-        Analyze Fibonacci pullback.
+        Analyze Fibonacci pullback using CONFIRMED swing points.
         
-        pullback_depth = swing_high - current_price (for bullish)
-        pullback_ratio = pullback_depth / impulse_size
-        valid_pullback = 0.38 <= pullback_ratio <= 0.62
+        For BUY:
+        1. impulse_low = confirmed swing low
+        2. impulse_high = confirmed swing high AFTER impulse_low
+        3. pullback_depth = impulse_high - current_close
+        4. pullback_ratio = pullback_depth / impulse_size
+        5. valid_pullback = 0.38 <= pullback_ratio <= 0.62
+        
+        IMPORTANT:
+        - current_close must be close of last CLOSED candle
+        - if impulse_size <= 0 → rejection_reason = "invalid_impulse_size"
+        - if no valid swings → rejection_reason = "no_valid_swings"
         """
         result = PullbackAnalysis()
+        result.valid_min = self.PULLBACK_MIN_RATIO
+        result.valid_max = self.PULLBACK_MAX_RATIO
+        result.current_close = current_close
         
-        if impulse.impulse_size <= 0:
+        # Check if impulse has valid swings
+        if not impulse.has_valid_swings:
+            result.rejection_reason = "no_valid_swings"
             return result
         
-        # For bullish setup: price should be pulling back from swing high
-        if impulse.bullish_impulse:
-            result.pullback_depth = impulse.swing_high - current_price
-            result.pullback_ratio = result.pullback_depth / impulse.impulse_size
+        # Check impulse size
+        if impulse.impulse_size <= 0:
+            result.rejection_reason = "invalid_impulse_size"
+            return result
         
-        # For bearish setup: price should be pulling back from swing low
+        result.has_valid_impulse = True
+        result.impulse_high = impulse.impulse_high
+        result.impulse_low = impulse.impulse_low
+        result.impulse_size = impulse.impulse_size
+        
+        # Calculate pullback for BULLISH setup
+        # Price should be pulling back from impulse_high toward impulse_low
+        if impulse.bullish_impulse or impulse.impulse_high > impulse.impulse_low:
+            # Pullback depth = how much price has retraced from the high
+            result.pullback_depth = impulse.impulse_high - current_close
+            
+            # Only calculate ratio if pullback is positive (price below impulse high)
+            if result.pullback_depth > 0:
+                result.pullback_ratio = result.pullback_depth / impulse.impulse_size
+            else:
+                # Price is above impulse high (no pullback yet)
+                result.pullback_ratio = 0.0
+                result.rejection_reason = "price_above_impulse_high"
+        
+        # For BEARISH setup (not used currently but for completeness)
         elif impulse.bearish_impulse:
-            result.pullback_depth = current_price - impulse.swing_low
-            result.pullback_ratio = result.pullback_depth / impulse.impulse_size
+            result.pullback_depth = current_close - impulse.impulse_low
+            if result.pullback_depth > 0:
+                result.pullback_ratio = result.pullback_depth / impulse.impulse_size
+            else:
+                result.pullback_ratio = 0.0
+                result.rejection_reason = "price_below_impulse_low"
+        else:
+            # No clear direction
+            result.rejection_reason = "no_impulse_direction"
         
-        # Valid pullback zone: 38.2% - 61.8% Fibonacci
+        # Validate pullback zone: 38.2% - 61.8% Fibonacci
         result.in_valid_zone = (
             self.PULLBACK_MIN_RATIO <= result.pullback_ratio <= self.PULLBACK_MAX_RATIO
         )
+        
+        # Set rejection reason if not in valid zone
+        if not result.in_valid_zone and not result.rejection_reason:
+            if result.pullback_ratio < self.PULLBACK_MIN_RATIO:
+                result.rejection_reason = f"pullback_too_shallow_{result.pullback_ratio:.3f}"
+            elif result.pullback_ratio > self.PULLBACK_MAX_RATIO:
+                result.rejection_reason = f"pullback_too_deep_{result.pullback_ratio:.3f}"
         
         return result
     
@@ -874,7 +998,8 @@ class MathEngine:
         """
         Complete mathematical analysis.
         
-        Returns SignalResult with all calculated values.
+        Returns SignalResult with all calculated values and full debug data.
+        Uses CLOSED candles only - current_close = close of last closed candle.
         """
         rejection_reasons = []
         
@@ -886,14 +1011,17 @@ class MathEngine:
             return self._create_result(
                 symbol=symbol,
                 candles=candles,
-                current_price=current_price,
+                session_name="unknown",
                 rejection_reasons=rejection_reasons
             )
         
+        # Use LAST CLOSED CANDLE for all calculations
         last_candle = candles[-1]
+        current_close = last_candle.close  # Close of last closed candle
         
         # Session analysis
         session = self.analyze_session()
+        session_name = "New_York" if session.ny_optimal else f"hour_{session.current_hour_italy}"
         if not session.ny_optimal:
             rejection_reasons.append(f"session_not_optimal_hour_{session.current_hour_italy}")
         
@@ -904,8 +1032,8 @@ class MathEngine:
         
         atr = volatility.atr_14
         
-        # Swing points
-        swing_highs, swing_lows = self.find_swing_points(candles)
+        # Swing points (using closed candles only)
+        swing_highs, swing_lows = self.find_swing_points(candles[:-1])  # Exclude current candle
         
         # Trend analysis
         trend = self.analyze_trend(swing_highs, swing_lows)
@@ -914,13 +1042,17 @@ class MathEngine:
         
         # Impulse analysis
         impulse = self.analyze_impulse(swing_highs, swing_lows, atr)
-        if not impulse.bullish_impulse:
-            rejection_reasons.append(f"impulse_not_valid_atr_mult_{impulse.atr_multiple:.2f}")
+        if not impulse.has_valid_swings:
+            rejection_reasons.append("no_valid_swings_for_impulse")
+        elif not impulse.bullish_impulse:
+            rejection_reasons.append(f"impulse_not_valid_strength_{impulse.impulse_strength:.2f}_required_{impulse.threshold_required}")
         
-        # Pullback analysis
-        pullback = self.analyze_pullback(current_price, impulse)
-        if not pullback.in_valid_zone:
-            rejection_reasons.append(f"pullback_not_valid_ratio_{pullback.pullback_ratio:.2f}")
+        # Pullback analysis - use current_close from last closed candle
+        pullback = self.analyze_pullback(current_close, impulse)
+        if pullback.rejection_reason:
+            rejection_reasons.append(f"pullback_{pullback.rejection_reason}")
+        elif not pullback.in_valid_zone:
+            rejection_reasons.append(f"pullback_not_in_zone_ratio_{pullback.pullback_ratio:.3f}")
         
         # Candle validation
         if not last_candle.is_bullish:
@@ -935,8 +1067,8 @@ class MathEngine:
         # Flag pattern
         flag = self.analyze_flag(candles, atr, impulse)
         
-        # Double bottom
-        double_bottom = self.analyze_double_bottom(swing_lows, swing_highs, current_price, atr)
+        # Double bottom (use current_close)
+        double_bottom = self.analyze_double_bottom(swing_lows, swing_highs, current_close, atr)
         
         # Trade levels
         entry_price = last_candle.close
@@ -964,67 +1096,126 @@ class MathEngine:
             signal_valid = False
             rejection_reasons.append("direction_buy_not_allowed")
         
-        # Create result
+        # Create result with FULL DEBUG DATA
         result = SignalResult(
             timestamp=datetime.utcnow().isoformat(),
             symbol=symbol,
+            session=session_name,
+            candle_closed=True,  # We only analyze closed candles
             
-            # Raw OHLC
+            # CANDLE DEBUG DATA
+            candle={
+                "open": last_candle.open,
+                "high": last_candle.high,
+                "low": last_candle.low,
+                "close": last_candle.close,
+                "range": last_candle.range,
+                "body_ratio": round(last_candle.body_ratio, 4),
+                "close_position": round(last_candle.close_position, 4),
+                "bullish_candle": last_candle.is_bullish
+            },
+            
+            # TREND DEBUG DATA
+            trend={
+                "last_swing_high": trend.last_swing_high,
+                "previous_swing_high": trend.prev_swing_high,
+                "last_swing_low": trend.last_swing_low,
+                "previous_swing_low": trend.prev_swing_low,
+                "higher_high": trend.higher_highs > 0,
+                "higher_low": trend.higher_lows > 0,
+                "higher_highs_count": trend.higher_highs,
+                "higher_lows_count": trend.higher_lows,
+                "bullish_trend_valid": trend.bullish_trend_valid
+            },
+            
+            # IMPULSE DEBUG DATA
+            impulse={
+                "impulse_low": impulse.impulse_low,
+                "impulse_high": impulse.impulse_high,
+                "impulse_low_index": impulse.impulse_low_index,
+                "impulse_high_index": impulse.impulse_high_index,
+                "impulse_size": impulse.impulse_size,
+                "atr_14": atr,
+                "impulse_strength": round(impulse.impulse_strength, 4),
+                "threshold_required": impulse.threshold_required,
+                "has_valid_swings": impulse.has_valid_swings,
+                "bullish_impulse": impulse.bullish_impulse
+            },
+            
+            # PULLBACK DEBUG DATA
+            pullback={
+                "impulse_high": pullback.impulse_high,
+                "impulse_low": pullback.impulse_low,
+                "impulse_size": pullback.impulse_size,
+                "current_close": pullback.current_close,
+                "pullback_depth": round(pullback.pullback_depth, 6),
+                "pullback_ratio": round(pullback.pullback_ratio, 4),
+                "valid_min": pullback.valid_min,
+                "valid_max": pullback.valid_max,
+                "valid_pullback": pullback.in_valid_zone,
+                "has_valid_impulse": pullback.has_valid_impulse,
+                "rejection_reason": pullback.rejection_reason
+            },
+            
+            # VOLATILITY DEBUG DATA
+            volatility={
+                "atr_14": atr,
+                "atr_20_avg": volatility.atr_20_avg,
+                "min_ratio_required": self.MIN_VOLATILITY_RATIO,
+                "volatility_ok": volatility.volatility_ok
+            },
+            
+            # TRADE LEVELS DEBUG DATA
+            trade_levels={
+                "entry_price": levels.entry_price,
+                "stop_loss": levels.stop_loss,
+                "take_profit": levels.take_profit,
+                "sl_distance": levels.sl_distance,
+                "risk": levels.risk,
+                "reward": levels.reward,
+                "rr_ratio": round(levels.rr_ratio, 2),
+                "rr_valid": levels.rr_valid
+            },
+            
+            # SIGNAL DECISION
+            signal={
+                "valid": signal_valid,
+                "direction": direction,
+                "rejection_reasons": rejection_reasons
+            },
+            
+            # Legacy compatibility fields
             open=last_candle.open,
             high=last_candle.high,
             low=last_candle.low,
             close=last_candle.close,
-            
-            # Candle metrics
             range=last_candle.range,
             body_ratio=last_candle.body_ratio,
             close_position=last_candle.close_position,
             bullish_candle=last_candle.is_bullish,
             bearish_candle=last_candle.is_bearish,
-            
-            # Trend
             bullish_trend_valid=trend.bullish_trend_valid,
             bearish_trend_valid=trend.bearish_trend_valid,
             higher_highs=trend.higher_highs,
             higher_lows=trend.higher_lows,
-            
-            # Impulse
             impulse_size=impulse.impulse_size,
-            impulse_atr_multiple=impulse.atr_multiple,
+            impulse_atr_multiple=impulse.impulse_strength,
             bullish_impulse=impulse.bullish_impulse,
-            
-            # Pullback
             pullback_ratio=pullback.pullback_ratio,
             pullback_valid=pullback.in_valid_zone,
-            
-            # Breakout
             breakout_retest_valid=breakout.breakout_retest_valid,
-            
-            # Liquidity
             liquidity_sweep=liquidity.bullish_sweep,
-            
-            # Flag
             flag_valid=flag.flag_valid,
-            
-            # Double Bottom
             double_bottom_valid=double_bottom.double_bottom_valid,
-            
-            # Volatility
             atr_14=atr,
             volatility_ok=volatility.volatility_ok,
-            
-            # Session
             session_hour_italy=session.current_hour_italy,
             ny_optimal=session.ny_optimal,
-            
-            # Trade levels
             entry_price=levels.entry_price,
             stop_loss=levels.stop_loss,
             take_profit=levels.take_profit,
             rr_ratio=levels.rr_ratio,
             rr_valid=levels.rr_valid,
-            
-            # Decision
             signal_valid=signal_valid,
             direction=direction,
             rejection_reasons=rejection_reasons
@@ -1039,7 +1230,7 @@ class MathEngine:
         self,
         symbol: str,
         candles: List[Candle],
-        current_price: float,
+        session_name: str,
         rejection_reasons: List[str]
     ) -> SignalResult:
         """Create a minimal result when analysis can't be completed"""
@@ -1048,6 +1239,15 @@ class MathEngine:
         return SignalResult(
             timestamp=datetime.utcnow().isoformat(),
             symbol=symbol,
+            session=session_name,
+            candle_closed=False,
+            candle={},
+            trend={},
+            impulse={},
+            pullback={},
+            volatility={},
+            trade_levels={},
+            signal={"valid": False, "direction": "NONE", "rejection_reasons": rejection_reasons},
             open=last_candle.open,
             high=last_candle.high,
             low=last_candle.low,
@@ -1074,7 +1274,7 @@ class MathEngine:
             volatility_ok=False,
             session_hour_italy=0,
             ny_optimal=False,
-            entry_price=current_price,
+            entry_price=0,
             stop_loss=0,
             take_profit=0,
             rr_ratio=0,
