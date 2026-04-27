@@ -195,6 +195,7 @@ class MathMetrics:
     range_low: float = 0.0
     range_mid: float = 0.0
     range_width: float = 0.0
+    range_quality: float = 0.0  # range_width / ATR
     
     # Spread
     spread: float = 0.0
@@ -409,6 +410,9 @@ class DeterministicPatternEngine:
         metrics.range_low = min(c.low for c in recent)
         metrics.range_mid = (metrics.range_high + metrics.range_low) / 2
         metrics.range_width = metrics.range_high - metrics.range_low
+        
+        # range_quality = range_width / ATR
+        metrics.range_quality = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
         
         # SL buffer = max(spread*2, 0.15*ATR, minimum_tick)
         minimum_tick = 0.00001 if 'EUR' in str(last_candle) else 0.01
@@ -678,12 +682,28 @@ class DeterministicPatternEngine:
         """
         last_candle = candles[-1]
         
+        # Calcola range_quality = range_width / ATR
+        range_quality = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
+        
         # PREREQUISITO: Range deve essere sufficientemente ampio
-        # Se range_width / ATR < 1.5 → RANGE_TOO_TIGHT
-        range_atr_ratio = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
-        if range_atr_ratio < 1.5:
-            # Range troppo stretto per mean reversion
-            return None
+        # Se range_width / ATR < 1.5 → RANGE_TOO_TIGHT (pattern rilevato ma invalido)
+        if range_quality < 1.5:
+            # Pattern MEAN_REVERSION rilevato ma range troppo stretto
+            return PatternResult(
+                pattern_detected=True,
+                pattern_type=PatternType.MEAN_REVERSION.value,
+                regime=Regime.RANGE.value,
+                direction=SignalDirection.NONE.value,
+                status=ValidationStatus.REJECTED.value,
+                rejection_reason=RejectionReason.RANGE_TOO_TIGHT.value,
+                all_conditions_met=False,
+                conditions={
+                    'range_quality': round(range_quality, 3),
+                    'range_quality_required': 1.5,
+                    'range_width': metrics.range_width,
+                    'ATR': metrics.ATR_t
+                }
+            )
         
         conditions = {
             'mu_neutral': abs(metrics.mu_t) <= self.params.mu_neutral_threshold,
@@ -692,7 +712,8 @@ class DeterministicPatternEngine:
             'near_range_high': False,
             'z_oversold': metrics.Z_t <= -self.params.z_threshold,
             'z_overbought': metrics.Z_t >= self.params.z_threshold,
-            'range_wide_enough': range_atr_ratio >= 1.5
+            'range_wide_enough': range_quality >= 1.5,
+            'range_quality': round(range_quality, 3)
         }
         
         # Proximity to range bounds
@@ -709,8 +730,8 @@ class DeterministicPatternEngine:
             entry = last_candle.close
             sl = metrics.range_low - metrics.sl_buffer
             
-            # TP based on range width
-            if metrics.range_width / metrics.ATR_t >= 2:
+            # TP based on range_quality
+            if range_quality >= 2:
                 tp = metrics.range_high - metrics.sl_buffer
             else:
                 tp = metrics.range_mid
@@ -741,7 +762,8 @@ class DeterministicPatternEngine:
             entry = last_candle.close
             sl = metrics.range_high + metrics.sl_buffer
             
-            if metrics.range_width / metrics.ATR_t >= 2:
+            # TP based on range_quality
+            if range_quality >= 2:
                 tp = metrics.range_low + metrics.sl_buffer
             else:
                 tp = metrics.range_mid
@@ -1063,6 +1085,7 @@ class DeterministicPatternEngine:
             'range_width': round(metrics.range_width, 6),
             'range_high': round(metrics.range_high, 6),
             'range_low': round(metrics.range_low, 6),
+            'range_quality': round(metrics.range_quality, 3),  # range_width / ATR
             'sl_buffer': round(metrics.sl_buffer, 6)
         }
         
