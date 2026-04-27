@@ -224,13 +224,15 @@ async def startup_event():
                 logger.warning("🚫 Advanced Scanner v2 BLOCKED - Not starting (production safety)")
                 advanced_scanner_instance = None
             
-            # ========== AUTHORIZED PRODUCTION ENGINE ==========
-            # Signal Generator v3 - THE ONLY authorized production engine
-            logger.info("🚀 Initializing Signal Generator v3 (PRIMARY - threshold 60%)...")
-            signal_generator_instance = await init_signal_generator(db)
+            # ========== MATH ENGINE - UNICO MOTORE AUTORIZZATO ==========
+            # Signal Generator v3 - DISABILITATO (sostituito da Math Engine)
+            logger.info("⚠️ Signal Generator v3 - DISABILITATO (sostituito da Math Engine)")
+            # signal_generator_instance = await init_signal_generator(db)  # DISABILITATO
+            signal_generator_instance = None
             
-            if production_control.guard_production_startup(EngineType.SIGNAL_GENERATOR_V3):
-                logger.info("✅ Signal Generator v3 AUTHORIZED for production")
+            # Math Engine Signal Generator - UNICO MOTORE ATTIVO
+            logger.info("🚀 Initializing MATH ENGINE Signal Generator (UNICO MOTORE)...")
+            from services.math_signal_generator import math_signal_generator, start_math_signal_generator
             
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
@@ -239,12 +241,14 @@ async def startup_event():
             from services.signal_outcome_tracker_v2 import signal_outcome_tracker
             await signal_outcome_tracker.start()
             
-            # ========== START ONLY AUTHORIZED ENGINE ==========
-            # DO NOT start legacy scanners - they are blocked
-            # scanner.start() - REMOVED - Legacy scanner blocked
-            # advanced_scanner_instance.start() - REMOVED - Advanced scanner blocked
+            # ========== START MATH ENGINE - UNICO MOTORE ==========
+            # Signal Generator V3 - DISABILITATO
+            # await signal_generator_instance.start()  # DISABILITATO
             
-            await signal_generator_instance.start()  # ONLY PRODUCTION ENGINE
+            # MATH ENGINE - UNICO MOTORE ATTIVO
+            asyncio.create_task(start_math_signal_generator())
+            logger.info("✅ MATH ENGINE Signal Generator STARTED (UNICO MOTORE)")
+            
             await tracker.start()
             
             # ========== START MISSED OPPORTUNITY SIMULATION (AUDIT) ==========
@@ -4320,6 +4324,26 @@ async def get_math_engine_tracking():
         "total_records": len(math_engine.tracking_records),
         "recent_records": math_engine.tracking_records[-50:]
     }
+
+
+@app.get("/api/math-engine/generator/status")
+async def get_math_signal_generator_status():
+    """Get Math Engine Signal Generator status (UNICO MOTORE ATTIVO)"""
+    from services.math_signal_generator import math_signal_generator
+    return math_signal_generator.get_status()
+
+
+@app.post("/api/math-engine/generator/restart")
+async def restart_math_signal_generator():
+    """Restart the Math Engine Signal Generator"""
+    from services.math_signal_generator import math_signal_generator, start_math_signal_generator
+    import asyncio
+    
+    math_signal_generator.stop()
+    await asyncio.sleep(1)
+    asyncio.create_task(start_math_signal_generator())
+    
+    return {"status": "restarted", "message": "Math Engine Signal Generator restarted"}
 
 
 app.add_middleware(
