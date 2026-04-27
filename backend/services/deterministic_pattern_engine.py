@@ -76,6 +76,7 @@ class RejectionReason(Enum):
     EDGE_NEGATIVE = "EDGE_NEGATIVE"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
     INVALID_SWING = "INVALID_SWING"
+    RANGE_TOO_TIGHT = "RANGE_TOO_TIGHT"  # range_width/ATR < 1.5
 
 
 # ==================== GLOBAL PARAMETERS ====================
@@ -663,6 +664,9 @@ class DeterministicPatternEngine:
         """
         MEAN REVERSION
         
+        PREREQUISITO:
+        - range_width / ATR >= 1.5 (altrimenti RANGE_TOO_TIGHT)
+        
         BUY:
         - |mu_t| <= mu_neutral_threshold
         - T_t < trend_strength_threshold
@@ -674,13 +678,21 @@ class DeterministicPatternEngine:
         """
         last_candle = candles[-1]
         
+        # PREREQUISITO: Range deve essere sufficientemente ampio
+        # Se range_width / ATR < 1.5 → RANGE_TOO_TIGHT
+        range_atr_ratio = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
+        if range_atr_ratio < 1.5:
+            # Range troppo stretto per mean reversion
+            return None
+        
         conditions = {
             'mu_neutral': abs(metrics.mu_t) <= self.params.mu_neutral_threshold,
             'trend_weak': metrics.T_t < self.params.trend_strength_threshold,
             'near_range_low': False,
             'near_range_high': False,
             'z_oversold': metrics.Z_t <= -self.params.z_threshold,
-            'z_overbought': metrics.Z_t >= self.params.z_threshold
+            'z_overbought': metrics.Z_t >= self.params.z_threshold,
+            'range_wide_enough': range_atr_ratio >= 1.5
         }
         
         # Proximity to range bounds
