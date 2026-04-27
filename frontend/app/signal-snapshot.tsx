@@ -58,6 +58,19 @@ interface PatternData {
   sub_components?: { [patternKey: string]: PatternSubComponent[] };
 }
 
+// NEW: Math Metrics from Deterministic Engine
+interface MathMetrics {
+  mu_t?: number;
+  sigma_t?: number;
+  T_t?: number;
+  Z_t?: number;
+  ATR_t?: number;
+  range_width?: number;
+  range_high?: number;
+  range_low?: number;
+  sl_buffer?: number;
+}
+
 interface SignalSnapshot {
   signal_id: string;
   timestamp: string;
@@ -100,6 +113,13 @@ interface SignalSnapshot {
   } | null;
   // NEW: Pattern V3 data
   pattern_data?: PatternData;
+  // NEW: Deterministic Pattern Engine data
+  pattern_type?: string;
+  regime?: string;
+  metrics?: MathMetrics;
+  expected_edge?: number;
+  winrate?: number;
+  conditions?: Record<string, boolean>;
 }
 
 // Status colors
@@ -315,32 +335,124 @@ export default function SignalSnapshotScreen() {
           </View>
         </View>
 
-        {/* Score Breakdown */}
-        <View style={styles.scoreBreakdownCard}>
-          <Text style={styles.cardTitle}>Score Breakdown</Text>
-          <View style={styles.scoreBreakdownRow}>
-            <View style={styles.scoreBreakdownItem}>
-              <Text style={styles.sbLabel}>Pre-Penalty</Text>
-              <Text style={styles.sbValue}>
-                {snapshot.score_breakdown.score_pre_penalty.toFixed(1)}
-              </Text>
+        {/* Score Breakdown / Pattern Info */}
+        {snapshot.pattern_type ? (
+          /* NEW: Deterministic Pattern Engine Display */
+          <View style={styles.scoreBreakdownCard}>
+            <Text style={styles.cardTitle}>Pattern Detection</Text>
+            <View style={styles.patternInfoRow}>
+              <View style={styles.patternInfoBox}>
+                <Text style={styles.sbLabel}>Pattern</Text>
+                <Text style={[styles.sbValue, { color: '#00aaff', fontSize: 14 }]}>
+                  {snapshot.pattern_type?.replace(/_/g, ' ') || 'NONE'}
+                </Text>
+              </View>
+              <View style={styles.patternInfoBox}>
+                <Text style={styles.sbLabel}>Regime</Text>
+                <Text style={[styles.sbValue, { color: '#ffaa00', fontSize: 14 }]}>
+                  {snapshot.regime || 'NONE'}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.sbArrow}>→</Text>
-            <View style={styles.scoreBreakdownItem}>
-              <Text style={styles.sbLabel}>Penalties</Text>
-              <Text style={[styles.sbValue, { color: '#ff4444' }]}>
-                -{(snapshot.score_breakdown.score_pre_penalty - snapshot.score_breakdown.final_score).toFixed(1)}
-              </Text>
-            </View>
-            <Text style={styles.sbArrow}>→</Text>
-            <View style={styles.scoreBreakdownItem}>
-              <Text style={styles.sbLabel}>Final</Text>
-              <Text style={[styles.sbValue, { color: '#00ff88' }]}>
-                {snapshot.score_breakdown.final_score.toFixed(1)}
-              </Text>
+            {(snapshot.expected_edge !== undefined || snapshot.winrate !== undefined) && (
+              <View style={styles.patternInfoRow}>
+                <View style={styles.patternInfoBox}>
+                  <Text style={styles.sbLabel}>Winrate</Text>
+                  <Text style={styles.sbValue}>
+                    {((snapshot.winrate || 0) * 100).toFixed(0)}%
+                  </Text>
+                </View>
+                <View style={styles.patternInfoBox}>
+                  <Text style={styles.sbLabel}>Expected Edge</Text>
+                  <Text style={[styles.sbValue, { 
+                    color: (snapshot.expected_edge || 0) > 0 ? '#00ff88' : '#ff4444' 
+                  }]}>
+                    {(snapshot.expected_edge || 0).toFixed(4)}R
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+        ) : (
+          /* Legacy Score Breakdown */
+          <View style={styles.scoreBreakdownCard}>
+            <Text style={styles.cardTitle}>Score Breakdown</Text>
+            <View style={styles.scoreBreakdownRow}>
+              <View style={styles.scoreBreakdownItem}>
+                <Text style={styles.sbLabel}>Pre-Penalty</Text>
+                <Text style={styles.sbValue}>
+                  {snapshot.score_breakdown.score_pre_penalty.toFixed(1)}
+                </Text>
+              </View>
+              <Text style={styles.sbArrow}>→</Text>
+              <View style={styles.scoreBreakdownItem}>
+                <Text style={styles.sbLabel}>Penalties</Text>
+                <Text style={[styles.sbValue, { color: '#ff4444' }]}>
+                  -{(snapshot.score_breakdown.score_pre_penalty - snapshot.score_breakdown.final_score).toFixed(1)}
+                </Text>
+              </View>
+              <Text style={styles.sbArrow}>→</Text>
+              <View style={styles.scoreBreakdownItem}>
+                <Text style={styles.sbLabel}>Final</Text>
+                <Text style={[styles.sbValue, { color: '#00ff88' }]}>
+                  {snapshot.score_breakdown.final_score.toFixed(1)}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
+
+        {/* Math Metrics (for Deterministic Pattern Engine) */}
+        {snapshot.metrics && (
+          <CollapsibleSection title="Math Metrics" defaultOpen={true}>
+            <View style={styles.metricsGrid}>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>T (Trend)</Text>
+                <Text style={[styles.metricValue, {
+                  color: (snapshot.metrics.T_t || 0) >= 0.6 ? '#00ff88' : '#888'
+                }]}>
+                  {(snapshot.metrics.T_t || 0).toFixed(3)}
+                </Text>
+              </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>Z (Deviation)</Text>
+                <Text style={[styles.metricValue, {
+                  color: Math.abs(snapshot.metrics.Z_t || 0) >= 1.5 ? '#00ff88' : '#888'
+                }]}>
+                  {(snapshot.metrics.Z_t || 0).toFixed(3)}
+                </Text>
+              </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>μ (Mean Return)</Text>
+                <Text style={styles.metricValue}>
+                  {((snapshot.metrics.mu_t || 0) * 10000).toFixed(2)}bp
+                </Text>
+              </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>σ (Volatility)</Text>
+                <Text style={styles.metricValue}>
+                  {((snapshot.metrics.sigma_t || 0) * 10000).toFixed(2)}bp
+                </Text>
+              </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>ATR</Text>
+                <Text style={styles.metricValue}>
+                  {snapshot.symbol === 'XAUUSD' 
+                    ? (snapshot.metrics.ATR_t || 0).toFixed(2)
+                    : ((snapshot.metrics.ATR_t || 0) * 10000).toFixed(1) + 'p'}
+                </Text>
+              </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>Range Width</Text>
+                <Text style={styles.metricValue}>
+                  {snapshot.symbol === 'XAUUSD'
+                    ? (snapshot.metrics.range_width || 0).toFixed(2)
+                    : ((snapshot.metrics.range_width || 0) * 10000).toFixed(1) + 'p'}
+                </Text>
+              </View>
+            </View>
+          </CollapsibleSection>
+        )}
 
         {/* Pattern Analysis (replaces Factor Contributions) */}
         <CollapsibleSection title="Pattern Analysis" defaultOpen={true}>
@@ -854,5 +966,38 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  // NEW: Pattern Info Styles
+  patternInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  patternInfoBox: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  // NEW: Metrics Grid Styles
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  metricItem: {
+    width: '48%',
+    backgroundColor: '#0f0f0f',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  metricLabel: {
+    color: '#888',
+    fontSize: 11,
+    marginBottom: 4,
+  },
+  metricValue: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

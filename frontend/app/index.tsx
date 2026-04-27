@@ -217,7 +217,8 @@ export default function HomeScreen() {
   const fetchScannerStatus = useCallback(async () => {
     try {
       setScannerError(null);
-      const response = await fetch(`${API_BASE}/api/scanner/v3/status`, {
+      // Use new Deterministic Pattern Engine endpoint
+      const response = await fetch(`${API_BASE}/api/pattern-engine/status`, {
         headers: { 'Accept': 'application/json' },
       });
       
@@ -225,13 +226,28 @@ export default function HomeScreen() {
         const data = await response.json();
         setScannerStatus({
           is_running: data.is_running ?? false,
-          version: data.version || 'v3',
-          mode: data.mode || 'auto',
-          last_scan: data.last_check_time,
-          symbols: data.symbols || ['EURUSD', 'XAUUSD'],
+          version: 'Pattern Engine V2.0',
+          mode: data.engine || 'Deterministic',
+          last_scan: data.last_scan,
+          symbols: data.assets || ['EURUSD', 'XAUUSD'],
         });
       } else {
-        setScannerError('Scanner offline');
+        // Fallback to old endpoint if Pattern Engine not available
+        const fallbackResponse = await fetch(`${API_BASE}/api/scanner/v3/status`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          setScannerStatus({
+            is_running: fallbackData.is_running ?? false,
+            version: fallbackData.version || 'v3',
+            mode: fallbackData.mode || 'auto',
+            last_scan: fallbackData.last_check_time,
+            symbols: fallbackData.symbols || ['EURUSD', 'XAUUSD'],
+          });
+        } else {
+          setScannerError('Scanner offline');
+        }
       }
     } catch (err) {
       console.log('Scanner status error:', err);

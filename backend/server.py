@@ -224,15 +224,18 @@ async def startup_event():
                 logger.warning("🚫 Advanced Scanner v2 BLOCKED - Not starting (production safety)")
                 advanced_scanner_instance = None
             
-            # ========== MATH ENGINE - UNICO MOTORE AUTORIZZATO ==========
-            # Signal Generator v3 - DISABILITATO (sostituito da Math Engine)
-            logger.info("⚠️ Signal Generator v3 - DISABILITATO (sostituito da Math Engine)")
-            # signal_generator_instance = await init_signal_generator(db)  # DISABILITATO
+            # ========== DETERMINISTIC PATTERN ENGINE V2.0 - UNICO MOTORE ==========
+            # Tutti i precedenti motori sono DISABILITATI
+            logger.info("⚠️ Signal Generator v3 - DISABILITATO")
+            logger.info("⚠️ Math Engine V1.0 - DISABILITATO")
             signal_generator_instance = None
             
-            # Math Engine Signal Generator - UNICO MOTORE ATTIVO
-            logger.info("🚀 Initializing MATH ENGINE Signal Generator (UNICO MOTORE)...")
-            from services.math_signal_generator import math_signal_generator, start_math_signal_generator
+            # Deterministic Pattern Engine - UNICO MOTORE ATTIVO
+            logger.info("🚀 Initializing DETERMINISTIC PATTERN ENGINE V2.0 (UNICO MOTORE)...")
+            from services.deterministic_signal_generator import (
+                deterministic_signal_generator, 
+                start_deterministic_signal_generator
+            )
             
             tracker = init_outcome_tracker(db)
             analytics = create_analytics_service(db)
@@ -241,13 +244,9 @@ async def startup_event():
             from services.signal_outcome_tracker_v2 import signal_outcome_tracker
             await signal_outcome_tracker.start()
             
-            # ========== START MATH ENGINE - UNICO MOTORE ==========
-            # Signal Generator V3 - DISABILITATO
-            # await signal_generator_instance.start()  # DISABILITATO
-            
-            # MATH ENGINE - UNICO MOTORE ATTIVO
-            asyncio.create_task(start_math_signal_generator())
-            logger.info("✅ MATH ENGINE Signal Generator STARTED (UNICO MOTORE)")
+            # ========== START DETERMINISTIC PATTERN ENGINE - UNICO MOTORE ==========
+            asyncio.create_task(start_deterministic_signal_generator())
+            logger.info("✅ DETERMINISTIC PATTERN ENGINE V2.0 STARTED (UNICO MOTORE)")
             
             await tracker.start()
             
@@ -272,8 +271,10 @@ async def startup_event():
             logger.info("🧹 Signal Cleanup Service scheduled (14-day retention)")
             
             logger.info("=" * 60)
-            logger.info("🛡️ PRODUCTION SAFETY ACTIVE")
-            logger.info("   ✅ Signal Generator v3: RUNNING (authorized)")
+            logger.info("🛡️ PRODUCTION MODE - DETERMINISTIC PATTERN ENGINE V2.0")
+            logger.info("   ✅ Deterministic Pattern Engine: RUNNING (UNICO MOTORE)")
+            logger.info("   🚫 Signal Generator v3: DISABILITATO")
+            logger.info("   🚫 Math Engine V1.0: DISABILITATO")
             logger.info("   🚫 Legacy Scanner: BLOCKED")
             logger.info("   🚫 Advanced Scanner v2: BLOCKED")
             logger.info("   📊 Missed Opportunity Analyzer: RUNNING (audit only)")
@@ -4344,6 +4345,129 @@ async def restart_math_signal_generator():
     asyncio.create_task(start_math_signal_generator())
     
     return {"status": "restarted", "message": "Math Engine Signal Generator restarted"}
+
+
+# ==================== DETERMINISTIC PATTERN ENGINE V2.0 ENDPOINTS ====================
+
+@app.get("/api/pattern-engine/status")
+async def get_pattern_engine_status():
+    """
+    Get Deterministic Pattern Engine V2.0 status.
+    
+    Returns:
+    - Engine running status
+    - Statistics (total scans, signals generated)
+    - Configuration (parameters, winrates)
+    """
+    from services.deterministic_signal_generator import deterministic_signal_generator
+    return deterministic_signal_generator.get_status()
+
+
+@app.get("/api/pattern-engine/analyze/{symbol}")
+async def analyze_pattern(symbol: str):
+    """
+    Run Deterministic Pattern Engine analysis on a symbol.
+    
+    Returns complete pattern analysis with:
+    - Pattern detected (TREND_CONTINUATION, MEAN_REVERSION, COMPRESSION_BREAKOUT, FALSE_BREAKOUT)
+    - Regime (TREND, RANGE, COMPRESSION, FALSE_BREAKOUT)
+    - Trade levels (Entry, SL, TP, RR)
+    - Math metrics (mu_t, sigma_t, T_t, Z_t, ATR)
+    - Edge calculation (winrate, expected_edge_R)
+    - All conditions checked
+    """
+    from services.deterministic_pattern_engine import deterministic_engine
+    from services.market_data_cache import market_data_cache
+    from models import Asset, Timeframe
+    
+    # Validate symbol
+    try:
+        asset = Asset(symbol.upper())
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid symbol: {symbol}")
+    
+    # Get candles
+    candles = market_data_cache.get_candles(asset, Timeframe.M5)
+    if not candles or len(candles) < 30:
+        return {
+            "symbol": symbol,
+            "error": "Insufficient candle data",
+            "candles_available": len(candles) if candles else 0,
+            "candles_required": 30
+        }
+    
+    # Get spread
+    price_data = market_data_cache.get_price(asset)
+    spread = 0.0
+    if price_data:
+        spread = getattr(price_data, 'spread', 0) or 0.0
+    
+    # Convert candles
+    candles_dict = []
+    for c in candles:
+        if isinstance(c, dict):
+            candles_dict.append(c)
+        else:
+            candles_dict.append({
+                'datetime': getattr(c, 'datetime', ''),
+                'open': getattr(c, 'open', 0),
+                'high': getattr(c, 'high', 0),
+                'low': getattr(c, 'low', 0),
+                'close': getattr(c, 'close', 0)
+            })
+    
+    # Run analysis
+    result = deterministic_engine.analyze(
+        symbol=symbol.upper(),
+        candles_raw=candles_dict,
+        spread=spread
+    )
+    
+    return result.to_dict()
+
+
+@app.get("/api/pattern-engine/statistics")
+async def get_pattern_engine_statistics():
+    """
+    Get Deterministic Pattern Engine statistics.
+    
+    Returns:
+    - Total analyses
+    - Valid/rejected breakdown
+    - By pattern type breakdown
+    - Rejection reasons breakdown
+    - Engine parameters
+    """
+    from services.deterministic_pattern_engine import deterministic_engine
+    return deterministic_engine.get_statistics()
+
+
+@app.get("/api/pattern-engine/parameters")
+async def get_pattern_engine_parameters():
+    """
+    Get current Deterministic Pattern Engine parameters.
+    
+    Returns all configurable thresholds and settings.
+    """
+    from services.deterministic_pattern_engine import deterministic_engine
+    from dataclasses import asdict
+    return asdict(deterministic_engine.params)
+
+
+@app.post("/api/pattern-engine/restart")
+async def restart_pattern_engine():
+    """Restart the Deterministic Pattern Signal Generator"""
+    from services.deterministic_signal_generator import (
+        deterministic_signal_generator, 
+        start_deterministic_signal_generator
+    )
+    import asyncio
+    
+    deterministic_signal_generator.stop()
+    await asyncio.sleep(1)
+    asyncio.create_task(start_deterministic_signal_generator())
+    
+    return {"status": "restarted", "message": "Deterministic Pattern Signal Generator restarted"}
 
 
 app.add_middleware(
