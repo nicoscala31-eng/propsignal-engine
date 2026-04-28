@@ -352,33 +352,38 @@ export default function HomeScreen() {
     try {
       setScannerStarting(true);
       setScannerError(null);
-      console.log('🚀 Starting scanner...');
+      console.log('🚀 Starting Pattern Engine...');
       
-      const response = await fetch(`${API_BASE}/api/scanner/v3/initialize`, {
+      // Use new Pattern Engine restart endpoint
+      const response = await fetch(`${API_BASE}/api/pattern-engine/restart`, {
         method: 'POST',
         headers: { 'Accept': 'application/json' },
       });
       
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Scanner started:', data);
+        console.log('✅ Pattern Engine started:', data);
         
         // Update scanner status
         setScannerStatus({
-          is_running: data.scanner_running ?? true,
-          version: data.version || 'v3.3',
+          is_running: true,
+          version: 'Pattern Engine V2.0',
+          mode: 'Deterministic',
         });
+        
+        // Refresh status after a moment
+        setTimeout(() => fetchScannerStatus(), 2000);
       } else {
-        console.log('❌ Failed to start scanner:', response.status);
+        console.log('❌ Failed to start Pattern Engine:', response.status);
         setScannerError('Start failed');
       }
     } catch (err: any) {
-      console.log('❌ Scanner start error:', err.message);
+      console.log('❌ Pattern Engine start error:', err.message);
       setScannerError('Start error');
     } finally {
       setScannerStarting(false);
     }
-  }, [scannerStarting, scannerStatus?.is_running]);
+  }, [scannerStarting, scannerStatus?.is_running, fetchScannerStatus]);
 
   // ============================================
   // PUSH NOTIFICATIONS

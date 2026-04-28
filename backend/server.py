@@ -901,6 +901,9 @@ async def get_signal_feed(
     """
     Get signal feed with complete snapshot data.
     
+    PATTERN ENGINE V2.0 - Signal feed SOLO da snapshots.
+    Il vecchio tracker v3 è DISABILITATO.
+    
     Query params:
     - symbol: EURUSD or XAUUSD
     - direction: BUY or SELL
@@ -908,126 +911,42 @@ async def get_signal_feed(
     - limit: max items (default 100)
     - offset: pagination offset
     
-    Returns list of signal snapshots with metadata, scores, and short reasons.
+    Returns list of signal snapshots with metadata.
     """
     from services.signal_snapshot_service import signal_snapshot_service
-    from services.signal_outcome_tracker_v2 import signal_outcome_tracker
     
     # Initialize if needed
     await signal_snapshot_service.initialize()
     
-    # STEP 1: Get ALL signals from tracker first (they have priority)
-    tracker_signals = []
-    snapshot_ids_from_tracker = set()
-    
-    # Add ACTIVE signals from tracker
-    if status in [None, 'all', 'active', 'accepted']:
-        for sig_id, tracked in signal_outcome_tracker.active_signals.items():
-            ts = tracked.timestamp
-            if hasattr(ts, 'isoformat'):
-                ts = ts.isoformat()
-            
-            tracker_signals.append({
-                'signal_id': sig_id,
-                'symbol': tracked.asset,
-                'direction': tracked.direction,
-                'status': 'active',
-                'score': tracked.confidence_score or 0,
-                'entry': tracked.entry_price,
-                'sl': tracked.stop_loss,
-                'tp': tracked.take_profit_1,
-                'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
-                'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
-                'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
-                'short_reason': f"Score {tracked.confidence_score or 0:.1f} | Active",
-                'rejection_reason': '',
-                'blocking_filter': '',
-                'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
-                'timestamp': ts,
-                'outcome': None,
-                'final_r': 0,
-                'from_tracker': True
-            })
-            snapshot_ids_from_tracker.add(sig_id)
-    
-    # Add CLOSED signals from tracker
-    if status in [None, 'all', 'closed']:
-        for tracked in signal_outcome_tracker.completed_signals:
-            sig_id = tracked.signal_id
-            ts = tracked.timestamp
-            if hasattr(ts, 'isoformat'):
-                ts = ts.isoformat()
-            
-            tracker_signals.append({
-                'signal_id': sig_id,
-                'symbol': tracked.asset,
-                'direction': tracked.direction,
-                'status': 'closed',
-                'score': tracked.confidence_score or 0,
-                'entry': tracked.entry_price,
-                'sl': tracked.stop_loss,
-                'tp': tracked.take_profit_1,
-                'rr': getattr(tracked, 'risk_reward', 1.5) or 1.5,
-                'session': getattr(tracked, 'session', 'Unknown') or 'Unknown',
-                'setup_type': getattr(tracked, 'setup_type', 'From Tracker') or 'From Tracker',
-                'short_reason': f"Score {tracked.confidence_score or 0:.1f} | {getattr(tracked, 'final_outcome', 'closed') or 'closed'}",
-                'rejection_reason': '',
-                'blocking_filter': '',
-                'confidence_bucket': f"{int((tracked.confidence_score or 0) // 5) * 5}+",
-                'timestamp': ts,
-                'outcome': getattr(tracked, 'final_outcome', None),
-                'final_r': 0,
-                'from_tracker': True
-            })
-            snapshot_ids_from_tracker.add(sig_id)
-    
-    # STEP 2: Get snapshots (for rejected and any missed signals)
-    # When status is 'all' or None, we need BOTH accepted and rejected
-    snapshot_status_filter = status
-    if status in [None, 'all']:
-        snapshot_status_filter = 'all'  # Get everything including rejected
+    # Get snapshots ONLY (no old tracker signals)
+    snapshot_status_filter = status if status else 'all'
     
     snapshot_feed = signal_snapshot_service.get_feed(
         symbol=symbol,
         direction=direction,
         status_filter=snapshot_status_filter,
-        limit=1000,  # Get more, we'll filter later
+        limit=limit * 2,  # Get more for filtering
         offset=0
     )
     
-    # Filter out duplicates
-    for s in snapshot_feed:
-        if s.get('signal_id') not in snapshot_ids_from_tracker:
-            tracker_signals.append(s)
-    
-    # STEP 3: Sort with priority - ACTIVE first, then CLOSED, then REJECTED
+    # Sort: ACCEPTED first, then REJECTED by timestamp
     def sort_key(s):
-        status_priority = {'active': 0, 'accepted': 0, 'closed': 1, 'tp_hit': 1, 'sl_hit': 1}
-        priority = status_priority.get(s.get('status', '').lower(), 2)
-        # Timestamp as secondary sort (newest first)
+        status_val = s.get('status', '').lower()
+        status_priority = {'active': 0, 'accepted': 1, 'closed': 2, 'rejected': 3}
+        priority = status_priority.get(status_val, 4)
         ts = s.get('timestamp', '') or ''
         return (priority, ts)
     
-    tracker_signals.sort(key=lambda x: (sort_key(x)[0], -hash(sort_key(x)[1]) if sort_key(x)[1] else 0))
+    # Sort by status priority, then by timestamp descending
+    accepted = [s for s in snapshot_feed if s.get('status') in ['active', 'accepted']]
+    rejected = [s for s in snapshot_feed if s.get('status') == 'rejected']
+    others = [s for s in snapshot_feed if s.get('status') not in ['active', 'accepted', 'rejected']]
     
-    # Better sort by timestamp within each priority group
-    # FIXED: Explicitly handle 'rejected' status separately
-    active = [s for s in tracker_signals if s.get('status') in ['active', 'accepted']]
-    closed = [s for s in tracker_signals if s.get('status') in ['closed', 'tp_hit', 'sl_hit']]
-    rejected = [s for s in tracker_signals if s.get('status') == 'rejected']
-    others = [s for s in tracker_signals if s.get('status') not in ['active', 'accepted', 'closed', 'tp_hit', 'sl_hit', 'rejected']]
+    accepted.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    rejected.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    others.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
     
-    # Sort each by timestamp descending
-    def ts_sort(x):
-        return x.get('timestamp', '') or ''
-    
-    active.sort(key=ts_sort, reverse=True)
-    closed.sort(key=ts_sort, reverse=True)
-    rejected.sort(key=ts_sort, reverse=True)
-    others.sort(key=ts_sort, reverse=True)
-    
-    # Combine: ACTIVE first, then CLOSED, then REJECTED, then others
-    feed = active + closed + rejected + others
+    feed = accepted + rejected + others
     
     # Apply offset and limit
     feed = feed[offset:offset + limit]
@@ -1906,115 +1825,70 @@ async def get_advanced_scanner_status():
 @api_router.get("/scanner/v3/status")
 async def get_signal_generator_v3_status():
     """
-    Get status of Signal Generator v3.2 (DATA-DRIVEN OPTIMIZATION)
+    REDIRECTED TO PATTERN ENGINE V2.0
     
-    This is the PRIMARY signal generator with DATA-DRIVEN filters:
-    - Min confidence: 75% (raised from 60% based on performance data)
-    - Min MTF: 80 (only strong alignment)
-    - Assets: EURUSD only (XAUUSD disabled due to -12R performance)
-    - Sessions: London only (overlap and NY disabled)
-    - Setups: HTF Continuation and Momentum Breakout only
-    - Trade Management: Partial@0.5R, BE@1R, Trail@1R
+    Signal Generator v3 è stato DISABILITATO.
+    Questo endpoint ora restituisce lo stato del Pattern Engine V2.0.
     """
-    if not signal_generator_instance:
-        return {"error": "Signal Generator v3 not initialized"}
+    # Redirect to Pattern Engine V2.0
+    from services.deterministic_signal_generator import deterministic_signal_generator
     
-    stats = signal_generator_instance.get_stats()
-    
-    # Extract data-driven filters
-    data_driven = stats.get("data_driven_filters", {})
+    status = deterministic_signal_generator.get_status()
     
     return {
-        "version": stats["version"],
-        "mode": stats["mode"],
-        "is_running": stats["is_running"],
-        "uptime_seconds": stats["uptime_seconds"],
-        
-        # v3.2 DATA-DRIVEN configuration
-        "data_driven_filters": data_driven,
-        "trade_management": stats.get("trade_management", {}),
-        "classification": stats["classification"],
-        
-        "statistics": {
-            "total_scans": stats["scan_count"],
-            "signals_generated": stats["signal_count"],
-            "notifications_sent": stats["notification_count"],
-            "rejections": stats["rejection_count"],
-            "invalid_tokens_removed": stats.get("invalid_tokens_removed", 0)
-        },
-        
-        "rejection_reasons": stats.get("rejection_reasons", {}),
-        "duplicate_window_minutes": stats["duplicate_window_minutes"],
-        "recent_signals_count": stats["recent_signals"],
-        
-        # ========== BUFFER ZONE MONITORING (v3.3) ==========
-        "buffer_zone_metrics": stats.get("buffer_zone_metrics", {}),
-        
-        # ========== BUFFER ZONE FAILURE DIAGNOSTICS (v5.1) ==========
-        "buffer_fail_diagnostics": stats.get("buffer_fail_diagnostics", {}),
-        
-        # Prop firm configuration and risk status
-        "prop_config": stats.get("prop_config", {}),
-        "daily_risk_status": stats.get("daily_risk_status", {}),
-        "optimization_applied": stats.get("optimization_applied", "")
+        "version": "Pattern Engine V2.0",
+        "mode": "Deterministic",
+        "is_running": status.get("is_running", False),
+        "uptime_seconds": 0,
+        "symbols": status.get("assets", ["EURUSD", "XAUUSD"]),
+        "last_check_time": status.get("last_scan"),
+        "statistics": status.get("statistics", {}),
+        "engine_stats": status.get("engine_stats", {}),
+        "message": "Signal Generator v3 DISABILITATO - Pattern Engine V2.0 ATTIVO"
     }
 
 
 @api_router.post("/scanner/v3/initialize")
 async def initialize_scanner_v3():
     """
-    Manually initialize and start Signal Generator v3.
+    REDIRECTED TO PATTERN ENGINE V2.0
     
-    Use this if the scanner failed to initialize during startup.
-    This will:
-    1. Initialize the signal snapshot service
-    2. Initialize the signal generator if not already done
-    3. Start the scanner if not running
-    4. Initialize the outcome tracker
+    Signal Generator v3 è stato DISABILITATO.
+    Questo endpoint ora avvia/riavvia il Pattern Engine V2.0.
     """
-    global signal_generator_instance, tracker
-    
     try:
-        # Initialize signal snapshot service FIRST
+        # Redirect to Pattern Engine V2.0
+        from services.deterministic_signal_generator import (
+            deterministic_signal_generator, 
+            start_deterministic_signal_generator
+        )
+        import asyncio
+        
+        # Initialize signal snapshot service
         from services.signal_snapshot_service import signal_snapshot_service
         await signal_snapshot_service.initialize()
-        logger.info("✅ Signal Snapshot Service initialized manually")
         
         # Check if already running
-        if signal_generator_instance and signal_generator_instance.is_running:
+        if deterministic_signal_generator.is_running:
             return {
                 "status": "already_running",
-                "message": "Signal Generator v3 is already running",
-                "version": signal_generator_instance.get_stats().get("version", "unknown")
+                "message": "Pattern Engine V2.0 is already running",
+                "version": "Pattern Engine V2.0",
+                "scanner_running": True
             }
         
-        # Initialize if not done
-        if not signal_generator_instance:
-            logger.info("🔄 Manual initialization of Signal Generator v3...")
-            signal_generator_instance = await init_signal_generator(db)
-            logger.info("✅ Signal Generator v3 initialized manually")
-        
-        # Start if not running
-        if not signal_generator_instance.is_running:
-            await signal_generator_instance.start()
-            logger.info("✅ Signal Generator v3 started manually")
-        
-        # Initialize and start tracker V2
-        from services.signal_outcome_tracker_v2 import signal_outcome_tracker
-        if not signal_outcome_tracker.is_running:
-            await signal_outcome_tracker.start()
-            logger.info("✅ Outcome Tracker V2 started manually")
+        # Start Pattern Engine
+        asyncio.create_task(start_deterministic_signal_generator())
         
         return {
             "status": "success",
-            "message": "Signal Generator v3 initialized and started",
-            "scanner_running": signal_generator_instance.is_running,
-            "tracker_running": signal_outcome_tracker.is_running,
-            "version": signal_generator_instance.get_stats().get("version", "unknown")
+            "message": "Pattern Engine V2.0 avviato",
+            "scanner_running": True,
+            "version": "Pattern Engine V2.0"
         }
         
     except Exception as e:
-        logger.error(f"❌ Manual initialization error: {e}")
+        logger.error(f"❌ Pattern Engine initialization error: {e}")
         return {
             "status": "error",
             "message": str(e)
