@@ -456,36 +456,65 @@ export default function SignalSnapshotScreen() {
 
         {/* Pattern Analysis (replaces Factor Contributions) */}
         <CollapsibleSection title="Pattern Analysis" defaultOpen={true}>
-          {snapshot.factor_contributions.map((factor, index) => (
-            <View key={index} style={styles.factorRow}>
-              <View style={styles.factorHeader}>
-                <Text style={styles.factorName}>{factor.factor_name}</Text>
-                <View style={[
-                  styles.factorStatusBadge,
-                  { backgroundColor: getStatusColor(factor.status) + '20' }
-                ]}>
-                  <Text style={[
-                    styles.factorStatusText,
-                    { color: getStatusColor(factor.status) }
-                  ]}>
-                    {factor.status === 'pass' ? 'ACTIVE' : 'INACTIVE'}
-                  </Text>
-                </View>
+          {/* NEW: Show Pattern Engine data if available */}
+          {snapshot.metrics && Object.keys(snapshot.metrics).length > 0 ? (
+            <View>
+              <View style={styles.patternEngineInfo}>
+                <Text style={styles.peLabel}>Pattern Type</Text>
+                <Text style={styles.peValue}>{snapshot.pattern_type?.replace(/_/g, ' ') || 'NONE'}</Text>
               </View>
-              <View style={styles.factorDetails}>
-                {factor.status === 'pass' ? (
-                  <Text style={styles.factorDetail}>
-                    <Text style={{ color: '#00ff88' }}>✓</Text> Pattern detected
-                  </Text>
-                ) : (
-                  <Text style={styles.factorDetail}>
-                    <Text style={{ color: '#ff4444' }}>✗</Text> Not detected
-                  </Text>
-                )}
-                <Text style={styles.factorReason}>{factor.reason}</Text>
+              <View style={styles.patternEngineInfo}>
+                <Text style={styles.peLabel}>Regime</Text>
+                <Text style={styles.peValue}>{snapshot.regime || 'NONE'}</Text>
+              </View>
+              <View style={styles.patternEngineInfo}>
+                <Text style={styles.peLabel}>Winrate</Text>
+                <Text style={styles.peValue}>{((snapshot.winrate || 0) * 100).toFixed(0)}%</Text>
+              </View>
+              <View style={styles.patternEngineInfo}>
+                <Text style={styles.peLabel}>Expected Edge</Text>
+                <Text style={[styles.peValue, { color: (snapshot.expected_edge || 0) > 0 ? '#00ff88' : '#ff4444' }]}>
+                  {(snapshot.expected_edge || 0).toFixed(4)}R
+                </Text>
               </View>
             </View>
-          ))}
+          ) : (
+            // Legacy: show factor contributions
+            snapshot.factor_contributions?.length > 0 ? (
+              snapshot.factor_contributions.map((factor, index) => (
+                <View key={index} style={styles.factorRow}>
+                  <View style={styles.factorHeader}>
+                    <Text style={styles.factorName}>{factor.factor_name}</Text>
+                    <View style={[
+                      styles.factorStatusBadge,
+                      { backgroundColor: getStatusColor(factor.status) + '20' }
+                    ]}>
+                      <Text style={[
+                        styles.factorStatusText,
+                        { color: getStatusColor(factor.status) }
+                      ]}>
+                        {factor.status === 'pass' ? 'ACTIVE' : 'INACTIVE'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.factorDetails}>
+                    {factor.status === 'pass' ? (
+                      <Text style={styles.factorDetail}>
+                        <Text style={{ color: '#00ff88' }}>✓</Text> Pattern detected
+                      </Text>
+                    ) : (
+                      <Text style={styles.factorDetail}>
+                        <Text style={{ color: '#ff4444' }}>✗</Text> Not detected
+                      </Text>
+                    )}
+                    <Text style={styles.factorReason}>{factor.reason}</Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No pattern analysis data available</Text>
+            )
+          )}
         </CollapsibleSection>
 
         {/* Penalties Applied */}
@@ -508,46 +537,80 @@ export default function SignalSnapshotScreen() {
           </CollapsibleSection>
         )}
 
-        {/* Filter Checks */}
-        <CollapsibleSection title="Filter Checks" defaultOpen={false}>
-          {snapshot.filters_checked.map((filter, index) => (
-            <View key={index} style={[
-              styles.filterRow,
-              { borderLeftColor: filter.passed ? '#00ff88' : '#ff4444' }
-            ]}>
-              <View style={styles.filterHeader}>
-                <Text style={styles.filterName}>
-                  {filter.filter_name.replace(/_/g, ' ')}
-                </Text>
-                <View style={[
-                  styles.filterPassBadge,
-                  { backgroundColor: filter.passed ? '#00ff8820' : '#ff444420' }
-                ]}>
-                  <Text style={[
-                    styles.filterPassText,
-                    { color: filter.passed ? '#00ff88' : '#ff4444' }
-                  ]}>
-                    {filter.passed ? '✓ PASS' : '✗ FAIL'}
+        {/* Filter Checks / Conditions */}
+        <CollapsibleSection title="Conditions Check" defaultOpen={false}>
+          {/* NEW: Show Pattern Engine conditions if available */}
+          {snapshot.conditions && Object.keys(snapshot.conditions).length > 0 ? (
+            Object.entries(snapshot.conditions).map(([key, value], index) => (
+              <View key={index} style={[
+                styles.filterRow,
+                { borderLeftColor: value === true ? '#00ff88' : (value === false ? '#ff4444' : '#888') }
+              ]}>
+                <View style={styles.filterHeader}>
+                  <Text style={styles.filterName}>
+                    {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </Text>
+                  <View style={[
+                    styles.filterPassBadge,
+                    { backgroundColor: value === true ? '#00ff8820' : (value === false ? '#ff444420' : '#88888820') }
+                  ]}>
+                    <Text style={[
+                      styles.filterPassText,
+                      { color: value === true ? '#00ff88' : (value === false ? '#ff4444' : '#888') }
+                    ]}>
+                      {typeof value === 'boolean' ? (value ? '✓ TRUE' : '✗ FALSE') : String(value)}
+                    </Text>
+                  </View>
                 </View>
               </View>
-              {filter.threshold > 0 && (
-                <Text style={styles.filterDetail}>
-                  Value: {filter.actual_value.toFixed(1)} | Threshold: {filter.threshold.toFixed(1)}
-                </Text>
-              )}
-              {filter.blocks_trade && (
-                <Text style={styles.filterBlocking}>⚠ BLOCKING FILTER</Text>
-              )}
-            </View>
-          ))}
+            ))
+          ) : (
+            // Legacy: show filter checks
+            snapshot.filters_checked?.length > 0 ? (
+              snapshot.filters_checked.map((filter, index) => (
+                <View key={index} style={[
+                  styles.filterRow,
+                  { borderLeftColor: filter.passed ? '#00ff88' : '#ff4444' }
+                ]}>
+                  <View style={styles.filterHeader}>
+                    <Text style={styles.filterName}>
+                      {filter.filter_name.replace(/_/g, ' ')}
+                    </Text>
+                    <View style={[
+                      styles.filterPassBadge,
+                      { backgroundColor: filter.passed ? '#00ff8820' : '#ff444420' }
+                    ]}>
+                      <Text style={[
+                        styles.filterPassText,
+                        { color: filter.passed ? '#00ff88' : '#ff4444' }
+                      ]}>
+                        {filter.passed ? '✓ PASS' : '✗ FAIL'}
+                      </Text>
+                    </View>
+                  </View>
+                  {filter.threshold > 0 && (
+                    <Text style={styles.filterDetail}>
+                      Value: {filter.actual_value.toFixed(1)} | Threshold: {filter.threshold.toFixed(1)}
+                    </Text>
+                  )}
+                  {filter.blocks_trade && (
+                    <Text style={styles.filterBlocking}>⚠ BLOCKING FILTER</Text>
+                  )}
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No condition data available</Text>
+            )
+          )}
         </CollapsibleSection>
 
         {/* Final Explanation */}
         <View style={styles.explanationCard}>
           <Text style={styles.cardTitle}>Final Explanation</Text>
           <Text style={styles.explanationText}>
-            {snapshot.reasoning.summary_full}
+            {snapshot.rejection_reason 
+              ? `Signal rejected: ${snapshot.rejection_reason?.replace(/_/g, ' ')}`
+              : (snapshot.reasoning?.summary_full || `Pattern: ${snapshot.pattern_type?.replace(/_/g, ' ') || 'N/A'}, Regime: ${snapshot.regime || 'N/A'}, RR: ${snapshot.rr?.toFixed(2) || 'N/A'}`)}
           </Text>
         </View>
 
@@ -999,5 +1062,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // NEW: Pattern Engine Info Styles
+  patternEngineInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+  },
+  peLabel: {
+    color: '#888',
+    fontSize: 14,
+  },
+  peValue: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  noDataText: {
+    color: '#666',
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 20,
   },
 });

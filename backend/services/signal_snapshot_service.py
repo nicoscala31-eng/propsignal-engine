@@ -118,6 +118,14 @@ class SignalSnapshot:
     penalties_applied: List[Dict] = field(default_factory=list)
     filters_checked: List[Dict] = field(default_factory=list)
     
+    # === PATTERN ENGINE V2.0 DATA ===
+    pattern_type: str = ""
+    regime: str = ""
+    winrate: float = 0.0
+    expected_edge: float = 0.0
+    metrics: Dict = field(default_factory=dict)
+    conditions: Dict = field(default_factory=dict)
+    
     # === HUMAN READABLE ===
     summary_short: str = ""
     summary_full: str = ""
@@ -351,10 +359,18 @@ class SignalSnapshotService:
                 'confidence_bucket': snap.confidence_bucket
             },
             
-            # Detailed breakdowns
+            # Detailed breakdowns (legacy)
             'factor_contributions': snap.factor_contributions,
             'penalties_applied': snap.penalties_applied,
             'filters_checked': snap.filters_checked,
+            
+            # Pattern Engine V2.0 data
+            'pattern_type': snap.pattern_type,
+            'regime': snap.regime,
+            'winrate': snap.winrate,
+            'expected_edge': snap.expected_edge,
+            'metrics': snap.metrics,
+            'conditions': snap.conditions,
             
             # Reasoning
             'reasoning': {

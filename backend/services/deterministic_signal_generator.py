@@ -195,9 +195,21 @@ class DeterministicPatternSignalGenerator:
                 score_post_penalty=0.0,
                 final_score=0.0,
                 confidence_bucket='0',
+                # Pattern Engine V2.0 data
+                pattern_type=result.pattern_type,
+                regime=result.regime,
+                winrate=result.winrate,
+                expected_edge=result.expected_edge_R,
+                metrics=result.metrics,
+                conditions=result.conditions,
             )
-            # Add pattern-specific data to short_reason field
-            snapshot.short_reason = f"{result.pattern_type} | RR {result.rr:.2f} | Edge {result.expected_edge_R:.4f}" if result.status == ValidationStatus.VALID.value else result.rejection_reason
+            # Add pattern-specific data to short_reason and summary fields
+            if result.status == ValidationStatus.VALID.value:
+                snapshot.summary_short = f"{result.pattern_type} | RR {result.rr:.2f} | Edge {result.expected_edge_R:.4f}"
+                snapshot.summary_full = f"Pattern: {result.pattern_type}, Regime: {result.regime}, Direction: {result.direction}, Entry: {result.entry}, SL: {result.stop_loss}, TP: {result.take_profit}, RR: {result.rr:.2f}, Winrate: {result.winrate:.0%}, Expected Edge: {result.expected_edge_R:.4f}R"
+            else:
+                snapshot.summary_short = result.rejection_reason
+                snapshot.summary_full = f"Signal rejected: {result.rejection_reason}. Pattern: {result.pattern_type}, Regime: {result.regime}"
             
             await signal_snapshot_service.save_snapshot(snapshot)
             
