@@ -415,7 +415,15 @@ class DeterministicPatternEngine:
         metrics.range_quality = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
         
         # SL buffer = max(spread*2, 0.15*ATR, minimum_tick)
-        minimum_tick = 0.00001 if 'EUR' in str(last_candle) else 0.01
+        # Determine minimum tick based on price level (not symbol name)
+        price = last_candle.close
+        if price < 10:  # Forex pairs like EURUSD (1.xxxx)
+            minimum_tick = 0.00001  # 0.1 pips
+        elif price < 100:  # Some pairs or indices
+            minimum_tick = 0.0001   # 1 pip
+        else:  # XAUUSD (~3000), indices, etc
+            minimum_tick = 0.01     # 1 cent
+        
         metrics.sl_buffer = max(spread * 2, 0.15 * metrics.ATR_t, minimum_tick)
         
         return metrics
