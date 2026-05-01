@@ -69,14 +69,33 @@ class ValidationStatus(Enum):
 
 
 class RejectionReason(Enum):
-    NO_PATTERN = "NO_PATTERN"
+    # === NO PATTERN ===
+    NO_PATTERN = "NO_PATTERN"  # Nessun pattern riconosciuto
+    
+    # === PATTERN_INVALID - Pattern riconosciuto ma invalido ===
     TREND_WEAK = "TREND_WEAK"
     RR_TOO_LOW = "RR_TOO_LOW"
-    INVALID_SL_TP = "INVALID_SL_TP"
+    INVALID_BUY_SELL_GEOMETRY = "INVALID_BUY_SELL_GEOMETRY"  # SL/TP non coerenti con direzione
     EDGE_NEGATIVE = "EDGE_NEGATIVE"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
     INVALID_SWING = "INVALID_SWING"
     RANGE_TOO_TIGHT = "RANGE_TOO_TIGHT"  # range_width/ATR < 1.5
+    
+    # === MEAN REVERSION SPECIFIC ===
+    Z_SCORE_NOT_EXTREME = "Z_SCORE_NOT_EXTREME"  # |Z_t| < threshold
+    NOT_NEAR_RANGE_BOUND = "NOT_NEAR_RANGE_BOUND"  # Prezzo non vicino a supporto/resistenza
+    MU_NOT_NEUTRAL = "MU_NOT_NEUTRAL"  # mu_t troppo alto (trend presente)
+    
+    # === TREND CONTINUATION SPECIFIC ===
+    NO_HIGHER_HIGHS_LOWS = "NO_HIGHER_HIGHS_LOWS"  # Struttura swing non valida per trend
+    NO_MICRO_BREAKOUT = "NO_MICRO_BREAKOUT"  # Nessun breakout del micro pullback
+    
+    # === COMPRESSION BREAKOUT SPECIFIC ===
+    NOT_COMPRESSION = "NOT_COMPRESSION"  # Range non abbastanza stretto
+    BREAKOUT_TOO_FAR = "BREAKOUT_TOO_FAR"  # Breakout troppo lontano dal range
+    
+    # === FALSE BREAKOUT SPECIFIC ===
+    NO_WICK_REJECTION = "NO_WICK_REJECTION"  # Wick ratio insufficiente
 
 
 # ==================== GLOBAL PARAMETERS ====================
@@ -202,6 +221,9 @@ class MathMetrics:
     
     # SL buffer
     sl_buffer: float = 0.0
+    
+    # Data freshness
+    data_freshness_seconds: float = 0.0
 
 
 @dataclass
@@ -687,32 +709,19 @@ class DeterministicPatternEngine:
         
         SL: range_low - sl_buffer
         TP: range_mid (or range_high - sl_buffer if range_width/ATR >= 2)
+        
+        REJECTION ESPLICITE:
+        - RANGE_TOO_TIGHT: range_quality < 1.5
+        - MU_NOT_NEUTRAL: mu_t troppo alto
+        - Z_SCORE_NOT_EXTREME: Z_t non raggiunge threshold
+        - NOT_NEAR_RANGE_BOUND: prezzo non vicino a supporto/resistenza
         """
         last_candle = candles[-1]
         
         # Calcola range_quality = range_width / ATR
         range_quality = metrics.range_width / metrics.ATR_t if metrics.ATR_t > 0 else 0
         
-        # PREREQUISITO: Range deve essere sufficientemente ampio
-        # Se range_width / ATR < 1.5 → RANGE_TOO_TIGHT (pattern rilevato ma invalido)
-        if range_quality < 1.5:
-            # Pattern MEAN_REVERSION rilevato ma range troppo stretto
-            return PatternResult(
-                pattern_detected=True,
-                pattern_type=PatternType.MEAN_REVERSION.value,
-                regime=Regime.RANGE.value,
-                direction=SignalDirection.NONE.value,
-                status=ValidationStatus.REJECTED.value,
-                rejection_reason=RejectionReason.RANGE_TOO_TIGHT.value,
-                all_conditions_met=False,
-                conditions={
-                    'range_quality': round(range_quality, 3),
-                    'range_quality_required': 1.5,
-                    'range_width': metrics.range_width,
-                    'ATR': metrics.ATR_t
-                }
-            )
-        
+        # Base conditions
         conditions = {
             'mu_neutral': abs(metrics.mu_t) <= self.params.mu_neutral_threshold,
             'trend_weak': metrics.T_t < self.params.trend_strength_threshold,
@@ -721,7 +730,11 @@ class DeterministicPatternEngine:
             'z_oversold': metrics.Z_t <= -self.params.z_threshold,
             'z_overbought': metrics.Z_t >= self.params.z_threshold,
             'range_wide_enough': range_quality >= 1.5,
-            'range_quality': round(range_quality, 3)
+            'range_quality': round(range_quality, 3),
+            'Z_t': round(metrics.Z_t, 4),
+            'z_threshold': self.params.z_threshold,
+            'mu_t': round(metrics.mu_t, 8),
+            'mu_threshold': self.params.mu_neutral_threshold
         }
         
         # Proximity to range bounds
@@ -729,23 +742,95 @@ class DeterministicPatternEngine:
         conditions['near_range_low'] = abs(last_candle.close - metrics.range_low) <= proximity_threshold
         conditions['near_range_high'] = abs(last_candle.close - metrics.range_high) <= proximity_threshold
         
-        # BUY signal - near support
-        if (conditions['mu_neutral'] and 
-            conditions['trend_weak'] and 
-            conditions['near_range_low'] and 
-            conditions['z_oversold']):
+        # Helper per creare rejection con entry/SL/TP teorici
+        def create_rejection(reason: RejectionReason, direction: SignalDirection, entry: float, sl: float, tp: float) -> PatternResult:
+            risk = abs(entry - sl) if entry and sl else 0
+            reward = abs(tp - entry) if entry and tp else 0
+            rr = reward / risk if risk > 0 else 0
+            return PatternResult(
+                pattern_detected=True,
+                pattern_type=PatternType.MEAN_REVERSION.value,
+                regime=Regime.RANGE.value,
+                direction=direction.value,
+                entry=entry,
+                stop_loss=sl,
+                take_profit=tp,
+                rr=rr,
+                status=ValidationStatus.REJECTED.value,
+                rejection_reason=reason.value,
+                all_conditions_met=False,
+                winrate=self.params.winrate_mean_reversion,
+                conditions=conditions
+            )
+        
+        # === REJECTION 1: RANGE_TOO_TIGHT ===
+        if range_quality < 1.5:
+            return create_rejection(
+                RejectionReason.RANGE_TOO_TIGHT,
+                SignalDirection.NONE,
+                last_candle.close,
+                metrics.range_low - metrics.sl_buffer,
+                metrics.range_mid
+            )
+        
+        # === REJECTION 2: MU_NOT_NEUTRAL (trend presente) ===
+        if not conditions['mu_neutral']:
+            return create_rejection(
+                RejectionReason.MU_NOT_NEUTRAL,
+                SignalDirection.NONE,
+                last_candle.close,
+                0, 0
+            )
+        
+        # Determina potenziale direzione basata sulla posizione nel range
+        near_support = conditions['near_range_low']
+        near_resistance = conditions['near_range_high']
+        
+        # Calcola entry/SL/TP teorici per BUY
+        buy_entry = last_candle.close
+        buy_sl = metrics.range_low - metrics.sl_buffer
+        buy_tp = metrics.range_high - metrics.sl_buffer if range_quality >= 2 else metrics.range_mid
+        
+        # Calcola entry/SL/TP teorici per SELL
+        sell_entry = last_candle.close
+        sell_sl = metrics.range_high + metrics.sl_buffer
+        sell_tp = metrics.range_low + metrics.sl_buffer if range_quality >= 2 else metrics.range_mid
+        
+        # === REJECTION 3: NOT_NEAR_RANGE_BOUND ===
+        if not near_support and not near_resistance:
+            # Prezzo nel mezzo del range
+            return create_rejection(
+                RejectionReason.NOT_NEAR_RANGE_BOUND,
+                SignalDirection.NONE,
+                last_candle.close,
+                0, 0
+            )
+        
+        # === CHECK BUY CONDITIONS ===
+        if near_support:
+            # Vicino al supporto - potenziale BUY
+            if not conditions['z_oversold']:
+                # Z_t non abbastanza oversold
+                return create_rejection(
+                    RejectionReason.Z_SCORE_NOT_EXTREME,
+                    SignalDirection.BUY,
+                    buy_entry,
+                    buy_sl,
+                    buy_tp
+                )
             
-            entry = last_candle.close
-            sl = metrics.range_low - metrics.sl_buffer
+            if not conditions['trend_weak']:
+                return create_rejection(
+                    RejectionReason.TREND_WEAK,
+                    SignalDirection.BUY,
+                    buy_entry,
+                    buy_sl,
+                    buy_tp
+                )
             
-            # TP based on range_quality
-            if range_quality >= 2:
-                tp = metrics.range_high - metrics.sl_buffer
-            else:
-                tp = metrics.range_mid
-            
-            risk = abs(entry - sl)
-            reward = abs(tp - entry)
+            # TUTTE LE CONDIZIONI BUY SODDISFATTE
+            risk = abs(buy_entry - buy_sl)
+            reward = abs(buy_tp - buy_entry)
             rr = reward / risk if risk > 0 else 0
             
             return PatternResult(
@@ -753,31 +838,39 @@ class DeterministicPatternEngine:
                 pattern_type=PatternType.MEAN_REVERSION.value,
                 regime=Regime.RANGE.value,
                 direction=SignalDirection.BUY.value,
-                entry=entry,
-                stop_loss=sl,
-                take_profit=tp,
+                entry=buy_entry,
+                stop_loss=buy_sl,
+                take_profit=buy_tp,
                 rr=rr,
                 winrate=self.params.winrate_mean_reversion,
                 conditions=conditions
             )
         
-        # SELL signal - near resistance
-        if (conditions['mu_neutral'] and 
-            conditions['trend_weak'] and 
-            conditions['near_range_high'] and 
-            conditions['z_overbought']):
+        # === CHECK SELL CONDITIONS ===
+        if near_resistance:
+            # Vicino alla resistenza - potenziale SELL
+            if not conditions['z_overbought']:
+                # Z_t non abbastanza overbought
+                return create_rejection(
+                    RejectionReason.Z_SCORE_NOT_EXTREME,
+                    SignalDirection.SELL,
+                    sell_entry,
+                    sell_sl,
+                    sell_tp
+                )
             
-            entry = last_candle.close
-            sl = metrics.range_high + metrics.sl_buffer
+            if not conditions['trend_weak']:
+                return create_rejection(
+                    RejectionReason.TREND_WEAK,
+                    SignalDirection.SELL,
+                    sell_entry,
+                    sell_sl,
+                    sell_tp
+                )
             
-            # TP based on range_quality
-            if range_quality >= 2:
-                tp = metrics.range_low + metrics.sl_buffer
-            else:
-                tp = metrics.range_mid
-            
-            risk = abs(sl - entry)
-            reward = abs(entry - tp)
+            # TUTTE LE CONDIZIONI SELL SODDISFATTE
+            risk = abs(sell_sl - sell_entry)
+            reward = abs(sell_entry - sell_tp)
             rr = reward / risk if risk > 0 else 0
             
             return PatternResult(
@@ -785,14 +878,15 @@ class DeterministicPatternEngine:
                 pattern_type=PatternType.MEAN_REVERSION.value,
                 regime=Regime.RANGE.value,
                 direction=SignalDirection.SELL.value,
-                entry=entry,
-                stop_loss=sl,
-                take_profit=tp,
+                entry=sell_entry,
+                stop_loss=sell_sl,
+                take_profit=sell_tp,
                 rr=rr,
                 winrate=self.params.winrate_mean_reversion,
                 conditions=conditions
             )
         
+        # Fallback (non dovrebbe mai arrivare qui)
         return None
     
     def _detect_compression_breakout(
@@ -1007,7 +1101,14 @@ class DeterministicPatternEngine:
         - expected_edge_R > 0
         - TP coerente
         - SL coerente
+        
+        NOTE: Se il pattern è già stato REJECTED dalla detection function,
+        NON sovrascrivere la rejection reason.
         """
+        # Se già rejected, mantieni la rejection reason originale
+        if result.status == ValidationStatus.REJECTED.value and result.rejection_reason:
+            return result
+        
         if not result.pattern_detected:
             result.status = ValidationStatus.REJECTED.value
             result.rejection_reason = RejectionReason.NO_PATTERN.value
@@ -1020,16 +1121,16 @@ class DeterministicPatternEngine:
             result.all_conditions_met = False
             return result
         
-        # SL/TP coherence
+        # SL/TP coherence - BUY: SL < Entry < TP, SELL: TP < Entry < SL
         if result.direction == SignalDirection.BUY.value:
             if result.stop_loss >= result.entry or result.take_profit <= result.entry:
                 result.status = ValidationStatus.REJECTED.value
-                result.rejection_reason = RejectionReason.INVALID_SL_TP.value
+                result.rejection_reason = RejectionReason.INVALID_BUY_SELL_GEOMETRY.value
                 return result
         elif result.direction == SignalDirection.SELL.value:
             if result.stop_loss <= result.entry or result.take_profit >= result.entry:
                 result.status = ValidationStatus.REJECTED.value
-                result.rejection_reason = RejectionReason.INVALID_SL_TP.value
+                result.rejection_reason = RejectionReason.INVALID_BUY_SELL_GEOMETRY.value
                 return result
         
         # Expected edge calculation
@@ -1084,6 +1185,19 @@ class DeterministicPatternEngine:
         
         # Calculate metrics
         metrics = self._calculate_metrics(candles, spread)
+        
+        # Calculate data freshness
+        last_candle_time = candles[-1].timestamp
+        try:
+            # Parse timestamp (handles multiple formats)
+            if 'T' in str(last_candle_time):
+                candle_dt = datetime.fromisoformat(str(last_candle_time).replace('Z', '+00:00').replace('+00:00', ''))
+            else:
+                candle_dt = datetime.strptime(str(last_candle_time)[:19], '%Y-%m-%d %H:%M:%S')
+            data_freshness = (datetime.utcnow() - candle_dt).total_seconds()
+        except Exception:
+            data_freshness = -1  # Unable to calculate
+        
         result.metrics = {
             'mu_t': round(metrics.mu_t, 8),
             'sigma_t': round(metrics.sigma_t, 8),
@@ -1094,7 +1208,9 @@ class DeterministicPatternEngine:
             'range_high': round(metrics.range_high, 6),
             'range_low': round(metrics.range_low, 6),
             'range_quality': round(metrics.range_quality, 3),  # range_width / ATR
-            'sl_buffer': round(metrics.sl_buffer, 6)
+            'sl_buffer': round(metrics.sl_buffer, 6),
+            'spread': round(spread, 6),
+            'data_freshness_seconds': round(data_freshness, 1)
         }
         
         # Detect regime
@@ -1149,7 +1265,13 @@ class DeterministicPatternEngine:
         result.conditions = pattern_result.conditions
         result.swings = pattern_result.swings
         
-        # Validate
+        # IMPORTANT: Copy status and rejection_reason if already set
+        if pattern_result.status == ValidationStatus.REJECTED.value:
+            result.status = pattern_result.status
+            result.rejection_reason = pattern_result.rejection_reason
+            result.all_conditions_met = pattern_result.all_conditions_met
+        
+        # Validate (only if not already rejected)
         result = self._validate_trade(result)
         
         # Track
